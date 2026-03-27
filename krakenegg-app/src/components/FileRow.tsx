@@ -1,9 +1,9 @@
 import { memo } from "react";
-import { Folder, File } from "lucide-react";
 import clsx from "clsx";
 import { FileInfo, SortColumn } from "../store";
 import { SmartTooltip } from "./SmartTooltip";
 import { formatSize, formatDate, getExtension } from "../utils/format";
+import { getFileIcon, getFileIconColor } from "../utils/fileIcons";
 
 interface FileRowProps {
   file: FileInfo;
@@ -49,17 +49,17 @@ export const FileRow = memo(({
 
   const renderCell = (col: SortColumn) => {
       switch (col) {
-          case 'name':
+          case 'name': {
+              const Icon = getFileIcon(file);
+              const iconColor = getFileIconColor(file, isSelected, isActive);
               return (
                   <div className="flex items-center overflow-hidden min-w-0 pr-2 h-full text-left">
-                      {file.is_dir ? (
-                        <Folder size={15} className={clsx("mr-2 shrink-0 fill-current", isSelected && isActive ? "text-white" : "text-blue-400")} />
-                      ) : (
-                        <File size={15} className={clsx("mr-2 shrink-0", isSelected && isActive ? "text-white" : "text-gray-400")} />
-                      )}
+                      <Icon size={15} className={clsx("mr-2 shrink-0", iconColor, file.is_dir && "fill-current")} />
                       <SmartTooltip text={file.name} className="pt-0.5 min-w-0" />
+                      {file.is_symlink && <span className="ml-1 text-[10px] text-gray-500 shrink-0">→</span>}
                   </div>
               );
+          }
           case 'ext':
               return (
                   <div className={clsx("text-right tabular-nums h-full flex items-center justify-end overflow-hidden pr-2", textColorClass)}>

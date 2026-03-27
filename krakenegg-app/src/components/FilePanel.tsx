@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { formatSize } from "../utils/format";
 // ... imports
 
   const resizingRef = useRef<{
@@ -658,9 +659,34 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react";
                         className="flex-1 text-[11px] font-medium bg-black/30 text-white px-1 py-0.5 rounded border border-blue-500/50 outline-none"
                     />
                 ) : (
-                    <span className={clsx("text-[11px] font-medium truncate select-text opacity-90 hover:opacity-100 cursor-pointer", isArchive ? "text-blue-300" : "text-macos-text")} title={activeTab.path}>
-                        {activeTab.path}
-                    </span>
+                    <div className="flex items-center min-w-0 overflow-hidden" title={activeTab.path}>
+                        {(() => {
+                            const parts = activeTab.path.split('/').filter(Boolean);
+                            if (parts.length === 0) {
+                                return <span className={clsx("text-[11px] font-medium opacity-90 cursor-pointer", isArchive ? "text-blue-300" : "text-macos-text")} onClick={handlePathClick}>/</span>;
+                            }
+                            return parts.map((segment, i) => {
+                                const targetPath = '/' + parts.slice(0, i + 1).join('/');
+                                const isLast = i === parts.length - 1;
+                                return (
+                                    <span key={i} className="flex items-center shrink-0">
+                                        {i > 0 && <ChevronRight size={10} className="text-gray-500 mx-0.5 shrink-0" />}
+                                        <span
+                                            className={clsx(
+                                                "text-[11px] font-medium cursor-pointer rounded px-0.5 transition-colors",
+                                                isLast ? "opacity-100" : "opacity-70 hover:opacity-100",
+                                                isArchive ? "text-blue-300 hover:bg-blue-500/20" : "text-macos-text hover:bg-white/10"
+                                            )}
+                                            onClick={(e) => { e.stopPropagation(); if (!isLast) setPath(side, targetPath); }}
+                                            onDoubleClick={(e) => { e.stopPropagation(); handlePathClick(); }}
+                                        >
+                                            {segment}
+                                        </span>
+                                    </span>
+                                );
+                            });
+                        })()}
+                    </div>
                 )}
               </div>
            </div>
@@ -772,6 +798,28 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react";
             <AutoSizer>{({ height, width }: { height: number; width: number }) => (<FixedSizeList ref={listRef} height={height - (activeTab.path !== "/" ? 24 : 0)} itemCount={processedFiles.length} itemSize={preferences.appearance.rowHeight} width={width} itemData={processedFiles}>{Row}</FixedSizeList>)}</AutoSizer>
           </>
         )}
+      </div>
+      {/* Status Bar */}
+      <div className={clsx("px-3 py-1 text-[10px] font-medium border-t flex items-center justify-between select-none shrink-0", isActive ? "border-white/10 text-gray-400" : "border-white/5 text-gray-500")}>
+        {(() => {
+          const dirs = processedFiles.filter(f => f.is_dir).length;
+          const files = processedFiles.filter(f => !f.is_dir).length;
+          const selectedIndices = activeTab.selection || [];
+          const selectedFiles = selectedIndices.map(i => processedFiles[i]).filter(Boolean);
+          const selectedSize = selectedFiles.reduce((sum, f) => sum + (f.is_dir ? 0 : f.size), 0);
+
+          return (
+            <>
+              <span>{dirs} folder{dirs !== 1 ? 's' : ''}, {files} file{files !== 1 ? 's' : ''}</span>
+              {selectedIndices.length > 0 && (
+                <span className="text-blue-400">
+                  {selectedIndices.length} selected
+                  {selectedSize > 0 && ` (${formatSize(selectedSize)})`}
+                </span>
+              )}
+            </>
+          );
+        })()}
       </div>
       {isActive && <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-macos-active shadow-[0_0_10px_rgba(0,122,255,0.5)]" />}
     </div>
