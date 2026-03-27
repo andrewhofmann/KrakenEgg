@@ -295,6 +295,9 @@ export function useKeyboard() {
           case 'open_settings':
             showSettingsModal();
             break;
+          case 'multi_rename':
+            state.openMultiRename(activeSide);
+            break;
           default:
             // No action defined for this hotkey
             return;

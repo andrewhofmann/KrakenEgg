@@ -101,7 +101,7 @@ export const SettingsModal = () => {
 
               useStore.setState({
                     left: {
-                        tabs: loadedState.left.tabs.map((t: any) => ({
+                        tabs: loadedState.left.tabs.map((t: { id: string; path: string; history: string[]; history_index: number }) => ({
                             ...createTab(t.path),
                             id: t.id,
                             path: t.path,
@@ -112,7 +112,7 @@ export const SettingsModal = () => {
                         layout: DEFAULT_LAYOUT
                     },
                     right: {
-                        tabs: loadedState.right.tabs.map((t: any) => ({
+                        tabs: loadedState.right.tabs.map((t: { id: string; path: string; history: string[]; history_index: number }) => ({
                             ...createTab(t.path),
                             id: t.id,
                             path: t.path,
