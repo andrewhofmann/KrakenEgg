@@ -99,7 +99,7 @@ export const FileRow = memo(({
       onDragLeave={(e) => onDragLeave(e, file)}
       onDrop={(e) => onDrop(e, file)}
       className={clsx(
-        "border-b border-transparent transition-colors text-[13px] font-normal select-none leading-none items-center",
+        "transition-colors font-normal select-none leading-none items-center border-b border-white/[0.03]",
         isSelected && isActive
           ? "bg-[#0058D0] text-white" 
           : isActive ? "text-white hover:bg-white/5" : "text-gray-400",

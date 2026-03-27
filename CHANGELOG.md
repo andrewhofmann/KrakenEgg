@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Rust unwrap() panic risk on path.parent() in compress command
+- Unnecessary braces warnings in commands.rs
+- All console.error() replaced with user-visible error notifications or silent fallbacks
+- `any` types in store loadState replaced with typed SavedState interface
+- Config corruption fallback — loadState silently uses defaults on parse failure
+- File name validation in createNewFile (rejects special characters, reserved names)
+
 ### Added
 - Async directory listing with spawn_blocking for non-blocking I/O
 - File extension and symlink detection fields in FileInfo (computed in Rust)
@@ -24,6 +32,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Loading skeleton animation replacing "Loading items..." text
 - Improved drag-drop visual feedback (rounded highlight ring)
 - Pre-computed file extension from Rust (avoids frontend recomputation)
+- Z-index constants system (centralized, no more magic numbers)
+- ConflictResolution typed enum replacing string literals
+- File name validation utility (validateFileName)
+- ARIA accessibility attributes on FileRow (role, aria-selected, aria-label, tabIndex)
+- Real byte-level progress tracking in copy operations with percentage display
+- Font zoom shortcuts (Cmd+Plus, Cmd+Minus, Cmd+0 to reset)
+- Subtle grid lines on file rows
+- Font size now inherits from panel preferences (was hardcoded 13px)
+- AutoSizer debounced via requestAnimationFrame (no excessive re-renders)
 - Git version control with develop/feature branching strategy
 - Comprehensive test suite: 259 tests (216 frontend unit, 33 Rust unit, 10 E2E)
 - Vitest test infrastructure with jsdom, @testing-library/react, coverage reporting

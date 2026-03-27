@@ -72,7 +72,26 @@ export function useKeyboard() {
         return; 
       }
       
-      const otherSide = activeSide === 'left' ? 'right' : 'left'; 
+      // Font zoom shortcuts (Cmd+Plus / Cmd+Minus / Cmd+0)
+      if ((e.metaKey || e.ctrlKey) && (e.key === '=' || e.key === '+')) {
+        e.preventDefault();
+        const current = state.preferences.appearance.fontSize;
+        state.setPreference('appearance', 'fontSize', Math.min(24, current + 1));
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === '-') {
+        e.preventDefault();
+        const current = state.preferences.appearance.fontSize;
+        state.setPreference('appearance', 'fontSize', Math.max(9, current - 1));
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === '0') {
+        e.preventDefault();
+        state.setPreference('appearance', 'fontSize', 13); // Reset to default
+        return;
+      }
+
+      const otherSide = activeSide === 'left' ? 'right' : 'left';
       const activeTab = state[activeSide].tabs[state[activeSide].activeTabIndex];
 
       if (!activeTab) return;
