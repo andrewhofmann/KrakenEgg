@@ -16,6 +16,7 @@ import { FilePanel } from "./components/FilePanel"; // Import the extracted File
 import { ContextMenu } from "./components/ContextMenu"; // Import ContextMenu
 import { OperationsDrawer } from "./components/OperationsDrawer";
 import { MultiRenameModal } from "./components/MultiRenameModal";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 import { listen } from '@tauri-apps/api/event';
 
@@ -98,8 +99,12 @@ function App() {
       
       {/* Main Dual Pane Area */}
       <div className="flex-1 flex overflow-hidden bg-black/40 backdrop-blur-2xl">
-        <FilePanel side="left" usePanelDataHook={usePanelData} />
-        <FilePanel side="right" usePanelDataHook={usePanelData} />
+        <ErrorBoundary fallbackTitle="Left panel crashed">
+          <FilePanel side="left" usePanelDataHook={usePanelData} />
+        </ErrorBoundary>
+        <ErrorBoundary fallbackTitle="Right panel crashed">
+          <FilePanel side="right" usePanelDataHook={usePanelData} />
+        </ErrorBoundary>
       </div>
 
       {/* Bottom Status Bar */}
