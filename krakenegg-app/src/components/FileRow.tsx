@@ -79,7 +79,7 @@ export const FileRow = memo(({
 
   const textColorClass = isSelected && isActive
       ? "text-white/90"
-      : "text-gray-500";
+      : "text-[var(--ke-text-secondary)]";
 
   const renderCell = (col: SortColumn) => {
       switch (col) {
@@ -150,8 +150,8 @@ export const FileRow = memo(({
       className={clsx(
         "transition-colors font-normal select-none leading-none items-center border-b border-white/[0.03]",
         isSelected && isActive
-          ? "bg-[#0058D0] text-white"
-          : isActive ? "text-white hover:bg-white/5" : "text-gray-400",
+          ? "bg-[var(--ke-selection)] text-white"
+          : isActive ? "hover:bg-[var(--ke-bg-hover)]" : "opacity-70",
 
         isDragTarget && "bg-blue-500/20 ring-2 ring-blue-400 z-20 rounded",
         isCursor && isActive && !isDragTarget && !isSelected && "ring-1 ring-white/20 z-10"

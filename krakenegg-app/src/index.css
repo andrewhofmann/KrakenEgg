@@ -10,29 +10,59 @@
   /* Dark theme (default) */
   --ke-bg: rgba(30, 30, 32, 1);
   --ke-bg-panel: rgba(30, 30, 32, 0.4);
-  --ke-bg-secondary: rgba(40, 40, 45, 0.3);
+  --ke-bg-secondary: rgba(40, 40, 45, 0.6);
+  --ke-bg-elevated: rgba(44, 44, 46, 0.95);
   --ke-bg-glass: rgba(20, 20, 20, 0.6);
-  --ke-bg-hover: rgba(255, 255, 255, 0.05);
+  --ke-bg-hover: rgba(255, 255, 255, 0.06);
+  --ke-bg-active: rgba(255, 255, 255, 0.1);
+  --ke-bg-input: rgba(0, 0, 0, 0.25);
   --ke-text: #FFFFFF;
   --ke-text-secondary: rgba(255, 255, 255, 0.55);
-  --ke-border: rgba(255, 255, 255, 0.08);
-  --ke-selection: rgba(0, 122, 255, 0.2);
+  --ke-text-tertiary: rgba(255, 255, 255, 0.35);
+  --ke-text-disabled: rgba(255, 255, 255, 0.25);
+  --ke-border: rgba(255, 255, 255, 0.1);
+  --ke-border-subtle: rgba(255, 255, 255, 0.05);
+  --ke-selection: #0058D0;
+  --ke-selection-light: rgba(0, 122, 255, 0.2);
+  --ke-accent: #007AFF;
+  --ke-accent-hover: #0062C4;
+  --ke-error: #FF453A;
+  --ke-error-bg: rgba(255, 69, 58, 0.1);
+  --ke-success: #30D158;
+  --ke-warning: #FFD60A;
   --ke-scrollbar-thumb: rgba(255, 255, 255, 0.2);
   --ke-scrollbar-hover: rgba(255, 255, 255, 0.3);
+  --ke-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --ke-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="light"] {
   --ke-bg: #F5F5F7;
-  --ke-bg-panel: rgba(255, 255, 255, 0.8);
-  --ke-bg-secondary: rgba(240, 240, 245, 0.9);
+  --ke-bg-panel: rgba(255, 255, 255, 0.85);
+  --ke-bg-secondary: rgba(240, 240, 242, 0.9);
+  --ke-bg-elevated: rgba(255, 255, 255, 0.98);
   --ke-bg-glass: rgba(255, 255, 255, 0.85);
   --ke-bg-hover: rgba(0, 0, 0, 0.04);
+  --ke-bg-active: rgba(0, 0, 0, 0.08);
+  --ke-bg-input: rgba(0, 0, 0, 0.05);
   --ke-text: #1D1D1F;
   --ke-text-secondary: rgba(0, 0, 0, 0.55);
-  --ke-border: rgba(0, 0, 0, 0.1);
-  --ke-selection: rgba(0, 122, 255, 0.15);
+  --ke-text-tertiary: rgba(0, 0, 0, 0.35);
+  --ke-text-disabled: rgba(0, 0, 0, 0.2);
+  --ke-border: rgba(0, 0, 0, 0.12);
+  --ke-border-subtle: rgba(0, 0, 0, 0.06);
+  --ke-selection: #0058D0;
+  --ke-selection-light: rgba(0, 122, 255, 0.12);
+  --ke-accent: #007AFF;
+  --ke-accent-hover: #0062C4;
+  --ke-error: #FF3B30;
+  --ke-error-bg: rgba(255, 59, 48, 0.08);
+  --ke-success: #34C759;
+  --ke-warning: #FF9500;
   --ke-scrollbar-thumb: rgba(0, 0, 0, 0.2);
   --ke-scrollbar-hover: rgba(0, 0, 0, 0.35);
+  --ke-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --ke-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 body {
@@ -42,6 +72,23 @@ body {
   color: var(--ke-text);
   overflow: hidden;
   user-select: none;
+}
+
+/* Global focus-visible ring for keyboard navigation */
+*:focus-visible {
+  outline: 2px solid var(--ke-accent);
+  outline-offset: 1px;
+  border-radius: 3px;
+}
+
+/* Disable focus ring for mouse clicks */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Base transition for all interactive elements */
+button, [role="button"], a, input, select, textarea, [tabindex] {
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, opacity 150ms ease, box-shadow 150ms ease;
 }
 
 /* Custom Scrollbar */

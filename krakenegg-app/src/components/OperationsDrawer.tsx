@@ -15,10 +15,13 @@ export const OperationsDrawer = () => {
     const runningOps = fileOperations.filter(op => op.status === 'running' || op.status === 'pending');
     
     return (
-        <div className={clsx(
-            "fixed bottom-0 right-4 w-96 bg-[#1e1e1e]/95 backdrop-blur-xl border border-white/10 rounded-t-lg shadow-2xl transition-all duration-300 z-[200] overflow-hidden text-white font-sans",
-            expanded ? "h-auto max-h-[400px]" : "h-9"
-        )}>
+        <div
+            className={clsx(
+                "fixed bottom-0 right-4 w-96 backdrop-blur-xl rounded-t-lg transition-all duration-300 z-[200] overflow-hidden font-sans",
+                expanded ? "h-auto max-h-[400px]" : "h-9"
+            )}
+            style={{ backgroundColor: 'var(--ke-bg-elevated)', border: '1px solid var(--ke-border)', color: 'var(--ke-text)', boxShadow: 'var(--ke-shadow)' }}
+        >
             {/* Header */}
             <div 
                 className="h-9 flex items-center justify-between px-3 bg-white/5 border-b border-white/5 cursor-pointer hover:bg-white/10 select-none"

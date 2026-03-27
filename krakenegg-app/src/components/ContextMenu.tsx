@@ -23,37 +23,21 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }
       const rect = menuRef.current.getBoundingClientRect();
       let newTop = y;
       let newLeft = x;
-
-      // Check vertical overflow
-      if (y + rect.height > window.innerHeight) {
-        newTop = Math.max(0, y - rect.height);
-      }
-
-      // Check horizontal overflow
-      if (x + rect.width > window.innerWidth) {
-        newLeft = Math.max(0, x - rect.width);
-      }
-
+      if (y + rect.height > window.innerHeight) newTop = Math.max(0, y - rect.height);
+      if (x + rect.width > window.innerWidth) newLeft = Math.max(0, x - rect.width);
       setPosition({ top: newTop, left: newLeft });
     }
   }, [x, y, items]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        onClose();
-      }
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) onClose();
     };
-
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
+      if (event.key === 'Escape') onClose();
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleEscape);
-
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscape);
@@ -63,24 +47,43 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }
   return (
     <div
       ref={menuRef}
-      className="fixed z-[200] min-w-[180px] bg-[#2C2C2C]/90 backdrop-blur-xl border border-white/15 rounded-lg shadow-2xl p-1 text-[13px] outline-none select-none"
-      style={{ top: position.top, left: position.left }}
+      className="fixed z-[200] min-w-[180px] backdrop-blur-xl rounded-lg p-1 text-[13px] outline-none select-none"
+      style={{
+        top: position.top,
+        left: position.left,
+        backgroundColor: 'var(--ke-bg-elevated)',
+        border: '1px solid var(--ke-border)',
+        boxShadow: 'var(--ke-shadow)',
+      }}
       onContextMenu={(e) => e.preventDefault()}
     >
       {items.map((item, index) => {
         if (item.label === "---") {
-            return <div key={index} className="h-px bg-white/10 my-1.5 mx-1" />;
+            return <div key={index} style={{ backgroundColor: 'var(--ke-border-subtle)' }} className="h-px my-1.5 mx-1" />;
         }
 
         return (
             <button
             key={index}
             className={clsx(
-                "block w-full text-left px-3 py-1 rounded-[4px] transition-colors leading-tight truncate",
-                item.disabled 
-                ? "text-white/30 cursor-default" 
-                : "text-white hover:bg-[#0058D0] hover:text-white cursor-default"
+                "block w-full text-left px-3 py-1.5 rounded-md leading-tight truncate",
+                item.disabled
+                ? "cursor-default"
+                : "cursor-default"
             )}
+            style={{
+              color: item.disabled ? 'var(--ke-text-disabled)' : 'var(--ke-text)',
+            }}
+            onMouseEnter={(e) => {
+              if (!item.disabled) {
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--ke-accent)';
+                (e.currentTarget as HTMLElement).style.color = '#fff';
+              }
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+              (e.currentTarget as HTMLElement).style.color = item.disabled ? 'var(--ke-text-disabled)' : 'var(--ke-text)';
+            }}
             onClick={() => {
                 if (!item.disabled) {
                 item.action();

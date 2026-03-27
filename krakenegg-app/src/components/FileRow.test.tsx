@@ -131,7 +131,7 @@ describe('FileRow', () => {
   it('applies selected+active styling class', () => {
     renderRow({ isSelected: true, isActive: true });
     const row = document.getElementById('row-0')!;
-    expect(row.className).toContain('bg-[#0058D0]');
+    expect(row.className).toContain('bg-[var(--ke-selection)]');
   });
 
   it('renders only specified columns in order', () => {

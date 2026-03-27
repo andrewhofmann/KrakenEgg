@@ -24,9 +24,9 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
 
   return (
     <>
-      <div 
-        ref={ref} 
-        className={clsx("truncate", className)} 
+      <div
+        ref={ref}
+        className={clsx("truncate", className)}
         style={style}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setShow(false)}
@@ -34,17 +34,16 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
         {text}
       </div>
       {show && createPortal(
-        <div 
-          className={clsx(
-              "fixed z-[1000] border shadow-xl text-[13px] whitespace-nowrap pointer-events-none px-1.5 py-[1px] rounded",
-              // Match the row style roughly (or standard tooltip style)
-              // macOS style: Yellowish/White in light mode. Dark gray in dark mode.
-              "bg-[#2C2C2C] border-white/20 text-white"
-          )}
-          style={{ 
-              top: coords.top, 
+        <div
+          className="fixed z-[1000] text-[13px] whitespace-nowrap pointer-events-none px-1.5 py-[1px] rounded"
+          style={{
+              top: coords.top,
               left: coords.left,
-              minWidth: ref.current?.getBoundingClientRect().width 
+              minWidth: ref.current?.getBoundingClientRect().width,
+              backgroundColor: 'var(--ke-bg-elevated)',
+              color: 'var(--ke-text)',
+              border: '1px solid var(--ke-border)',
+              boxShadow: 'var(--ke-shadow-sm)',
           }}
         >
           {text}
