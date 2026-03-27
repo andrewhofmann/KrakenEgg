@@ -253,6 +253,7 @@ pub fn add_files_to_zip(archive_path: &Path, sources: &[String], dest_dir_intern
 }
 
 pub fn remove_files_from_zip(archive_path: &Path, internal_paths: &[String]) -> Result<(), String> {
+
     if !archive_path.to_string_lossy().ends_with(".zip") {
         return Err("Deleting files only supported for ZIP archives currently".to_string());
     }
@@ -280,4 +281,100 @@ pub fn remove_files_from_zip(archive_path: &Path, internal_paths: &[String]) -> 
     zip_w.finish().map_err(|e| e.to_string())?;
     fs::rename(tmp_path, archive_path).map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+    use std::io::Write as IoWrite;
+
+    fn create_test_zip(dir: &Path, name: &str, entries: &[(&str, &[u8])]) -> PathBuf {
+        let zip_path = dir.join(name);
+        let file = fs::File::create(&zip_path).unwrap();
+        let mut zip = zip::ZipWriter::new(file);
+        let options = zip::write::FileOptions::default();
+        for (entry_name, content) in entries {
+            zip.start_file(*entry_name, options).unwrap();
+            zip.write_all(content).unwrap();
+        }
+        zip.finish().unwrap();
+        zip_path
+    }
+
+    #[test]
+    fn test_parse_archive_path_zip() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[("hello.txt", b"hi")]);
+        let full = format!("{}/hello.txt", zip_path.to_string_lossy());
+        let result = parse_archive_path(&full);
+        assert!(result.is_some());
+        let (archive, internal) = result.unwrap();
+        assert_eq!(archive, zip_path);
+        assert_eq!(internal, PathBuf::from("hello.txt"));
+    }
+
+    #[test]
+    fn test_parse_archive_path_returns_none_for_non_archive() {
+        let result = parse_archive_path("/home/user/documents/file.txt");
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_list_archive_contents_zip() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[
+            ("file1.txt", b"content1"),
+            ("file2.txt", b"content2"),
+        ]);
+        let result = list_archive_contents(&zip_path, &PathBuf::new()).unwrap();
+        assert_eq!(result.len(), 2);
+        let names: Vec<&str> = result.iter().map(|f| f.name.as_str()).collect();
+        assert!(names.contains(&"file1.txt"));
+        assert!(names.contains(&"file2.txt"));
+    }
+
+    #[test]
+    fn test_list_archive_contents_zip_with_dirs() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[
+            ("subdir/file.txt", b"content"),
+        ]);
+        let result = list_archive_contents(&zip_path, &PathBuf::new()).unwrap();
+        assert!(result.iter().any(|f| f.name == "subdir" && f.is_dir));
+    }
+
+    #[test]
+    fn test_add_files_to_zip() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[("existing.txt", b"data")]);
+        let new_file = dir.path().join("new.txt");
+        fs::write(&new_file, "new content").unwrap();
+        add_files_to_zip(&zip_path, &[new_file.to_string_lossy().to_string()], "").unwrap();
+        let contents = list_archive_contents(&zip_path, &PathBuf::new()).unwrap();
+        assert_eq!(contents.len(), 2);
+        let names: Vec<&str> = contents.iter().map(|f| f.name.as_str()).collect();
+        assert!(names.contains(&"new.txt"));
+    }
+
+    #[test]
+    fn test_remove_files_from_zip() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[
+            ("keep.txt", b"keep"),
+            ("remove.txt", b"remove"),
+        ]);
+        remove_files_from_zip(&zip_path, &["remove.txt".to_string()]).unwrap();
+        let contents = list_archive_contents(&zip_path, &PathBuf::new()).unwrap();
+        assert_eq!(contents.len(), 1);
+        assert_eq!(contents[0].name, "keep.txt");
+    }
+
+    #[test]
+    fn test_read_archive_file_zip() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[("hello.txt", b"hello world")]);
+        let result = read_archive_file(&zip_path, &PathBuf::from("hello.txt")).unwrap();
+        assert_eq!(result, "hello world");
+    }
 }

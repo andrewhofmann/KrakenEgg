@@ -129,3 +129,134 @@ pub fn execute_mrt(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    #[test]
+    fn test_preview_mrt_name_pattern_preserves_name() {
+        let dir = TempDir::new().unwrap();
+        let file = dir.path().join("hello.txt");
+        fs::write(&file, "").unwrap();
+        let result = preview_mrt(
+            vec![file.to_string_lossy().to_string()],
+            "[N]".to_string(), "[E]".to_string(), 1, 1, 1,
+        ).unwrap();
+        assert_eq!(result[0].new, "hello.txt");
+        assert_eq!(result[0].status, "unchanged");
+    }
+
+    #[test]
+    fn test_preview_mrt_counter_increments() {
+        let dir = TempDir::new().unwrap();
+        let f1 = dir.path().join("a.txt");
+        let f2 = dir.path().join("b.txt");
+        fs::write(&f1, "").unwrap();
+        fs::write(&f2, "").unwrap();
+        let result = preview_mrt(
+            vec![f1.to_string_lossy().to_string(), f2.to_string_lossy().to_string()],
+            "file_[C]".to_string(), "[E]".to_string(), 1, 1, 3,
+        ).unwrap();
+        assert_eq!(result[0].new, "file_001.txt");
+        assert_eq!(result[1].new, "file_002.txt");
+    }
+
+    #[test]
+    fn test_preview_mrt_counter_width_zero_pads() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("test.txt");
+        fs::write(&f, "").unwrap();
+        let result = preview_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "[C]".to_string(), "[E]".to_string(), 5, 1, 4,
+        ).unwrap();
+        assert_eq!(result[0].new, "0005.txt");
+    }
+
+    #[test]
+    fn test_preview_mrt_detects_name_collision() {
+        let dir = TempDir::new().unwrap();
+        let f1 = dir.path().join("a.txt");
+        let f2 = dir.path().join("b.txt");
+        fs::write(&f1, "").unwrap();
+        fs::write(&f2, "").unwrap();
+        // Both will generate same name
+        let result = preview_mrt(
+            vec![f1.to_string_lossy().to_string(), f2.to_string_lossy().to_string()],
+            "same".to_string(), "txt".to_string(), 1, 1, 1,
+        ).unwrap();
+        assert_eq!(result[0].status, "ok");
+        assert_eq!(result[1].status, "error");
+        assert!(result[1].error.as_ref().unwrap().contains("collision"));
+    }
+
+    #[test]
+    fn test_preview_mrt_detects_existing_file_conflict() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("original.txt");
+        let existing = dir.path().join("taken.txt");
+        fs::write(&f, "").unwrap();
+        fs::write(&existing, "").unwrap();
+        let result = preview_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "taken".to_string(), "txt".to_string(), 1, 1, 1,
+        ).unwrap();
+        assert_eq!(result[0].status, "error");
+        assert!(result[0].error.as_ref().unwrap().contains("already exists"));
+    }
+
+    #[test]
+    fn test_execute_mrt_renames_files() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("old.txt");
+        fs::write(&f, "content").unwrap();
+        execute_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "new".to_string(), "[E]".to_string(), 1, 1, 1,
+        ).unwrap();
+        assert!(!f.exists());
+        assert!(dir.path().join("new.txt").exists());
+    }
+
+    #[test]
+    fn test_execute_mrt_aborts_on_error() {
+        let dir = TempDir::new().unwrap();
+        let f1 = dir.path().join("a.txt");
+        let f2 = dir.path().join("b.txt");
+        fs::write(&f1, "").unwrap();
+        fs::write(&f2, "").unwrap();
+        // Both produce same name -> error
+        let result = execute_mrt(
+            vec![f1.to_string_lossy().to_string(), f2.to_string_lossy().to_string()],
+            "same".to_string(), "txt".to_string(), 1, 1, 1,
+        );
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_execute_mrt_skips_unchanged() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("keep.txt");
+        fs::write(&f, "data").unwrap();
+        execute_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "[N]".to_string(), "[E]".to_string(), 1, 1, 1,
+        ).unwrap();
+        // File should still exist with original name
+        assert!(f.exists());
+    }
+
+    #[test]
+    fn test_preview_mrt_ext_pattern() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("file.txt");
+        fs::write(&f, "").unwrap();
+        let result = preview_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "[N]".to_string(), "md".to_string(), 1, 1, 1,
+        ).unwrap();
+        assert_eq!(result[0].new, "file.md");
+    }
+}

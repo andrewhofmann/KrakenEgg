@@ -93,3 +93,105 @@ pub fn is_text_file_by_extension(file_name: &Path) -> bool {
         true // Assume no extension means it could be a text file or generic file
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+    use std::fs;
+
+    #[test]
+    fn test_delete_recursive_removes_file() {
+        let dir = TempDir::new().unwrap();
+        let file_path = dir.path().join("test.txt");
+        fs::write(&file_path, "hello").unwrap();
+        assert!(file_path.exists());
+        delete_recursive(&file_path).unwrap();
+        assert!(!file_path.exists());
+    }
+
+    #[test]
+    fn test_delete_recursive_removes_directory() {
+        let dir = TempDir::new().unwrap();
+        let sub = dir.path().join("subdir");
+        fs::create_dir(&sub).unwrap();
+        fs::write(sub.join("file.txt"), "data").unwrap();
+        delete_recursive(&sub).unwrap();
+        assert!(!sub.exists());
+    }
+
+    #[test]
+    fn test_delete_recursive_nonexistent_path_ok() {
+        let result = delete_recursive(Path::new("/tmp/nonexistent_krakenegg_test_path"));
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_copy_recursive_copies_file() {
+        let dir = TempDir::new().unwrap();
+        let src = dir.path().join("source.txt");
+        let dest = dir.path().join("dest.txt");
+        fs::write(&src, "content").unwrap();
+        copy_recursive(&src, &dest).unwrap();
+        assert_eq!(fs::read_to_string(&dest).unwrap(), "content");
+    }
+
+    #[test]
+    fn test_copy_recursive_copies_directory_tree() {
+        let dir = TempDir::new().unwrap();
+        let src = dir.path().join("src_dir");
+        fs::create_dir_all(src.join("sub")).unwrap();
+        fs::write(src.join("a.txt"), "a").unwrap();
+        fs::write(src.join("sub/b.txt"), "b").unwrap();
+        let dest = dir.path().join("dest_dir");
+        copy_recursive(&src, &dest).unwrap();
+        assert_eq!(fs::read_to_string(dest.join("a.txt")).unwrap(), "a");
+        assert_eq!(fs::read_to_string(dest.join("sub/b.txt")).unwrap(), "b");
+    }
+
+    #[test]
+    fn test_format_permissions() {
+        assert_eq!(format_permissions(0o755), "---rwxr-xr-x");
+        assert_eq!(format_permissions(0o644), "---rw-r--r--");
+        assert_eq!(format_permissions(0o700), "---rwx------");
+    }
+
+    #[test]
+    fn test_format_size() {
+        assert_eq!(format_size(500), "500 B");
+        assert_eq!(format_size(1024), "1.0 KB");
+        assert_eq!(format_size(1048576), "1.0 MB");
+        assert_eq!(format_size(1073741824), "1.0 GB");
+    }
+
+    #[test]
+    fn test_is_binary_detects_null_bytes() {
+        let data = b"hello\x00world";
+        assert!(is_binary(data));
+    }
+
+    #[test]
+    fn test_is_binary_returns_false_for_text() {
+        let data = b"hello world\nthis is text";
+        assert!(!is_binary(data));
+    }
+
+    #[test]
+    fn test_is_text_file_by_extension_identifies_text() {
+        assert!(is_text_file_by_extension(Path::new("file.rs")));
+        assert!(is_text_file_by_extension(Path::new("file.txt")));
+        assert!(is_text_file_by_extension(Path::new("file.json")));
+    }
+
+    #[test]
+    fn test_is_text_file_by_extension_identifies_binary() {
+        assert!(!is_text_file_by_extension(Path::new("image.png")));
+        assert!(!is_text_file_by_extension(Path::new("archive.zip")));
+        assert!(!is_text_file_by_extension(Path::new("video.mp4")));
+    }
+
+    #[test]
+    fn test_is_text_file_no_extension() {
+        assert!(is_text_file_by_extension(Path::new("Makefile")));
+    }
+}

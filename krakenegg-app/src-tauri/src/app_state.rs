@@ -107,3 +107,84 @@ pub fn list_layouts() -> Result<Vec<String>, String> {
     }
     Ok(layouts)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+    use std::collections::HashMap;
+
+    fn make_test_state() -> AppStateConfig {
+        AppStateConfig {
+            left: PanelStateConfig {
+                tabs: vec![TabStateConfig {
+                    id: "tab1".to_string(),
+                    path: "/home".to_string(),
+                    history: vec!["/home".to_string()],
+                    history_index: 0,
+                }],
+                active_tab_index: 0,
+            },
+            right: PanelStateConfig {
+                tabs: vec![TabStateConfig {
+                    id: "tab2".to_string(),
+                    path: "/tmp".to_string(),
+                    history: vec!["/tmp".to_string()],
+                    history_index: 0,
+                }],
+                active_tab_index: 0,
+            },
+            active_side: "left".to_string(),
+            hotkeys: HashMap::new(),
+            preferences: serde_json::Value::Null,
+            global_history: vec![],
+            hotlist: vec![],
+        }
+    }
+
+    #[test]
+    fn test_get_config_path_creates_directory() {
+        let dir = TempDir::new().unwrap();
+        let path = get_config_path(Some(dir.path())).unwrap();
+        assert!(path.parent().unwrap().exists());
+        assert!(path.to_string_lossy().contains("KrakenEgg"));
+        assert!(path.to_string_lossy().ends_with("app_state.json"));
+    }
+
+    #[test]
+    fn test_save_and_load_state_roundtrip() {
+        let dir = TempDir::new().unwrap();
+        let config_path = dir.path().join("state.json");
+        let state = make_test_state();
+        save_state_to_file(&state, &config_path).unwrap();
+        let loaded = load_state_from_file(&config_path).unwrap().unwrap();
+        assert_eq!(loaded.active_side, "left");
+        assert_eq!(loaded.left.tabs[0].path, "/home");
+        assert_eq!(loaded.right.tabs[0].path, "/tmp");
+    }
+
+    #[test]
+    fn test_load_state_from_missing_file() {
+        let result = load_state_from_file(Path::new("/tmp/nonexistent_krakenegg_state.json")).unwrap();
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_get_layouts_dir_creates_directory() {
+        let dir = TempDir::new().unwrap();
+        let layouts_dir = get_layouts_dir(Some(dir.path())).unwrap();
+        assert!(layouts_dir.exists());
+        assert!(layouts_dir.to_string_lossy().contains("layouts"));
+    }
+
+    #[test]
+    fn test_save_state_writes_valid_json() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("test_state.json");
+        let state = make_test_state();
+        save_state_to_file(&state, &path).unwrap();
+        let content = fs::read_to_string(&path).unwrap();
+        let parsed: serde_json::Value = serde_json::from_str(&content).unwrap();
+        assert_eq!(parsed["active_side"], "left");
+    }
+}
