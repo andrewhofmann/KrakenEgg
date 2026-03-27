@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { X, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { useStore } from '../store';
+import { formatSize } from '../utils/format';
 import clsx from 'clsx';
 
 export const OperationStatusModal = () => {
@@ -72,27 +73,37 @@ export const OperationStatusModal = () => {
             )}
         </div>
 
-        {progress && (
-            <div className="w-full pl-8">
+        {progress && (() => {
+            const pct = progress.bytes_total > 0
+              ? Math.round((progress.bytes_done / progress.bytes_total) * 100)
+              : progress.total > 0
+                ? Math.round((progress.current / progress.total) * 100)
+                : 0;
+            return (
+              <div className="w-full pl-8">
                 <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden mb-2">
-                    <div 
+                    <div
                         className="h-full bg-blue-500 transition-all duration-300 ease-out rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"
-                        style={{ width: `${progress.total > 0 ? (progress.current / progress.total) * 100 : 0}%` }}
+                        style={{ width: `${pct}%` }}
                     />
                 </div>
                 <div className="flex justify-between items-center">
                     <span className="text-[11px] text-white/50 tabular-nums">
-                        {progress.current} / {progress.total} items
+                        {progress.bytes_total > 0
+                          ? `${formatSize(progress.bytes_done)} / ${formatSize(progress.bytes_total)} (${pct}%)`
+                          : `${progress.current} items processed`
+                        }
                     </span>
-                    <button 
+                    <button
                         onClick={cancelOperation}
                         className="text-[11px] text-red-300 hover:text-white hover:bg-red-500/20 px-2 py-0.5 rounded transition-colors font-medium"
                     >
                         Cancel
                     </button>
                 </div>
-            </div>
-        )}
+              </div>
+            );
+        })()}
       </div>
     </div>
   );

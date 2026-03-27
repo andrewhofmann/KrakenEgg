@@ -310,10 +310,26 @@ pub async fn copy_items_with_progress(
 
 
     // --- Physical Destination Logic ---
-    let mut _total = 0; 
-    _total = sources.len();
+    // Pre-calculate total bytes for progress tracking
+    let mut bytes_total: u64 = 0;
+    for src in &sources {
+        if parse_archive_path(src).is_some() { continue; }
+        let src_path = Path::new(src);
+        if src_path.is_file() {
+            bytes_total += fs::metadata(src_path).map(|m| m.len()).unwrap_or(0);
+        } else if src_path.is_dir() {
+            for entry in WalkDir::new(src_path) {
+                if let Ok(e) = entry {
+                    if e.path().is_file() {
+                        bytes_total += e.metadata().map(|m| m.len()).unwrap_or(0);
+                    }
+                }
+            }
+        }
+    }
 
     let mut current = 0;
+    let mut bytes_done: u64 = 0;
     let dest_path = Path::new(&dest);
     
     let mut auto_overwrite = false;
@@ -397,12 +413,14 @@ pub async fn copy_items_with_progress(
         }
 
         if src_path.is_file() {
+            let file_size = fs::metadata(src_path).map(|m| m.len()).unwrap_or(0);
             if let Err(e) = fs::copy(src_path, &target_root) {
                 return Err(e.to_string());
             }
             current += 1;
+            bytes_done += file_size;
             let _ = window.emit("progress", ProgressPayload {
-                id: id.clone(), total: 0, current, path: src.clone(), bytes_done: 0, bytes_total: 0
+                id: id.clone(), total: 0, current, path: src.clone(), bytes_done, bytes_total
             });
         } else if src_path.is_dir() {
             if let Err(e) = fs::create_dir_all(&target_root) {
@@ -444,13 +462,15 @@ pub async fn copy_items_with_progress(
                 if path.is_dir() {
                     fs::create_dir_all(&target).map_err(|e| e.to_string())?;
                 } else {
+                    let file_size = entry.metadata().map(|m| m.len()).unwrap_or(0);
                     fs::copy(path, &target).map_err(|e| e.to_string())?;
+                    bytes_done += file_size;
                 }
-                
+
                 current += 1;
-                if current % 10 == 0 || current == _total {
+                if current % 10 == 0 {
                      let _ = window.emit("progress", ProgressPayload {
-                        id: id.clone(), total: 0, current, path: path.to_string_lossy().to_string(), bytes_done: 0, bytes_total: 0
+                        id: id.clone(), total: 0, current, path: path.to_string_lossy().to_string(), bytes_done, bytes_total
                     });
                 }
             }
