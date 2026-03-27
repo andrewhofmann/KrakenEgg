@@ -96,7 +96,8 @@ export const FileRow = memo(({
                           onChange={(e) => setRenameValue(e.target.value)}
                           onKeyDown={handleRenameKeyDown}
                           onBlur={() => onRenameCancel?.()}
-                          className="flex-1 min-w-0 bg-black/40 border border-blue-500 rounded px-1 py-0 text-white text-[inherit] outline-none"
+                          className="flex-1 min-w-0 rounded px-1 py-0 text-[inherit] outline-none"
+                          style={{ backgroundColor: 'var(--ke-bg-input)', border: '1px solid var(--ke-accent)', color: 'var(--ke-text)' }}
                           onClick={(e) => e.stopPropagation()}
                           onDoubleClick={(e) => e.stopPropagation()}
                         />

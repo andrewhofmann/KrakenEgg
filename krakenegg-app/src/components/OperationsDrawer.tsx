@@ -24,38 +24,41 @@ export const OperationsDrawer = () => {
         >
             {/* Header */}
             <div 
-                className="h-9 flex items-center justify-between px-3 bg-white/5 border-b border-white/5 cursor-pointer hover:bg-white/10 select-none"
+                className="h-9 flex items-center justify-between px-3 cursor-pointer select-none"
+                style={{ backgroundColor: 'var(--ke-bg-hover)', borderBottom: '1px solid var(--ke-border-subtle)' }}
                 onClick={() => setExpanded(!expanded)}
             >
                 <div className="flex items-center space-x-2 text-xs font-semibold">
-                    <Activity size={13} className={runningOps.length > 0 ? "text-blue-400 animate-pulse" : "text-gray-400"} />
+                    <Activity size={13} className={runningOps.length > 0 ? "animate-pulse" : ""} style={{ color: runningOps.length > 0 ? 'var(--ke-accent)' : 'var(--ke-text-secondary)' }} />
                     <span>{runningOps.length} Active, {fileOperations.length} Total</span>
                 </div>
-                {expanded ? <ChevronDown size={14} className="text-gray-400" /> : <ChevronUp size={14} className="text-gray-400" />}
+                {expanded ? <ChevronDown size={14} style={{ color: 'var(--ke-text-secondary)' }} /> : <ChevronUp size={14} style={{ color: 'var(--ke-text-secondary)' }} />}
             </div>
 
             {/* List */}
             {expanded && (
                 <div className="overflow-y-auto max-h-[360px] p-2 space-y-2">
                     {fileOperations.map(op => (
-                        <div key={op.id} className="p-3 bg-black/20 rounded-md border border-white/5 text-xs">
+                        <div key={op.id} className="p-3 rounded-md text-xs" style={{ backgroundColor: 'var(--ke-bg-input)', border: '1px solid var(--ke-border-subtle)' }}>
                             <div className="flex justify-between items-start mb-2">
-                                <div className="font-medium text-white truncate pr-2 flex-1" title={op.description}>
+                                <div className="font-medium truncate pr-2 flex-1" style={{ color: 'var(--ke-text)' }} title={op.description}>
                                     {op.type.toUpperCase()}: {op.description}
                                 </div>
                                 <div className="flex items-center space-x-1">
                                     {op.status === 'completed' || op.status === 'error' ? (
-                                        <button 
+                                        <button
                                             onClick={() => removeFileOperation(op.id)}
-                                            className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white"
+                                            className="p-1 rounded"
+                                            style={{ color: 'var(--ke-text-secondary)' }}
                                             title="Dismiss"
                                         >
                                             <X size={12} />
                                         </button>
                                     ) : (
-                                        <button 
+                                        <button
                                             onClick={() => cancelFileOperation(op.id)}
-                                            className="p-1 hover:bg-red-500/20 rounded text-gray-400 hover:text-red-400"
+                                            className="p-1 rounded"
+                                            style={{ color: 'var(--ke-text-secondary)' }}
                                             title="Cancel"
                                         >
                                             <X size={12} />
@@ -65,19 +68,19 @@ export const OperationsDrawer = () => {
                             </div>
                             
                             {op.error ? (
-                                <div className="text-red-400 flex items-center mb-1">
+                                <div className="flex items-center mb-1" style={{ color: 'var(--ke-error)' }}>
                                     <AlertCircle size={12} className="mr-1" />
                                     {op.error}
                                 </div>
                             ) : (
                                 <div className="space-y-1">
-                                    <div className="flex justify-between text-[10px] text-gray-400">
+                                    <div className="flex justify-between text-[10px]" style={{ color: 'var(--ke-text-secondary)' }}>
                                         <span className="truncate max-w-[200px]" title={op.currentPath}>
                                             {op.status === 'completed' ? 'Done' : op.currentPath || 'Preparing...'}
                                         </span>
                                         <span className="tabular-nums">
                                             {op.status === 'completed' ? (
-                                                <span className="text-green-400">Complete</span>
+                                                <span style={{ color: 'var(--ke-success)' }}>Complete</span>
                                             ) : op.total > 0 ? (
                                                 `${op.current}/${op.total} items · ${Math.round((op.current / op.total) * 100)}%`
                                             ) : (
@@ -85,13 +88,10 @@ export const OperationsDrawer = () => {
                                             )}
                                         </span>
                                     </div>
-                                    <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                                        <div 
-                                            className={clsx(
-                                                "h-full transition-all duration-300 ease-out",
-                                                op.status === 'completed' ? "bg-green-500" : "bg-blue-500"
-                                            )}
-                                            style={{ width: `${op.status === 'completed' ? 100 : (op.current / (op.total || 1)) * 100}%` }}
+                                    <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ backgroundColor: 'var(--ke-bg-hover)' }}>
+                                        <div
+                                            className="h-full transition-all duration-300 ease-out"
+                                            style={{ backgroundColor: op.status === 'completed' ? 'var(--ke-success)' : 'var(--ke-accent)', width: `${op.status === 'completed' ? 100 : (op.current / (op.total || 1)) * 100}%` }}
                                         />
                                     </div>
                                 </div>
