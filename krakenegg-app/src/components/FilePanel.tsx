@@ -138,8 +138,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         if (matchIndex !== -1) {
             setCursor(side, matchIndex);
             setSelection(side, [matchIndex]);
-            if (listRef.current && typeof listRef.current.scrollToItem === 'function') {
-                listRef.current.scrollToItem(matchIndex, "center");
+            if (listRef.current && typeof listRef.current.scrollToRow === 'function') {
+                listRef.current.scrollToRow({ index: matchIndex, align: 'center' });
             }
         }
 
@@ -159,8 +159,10 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
   useEffect(() => {
     if (isActive && activeTab && listRef.current) {
-      if (typeof listRef.current.scrollToItem === 'function') {
-          listRef.current.scrollToItem(activeTab.cursorIndex, "smart");
+      if (typeof listRef.current.scrollToRow === 'function') {
+          listRef.current.scrollToRow({ index: activeTab.cursorIndex, align: 'smart' });
+      } else if (typeof listRef.current.scrollToItem === 'function') {
+          listRef.current.scrollToItem(activeTab.cursorIndex, 'smart');
       }
     }
   }, [activeTab?.cursorIndex, isActive]);

@@ -314,43 +314,32 @@ export function useKeyboard() {
       // --- Fallback/non-customizable actions (ArrowUp/Down, Space, Enter, Tab) ---
       // These actions are typically not remappable or have complex logic, so handle them outside the hotkey map
       switch (e.key) {
-        case 'ArrowUp':
+        case 'ArrowUp': {
           e.preventDefault();
-          const minIndexUp = activeTab.path === "/" ? 0 : -1;
+          const minIdx = activeTab.path === "/" ? 0 : -1;
+          const upIndex = Math.max(minIdx, activeTab.cursorIndex - 1);
           if (e.shiftKey) {
-             const currentIndex = activeTab.cursorIndex;
-             const newIndex = Math.max(minIndexUp, currentIndex - 1);
-             setCursor(activeSide, newIndex);
              const newSelection = [...activeTab.selection];
-             if (!newSelection.includes(newIndex)) {
-                 newSelection.push(newIndex);
-             }
+             if (!newSelection.includes(upIndex)) newSelection.push(upIndex);
+             setCursor(activeSide, upIndex);
              setSelection(activeSide, newSelection);
           } else {
-             state.moveCursor(activeSide, -1);
-             if (!e.ctrlKey && !e.metaKey) {
-                 const newIndex = Math.max(minIndexUp, activeTab.cursorIndex - 1);
-                 setSelection(activeSide, [newIndex]);
-             }
+             setCursor(activeSide, upIndex);
+             if (!e.ctrlKey && !e.metaKey) setSelection(activeSide, [upIndex]);
           }
           break;
-        case 'ArrowDown':
+        }
+        case 'ArrowDown': {
           e.preventDefault();
+          const downIndex = Math.min(activeTab.files.length - 1, activeTab.cursorIndex + 1);
           if (e.shiftKey) {
-             const currentIndex = activeTab.cursorIndex;
-             const newIndex = Math.min(activeTab.files.length - 1, currentIndex + 1);
-             setCursor(activeSide, newIndex);
              const newSelection = [...activeTab.selection];
-             if (!newSelection.includes(newIndex)) {
-                 newSelection.push(newIndex);
-             }
+             if (!newSelection.includes(downIndex)) newSelection.push(downIndex);
+             setCursor(activeSide, downIndex);
              setSelection(activeSide, newSelection);
           } else {
-             state.moveCursor(activeSide, 1);
-             if (!e.ctrlKey && !e.metaKey) {
-                 const newIndex = Math.min(activeTab.files.length - 1, activeTab.cursorIndex + 1);
-                 setSelection(activeSide, [newIndex]);
-             }
+             setCursor(activeSide, downIndex);
+             if (!e.ctrlKey && !e.metaKey) setSelection(activeSide, [downIndex]);
           }
           break;
         case 'Home':
