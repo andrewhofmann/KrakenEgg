@@ -2,7 +2,60 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { formatSize } from "../utils/format";
 import { FileRow } from "./FileRow";
 import { FileInfo } from "../store";
-// ... imports
+import { invoke } from "@tauri-apps/api/core";
+import { useStore, SortColumn, getProcessedFiles } from "../store";
+import { List as FixedSizeList } from "react-window";
+import { AutoSizer } from "./AutoSizer";
+import { TabBar } from "./TabBar";
+import { SearchFilter } from "./SearchFilter";
+import { QuickInfoPanel } from "./QuickInfoPanel";
+import clsx from "clsx";
+import { ChevronRight, ChevronDown, ArrowUp, ArrowDown, HardDrive, Package, Clock } from "lucide-react";
+
+interface FilePanelProps {
+  side: 'left' | 'right';
+  usePanelDataHook: (side: 'left' | 'right') => void;
+}
+
+const joinPath = (dir: string, file: string) => dir === "/" ? `/${file}` : `${dir}/${file}`;
+
+export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
+  usePanelDataHook(side);
+
+  const activeTabIndex = useStore((s) => s[side].activeTabIndex);
+  const activeTab = useStore((s) => s[side].tabs[activeTabIndex]);
+  const layout = useStore((s) => s[side].layout);
+  const preferences = useStore((s) => s.preferences);
+  const activeSide = useStore((s) => s.activeSide);
+  const isActive = activeSide === side;
+  const quickView = useStore((s) => s.quickView);
+  const globalHistory = useStore((s) => s.globalHistory);
+  const hotlist = useStore((s) => s.hotlist);
+  const clipboard = useStore((s) => s.clipboard);
+
+  const { setActiveSide, setPath, setSort, setColumnOrder, setColumnWidth,
+    setCursor, setSelection, setFiles, setFilterQuery, setLoading,
+    showContextMenu, hideContextMenu, refreshPanel, addTab,
+    requestInput, requestConfirmation, showGoToPathModal,
+    copySelectedFiles, cutSelectedFiles, pasteFiles,
+    compressSelection, extractSelection,
+    copyToOppositePanel, moveToOppositePanel,
+    addToHotlist, removeFromHotlist,
+    showOperationStatus, setOperationError,
+  } = useStore((s) => s);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<FixedSizeList>(null);
+  const pathInputRef = useRef<HTMLInputElement>(null);
+
+  const [isPathEditing, setIsPathEditing] = useState(false);
+  const [pathInputValue, setPathInputValue] = useState('');
+  const [showHistory, setShowHistory] = useState(false);
+  const [isDraggingFiles, setIsDraggingFiles] = useState(false);
+  const [dragTargetIndex, setDragTargetIndex] = useState<number | null>(null);
+  const [panelDragOver, setPanelDragOver] = useState(false);
+  const [draggedCol, setDraggedCol] = useState<SortColumn | null>(null);
+  const [dragOverCol, setDragOverCol] = useState<SortColumn | null>(null);
 
   const resizingRef = useRef<{
       leftCol: SortColumn; 
@@ -391,7 +444,6 @@ import { FileInfo } from "../store";
     } catch (err) {
         useStore.getState().setOperationError(`Drop failed: ${err}`);
     }
-  }, [activeTab, side, requestConfirmation, refreshPanel]);
   }, [activeTab, side, requestConfirmation, refreshPanel]);
 
   const handleContextMenu = useCallback((e: React.MouseEvent, file: FileInfo, index: number) => {
