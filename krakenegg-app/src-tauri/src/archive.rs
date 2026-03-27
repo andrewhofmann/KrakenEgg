@@ -77,7 +77,7 @@ pub fn list_archive_contents(archive_file_path: &Path, internal_path: &Path) -> 
                 let child = relative.split('/').next().unwrap_or("");
                 if !child.is_empty() && !files.iter().any(|f| f.name == child) {
                     let is_dir = file.is_dir() || relative.trim_end_matches('/').contains('/');
-                    files.push(FileInfo { name: child.to_string(), is_dir, size: file.size(), modified_at: None, created_at: None, permissions: None });
+                    files.push(FileInfo { name: child.to_string(), is_dir, size: file.size(), modified_at: None, created_at: None, permissions: None, extension: if !is_dir { Path::new(child).extension().and_then(|e| e.to_str()).map(|e| e.to_lowercase()) } else { None }, is_symlink: false });
                 }
             }
         }
@@ -98,7 +98,7 @@ pub fn list_archive_contents(archive_file_path: &Path, internal_path: &Path) -> 
                 let child = relative.split('/').next().unwrap_or("");
                 if !child.is_empty() && !files.iter().any(|f| f.name == child) {
                     let is_dir = entry.header().entry_type().is_dir() || relative.trim_end_matches('/').contains('/');
-                    files.push(FileInfo { name: child.to_string(), is_dir, size: entry.size(), modified_at: None, created_at: None, permissions: None });
+                    files.push(FileInfo { name: child.to_string(), is_dir, size: entry.size(), modified_at: None, created_at: None, permissions: None, extension: if !is_dir { Path::new(child).extension().and_then(|e| e.to_str()).map(|e| e.to_lowercase()) } else { None }, is_symlink: false });
                 }
             }
         }

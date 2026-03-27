@@ -28,8 +28,8 @@ const updateActiveTab = (state: AppState, side: 'left' | 'right', updater: (tab:
 
 export const useStore = create<AppState>((set, get) => {
   const initialPanelState = {
-    left: { tabs: [createTab("/Users/andrew/Documents")], activeTabIndex: 0, layout: DEFAULT_LAYOUT },
-    right: { tabs: [createTab("/Users/andrew/Downloads")], activeTabIndex: 0, layout: DEFAULT_LAYOUT },
+    left: { tabs: [createTab("/")], activeTabIndex: 0, layout: DEFAULT_LAYOUT },
+    right: { tabs: [createTab("/")], activeTabIndex: 0, layout: DEFAULT_LAYOUT },
     activeSide: 'left' as 'left' | 'right',
     quickView: false,
     preferences: DEFAULT_PREFERENCES,

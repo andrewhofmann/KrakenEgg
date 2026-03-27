@@ -144,6 +144,16 @@ cargo fmt              # Rust formatting
 - **Commits**: Conventional commit messages
 - **Documentation**: JSDoc for complex functions, Rust doc comments
 
+### Mandatory Testing Rule
+**CRITICAL**: Every feature added or changed MUST have an associated unit test that passes. No untested code should be committed or presented to the user. This applies to:
+- New features (write tests before or alongside implementation)
+- Bug fixes (write regression test proving the fix)
+- Refactors (ensure existing tests still pass, add new ones if behavior changes)
+- Frontend components, hooks, utilities, and store actions
+- Rust backend functions and commands
+
+Run `pnpm test` and `pnpm test:rust` to verify all tests pass before committing.
+
 ### Testing and Quality Assurance Protocol
 
 **CRITICAL REQUIREMENT**: Every time you compile a new set of changes for the user, you MUST:

@@ -5,6 +5,8 @@ export interface FileInfo {
   modified_at?: number;
   created_at?: number;
   permissions?: number;
+  extension?: string;
+  is_symlink?: boolean;
 }
 
 export type SortColumn = 'name' | 'ext' | 'size' | 'date';

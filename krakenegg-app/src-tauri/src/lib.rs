@@ -5,6 +5,7 @@ use tauri::Emitter;
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 use crate::models::OperationMap;
+use crate::commands::WatcherMap;
 
 pub mod models;
 pub mod utils;
@@ -18,6 +19,7 @@ pub fn run() {
     println!("Tauri Builder starting...");
     tauri::Builder::default()
         .manage(OperationMap(Arc::new(Mutex::new(HashMap::new()))))
+        .manage(WatcherMap(std::sync::Mutex::new(HashMap::new())))
         .setup(|app| {
             println!("Tauri setup hook running.");
             let main_window = app.get_webview_window("main");
@@ -126,7 +128,10 @@ pub fn run() {
             commands::load_named_layout,
             commands::list_layouts,
             mrt::preview_mrt,
-            mrt::execute_mrt
+            mrt::execute_mrt,
+            commands::get_home_directory,
+            commands::watch_directory,
+            commands::unwatch_directory
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

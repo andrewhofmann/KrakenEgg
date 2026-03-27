@@ -146,58 +146,79 @@ pub fn resolve_conflict(id: String, resolution: String, state: State<'_, Operati
 }
 
 #[tauri::command]
-pub fn list_directory(path: &str) -> Result<Vec<FileInfo>, String> {
-    if let Some((archive_file_path, internal_path)) = parse_archive_path(path) {
+pub async fn list_directory(path: String) -> Result<Vec<FileInfo>, String> {
+    if let Some((archive_file_path, internal_path)) = parse_archive_path(&path) {
         return list_archive_contents(&archive_file_path, &internal_path);
     }
 
-    let entries = fs::read_dir(path)
-        .map_err(|e| format!("Failed to read directory '{}': {}", path, e.to_string()))?;
-    
-    let mut files: Vec<FileInfo> = entries
-        .filter_map(|entry| {
-            let entry = entry.ok()?;
-            let metadata = entry.metadata().ok()?;
+    let path_clone = path.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let entries = fs::read_dir(&path_clone)
+            .map_err(|e| format!("Failed to read directory '{}': {}", path_clone, e))?;
 
-            let modified_at = metadata.modified().ok()
-                .and_then(|st| st.duration_since(UNIX_EPOCH).ok().map(|d| d.as_secs()));
-            let created_at = metadata.created().ok()
-                .and_then(|st| st.duration_since(UNIX_EPOCH).ok().map(|d| d.as_secs()));
-            #[cfg(unix)]
-            let permissions = Some(metadata.permissions().mode());
-            #[cfg(not(unix))]
-            let permissions = None;
+        let mut files: Vec<FileInfo> = entries
+            .filter_map(|entry| {
+                let entry = entry.ok()?;
+                let symlink_meta = entry.metadata().ok();
+                let file_type = entry.file_type().ok()?;
+                let is_symlink = file_type.is_symlink();
 
-            let name = entry.file_name().to_string_lossy().to_string();
-            
-            if name.starts_with('.') {
-                return None;
-            }
+                // Use metadata (follows symlinks) for size/dates, file_type for symlink detection
+                let metadata = if is_symlink {
+                    fs::metadata(entry.path()).ok().or(symlink_meta)
+                } else {
+                    symlink_meta
+                }?;
 
-            Some(FileInfo {
-                name,
-                is_dir: metadata.is_dir(),
-                size: metadata.len(),
-                modified_at,
-                created_at,
-                permissions,
+                let modified_at = metadata.modified().ok()
+                    .and_then(|st| st.duration_since(UNIX_EPOCH).ok().map(|d| d.as_secs()));
+                let created_at = metadata.created().ok()
+                    .and_then(|st| st.duration_since(UNIX_EPOCH).ok().map(|d| d.as_secs()));
+                #[cfg(unix)]
+                let permissions = Some(metadata.permissions().mode());
+                #[cfg(not(unix))]
+                let permissions = None;
+
+                let name = entry.file_name().to_string_lossy().to_string();
+                let is_dir = metadata.is_dir();
+
+                // Extract lowercase extension
+                let extension = if !is_dir {
+                    Path::new(&name).extension()
+                        .and_then(|e| e.to_str())
+                        .map(|e| e.to_lowercase())
+                } else {
+                    None
+                };
+
+                Some(FileInfo {
+                    name,
+                    is_dir,
+                    size: metadata.len(),
+                    modified_at,
+                    created_at,
+                    permissions,
+                    extension,
+                    is_symlink,
+                })
             })
-        })
-        .collect();
+            .collect();
 
-    files.sort_by(|a, b| {
-        if a.name == ".." {
-            std::cmp::Ordering::Less
-        } else if b.name == ".." {
-            std::cmp::Ordering::Greater
-        } else if a.is_dir == b.is_dir {
-            a.name.to_lowercase().cmp(&b.name.to_lowercase())
-        } else {
-            b.is_dir.cmp(&a.is_dir)
-        }
-    });
+        // Pre-compute lowercase names for sorting to avoid repeated allocation
+        files.sort_by(|a, b| {
+            if a.name == ".." {
+                std::cmp::Ordering::Less
+            } else if b.name == ".." {
+                std::cmp::Ordering::Greater
+            } else if a.is_dir == b.is_dir {
+                a.name.to_lowercase().cmp(&b.name.to_lowercase())
+            } else {
+                b.is_dir.cmp(&a.is_dir)
+            }
+        });
 
-    Ok(files)
+        Ok(files)
+    }).await.map_err(|e| format!("Task failed: {}", e))?
 }
 
 #[tauri::command]
@@ -841,13 +862,23 @@ pub async fn search_files(query: String, path: String, search_content: bool) -> 
             #[cfg(not(unix))]
             let permissions = None;
 
+             let is_dir = metadata.is_dir();
+             let extension = if !is_dir {
+                 Path::new(&relative_path).extension()
+                     .and_then(|e| e.to_str())
+                     .map(|e| e.to_lowercase())
+             } else {
+                 None
+             };
              files.push(FileInfo {
-                name: relative_path, 
-                is_dir: metadata.is_dir(),
+                name: relative_path,
+                is_dir,
                 size: metadata.len(),
                 modified_at,
                 created_at,
                 permissions,
+                extension,
+                is_symlink: false,
              });
         }
 
@@ -888,6 +919,14 @@ pub async fn open_with_default(path: String) -> Result<(), String> {
     }
 }
 
+// System Commands
+#[tauri::command]
+pub fn get_home_directory() -> Result<String, String> {
+    dirs::home_dir()
+        .map(|p| p.to_string_lossy().to_string())
+        .ok_or_else(|| "Could not determine home directory".to_string())
+}
+
 // Layout Commands
 #[tauri::command]
 pub async fn save_named_layout(name: String, state: AppStateConfig) -> Result<(), String> {
@@ -903,3 +942,50 @@ pub async fn load_named_layout(name: String) -> Result<Option<AppStateConfig>, S
 pub async fn list_layouts() -> Result<Vec<String>, String> {
     crate::app_state::list_layouts()
 }
+
+// Filesystem watcher commands
+use notify::{RecommendedWatcher, RecursiveMode, Watcher, Event};
+use std::sync::Mutex;
+
+#[tauri::command]
+pub async fn watch_directory(
+    path: String,
+    window: Window,
+    state: State<'_, WatcherMap>,
+) -> Result<(), String> {
+    let path_clone = path.clone();
+
+    // Remove existing watcher for this path if any
+    {
+        let mut watchers = state.0.lock().map_err(|e| e.to_string())?;
+        watchers.remove(&path);
+    }
+
+    let emit_path = path.clone();
+    let mut watcher = notify::recommended_watcher(move |res: Result<Event, notify::Error>| {
+        if let Ok(_event) = res {
+            // Emit a directory-changed event to the frontend
+            let _ = window.emit("directory-changed", &emit_path);
+        }
+    }).map_err(|e| format!("Failed to create watcher: {}", e))?;
+
+    watcher.watch(Path::new(&path_clone), RecursiveMode::NonRecursive)
+        .map_err(|e| format!("Failed to watch '{}': {}", path_clone, e))?;
+
+    let mut watchers = state.0.lock().map_err(|e| e.to_string())?;
+    watchers.insert(path, watcher);
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn unwatch_directory(
+    path: String,
+    state: State<'_, WatcherMap>,
+) -> Result<(), String> {
+    let mut watchers = state.0.lock().map_err(|e| e.to_string())?;
+    watchers.remove(&path);
+    Ok(())
+}
+
+pub struct WatcherMap(pub Mutex<HashMap<String, RecommendedWatcher>>);

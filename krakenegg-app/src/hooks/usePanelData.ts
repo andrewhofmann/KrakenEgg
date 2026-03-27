@@ -1,11 +1,12 @@
 import { useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { useStore, FileInfo } from "../store";
 
 export function usePanelData(side: "left" | "right") {
   const activeTabIndex = useStore((state) => state[side].activeTabIndex);
   const activeTab = useStore((state) => state[side].tabs[activeTabIndex]);
-  
+
   const setFiles = useStore((state) => state.setFiles);
   const setLoading = useStore((state) => state.setLoading);
   const setError = useStore((state) => state.setError);
@@ -16,15 +17,14 @@ export function usePanelData(side: "left" | "right") {
 
   useEffect(() => {
     if (!path) return;
-    
+
     let mounted = true;
-    
-    const load = async (isPolling = false) => {
-      // Only show loading state if it's an initial load or manual refresh, not polling
-      if (!isPolling) {
-          setLoading(side, true);
+
+    const load = async (showLoading = true) => {
+      if (showLoading) {
+        setLoading(side, true);
       }
-      
+
       try {
         const result = await invoke<FileInfo[]>("list_directory", { path });
         if (!mounted) return;
@@ -32,18 +32,17 @@ export function usePanelData(side: "left" | "right") {
         // Diff check to prevent unnecessary re-renders (flicker)
         const currentFiles = useStore.getState()[side].tabs[activeTabIndex]?.files || [];
         let changed = false;
-        
+
         if (result.length !== currentFiles.length) {
             changed = true;
         } else {
-            // Shallow compare sufficient for display
             for (let i = 0; i < result.length; i++) {
                 const a = result[i];
                 const b = currentFiles[i];
                 if (
-                    a.name !== b.name || 
-                    a.size !== b.size || 
-                    a.modified_at !== b.modified_at || 
+                    a.name !== b.name ||
+                    a.size !== b.size ||
+                    a.modified_at !== b.modified_at ||
                     a.is_dir !== b.is_dir
                 ) {
                     changed = true;
@@ -54,8 +53,7 @@ export function usePanelData(side: "left" | "right") {
 
         if (changed) {
             setFiles(side, result);
-        } else if (!isPolling) {
-            // If manual refresh resulted in no change, we still need to clear loading state
+        } else if (showLoading) {
             setLoading(side, false);
         }
       } catch (err) {
@@ -63,13 +61,41 @@ export function usePanelData(side: "left" | "right") {
       }
     };
 
-    load(false); // Initial load
-    
-    const interval = setInterval(() => load(true), 2000); // Polling
-    
-    return () => { 
-        mounted = false; 
-        clearInterval(interval);
+    load(true); // Initial load
+
+    // Set up filesystem watcher for live updates
+    let unwatchFn: (() => void) | null = null;
+    let unlistenFn: (() => void) | null = null;
+
+    const setupWatcher = async () => {
+      try {
+        // Start watching this directory
+        await invoke("watch_directory", { path });
+
+        // Listen for change events
+        const unlisten = await listen<string>("directory-changed", (event) => {
+          if (event.payload === path && mounted) {
+            load(false); // Reload without showing loading indicator
+          }
+        });
+        unlistenFn = unlisten;
+
+        unwatchFn = () => {
+          invoke("unwatch_directory", { path }).catch(() => {});
+        };
+      } catch {
+        // Fallback to polling if watcher fails (e.g., running outside Tauri)
+        const interval = setInterval(() => load(false), 3000);
+        unwatchFn = () => clearInterval(interval);
+      }
+    };
+
+    setupWatcher();
+
+    return () => {
+        mounted = false;
+        if (unlistenFn) unlistenFn();
+        if (unwatchFn) unwatchFn();
     };
   }, [path, refreshVersion, tabId, side, setFiles, setLoading, setError, activeTabIndex]);
 }

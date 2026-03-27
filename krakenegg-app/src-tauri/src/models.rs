@@ -12,6 +12,8 @@ pub struct FileInfo {
     pub modified_at: Option<u64>,
     pub created_at: Option<u64>,
     pub permissions: Option<u32>, // Unix permission bits
+    pub extension: Option<String>, // Lowercase file extension (e.g., "txt", "rs")
+    pub is_symlink: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { usePanelData } from './usePanelData';
 import { useStore } from '../store';
@@ -33,7 +33,10 @@ beforeEach(() => {
 describe('usePanelData', () => {
   it('calls list_directory with current path on mount', async () => {
     const files = [{ name: 'file.txt', is_dir: false, size: 100 }];
-    mockInvoke.mockResolvedValue(files);
+    mockInvoke.mockImplementation((cmd: string) => {
+      if (cmd === 'list_directory') return Promise.resolve(files);
+      return Promise.resolve(); // watch_directory, etc.
+    });
 
     await act(async () => {
       renderHook(() => usePanelData('left'));
@@ -44,7 +47,10 @@ describe('usePanelData', () => {
 
   it('sets files in store on successful response', async () => {
     const files = [{ name: 'a.txt', is_dir: false, size: 50, modified_at: 1000 }];
-    mockInvoke.mockResolvedValue(files);
+    mockInvoke.mockImplementation((cmd: string) => {
+      if (cmd === 'list_directory') return Promise.resolve(files);
+      return Promise.resolve();
+    });
 
     await act(async () => {
       renderHook(() => usePanelData('left'));
@@ -54,7 +60,10 @@ describe('usePanelData', () => {
   });
 
   it('sets error on failed invoke', async () => {
-    mockInvoke.mockRejectedValue('Permission denied');
+    mockInvoke.mockImplementation((cmd: string) => {
+      if (cmd === 'list_directory') return Promise.reject('Permission denied');
+      return Promise.resolve();
+    });
 
     await act(async () => {
       renderHook(() => usePanelData('left'));
@@ -63,9 +72,24 @@ describe('usePanelData', () => {
     expect(useStore.getState().left.tabs[0].error).toBe('Permission denied');
   });
 
-  it('cleans up interval on unmount', async () => {
-    vi.useFakeTimers();
-    mockInvoke.mockResolvedValue([]);
+  it('sets up filesystem watcher', async () => {
+    mockInvoke.mockImplementation((cmd: string) => {
+      if (cmd === 'list_directory') return Promise.resolve([]);
+      return Promise.resolve();
+    });
+
+    await act(async () => {
+      renderHook(() => usePanelData('left'));
+    });
+
+    expect(mockInvoke).toHaveBeenCalledWith('watch_directory', { path: '/test' });
+  });
+
+  it('unwatches on unmount', async () => {
+    mockInvoke.mockImplementation((cmd: string) => {
+      if (cmd === 'list_directory') return Promise.resolve([]);
+      return Promise.resolve();
+    });
 
     let hookResult: ReturnType<typeof renderHook>;
     await act(async () => {
@@ -75,11 +99,11 @@ describe('usePanelData', () => {
     mockInvoke.mockClear();
     hookResult!.unmount();
 
+    // Give cleanup a tick to run
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(4000);
+      await new Promise(r => setTimeout(r, 0));
     });
 
-    expect(mockInvoke).not.toHaveBeenCalled();
-    vi.useRealTimers();
+    expect(mockInvoke).toHaveBeenCalledWith('unwatch_directory', { path: '/test' });
   });
 });

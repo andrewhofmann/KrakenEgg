@@ -27,8 +27,22 @@ function App() {
   const { contextMenu, hideContextMenu, settingsModal } = useStore(state => state);
 
   useEffect(() => {
-    // Load saved state on startup
-    useStore.getState().loadState();
+    // Load saved state on startup, then set home directory defaults if needed
+    const init = async () => {
+      await useStore.getState().loadState();
+      // If paths are still the default "/", set to home directory
+      try {
+        const home = await invoke<string>('get_home_directory');
+        const state = useStore.getState();
+        if (state.left.tabs[0]?.path === '/') {
+          state.setPath('left', home);
+        }
+        if (state.right.tabs[0]?.path === '/') {
+          state.setPath('right', home);
+        }
+      } catch { /* fallback to "/" is fine */ }
+    };
+    init();
 
     // Listen for Menu Events
     const unlistenPromise = listen<string>('menu_event', (event) => {
