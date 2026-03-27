@@ -310,35 +310,61 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   };
 
   const { setCursorAndSelection } = useStore((s) => s);
+  const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingClickRef = useRef<{ index: number; e: React.MouseEvent } | null>(null);
 
   const handleFileClick = useCallback((e: React.MouseEvent, index: number) => {
     setActiveSide(side);
     if (!activeTab) return;
 
-    if (index === -1) {
+    // Store click data for delayed processing (allows double-click to cancel)
+    pendingClickRef.current = { index, e };
+
+    if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+
+    clickTimerRef.current = setTimeout(() => {
+      const click = pendingClickRef.current;
+      if (!click) return;
+      pendingClickRef.current = null;
+
+      const idx = click.index;
+      const ev = click.e;
+
+      if (idx === -1) {
         setCursorAndSelection(side, -1, [-1]);
         return;
-    }
-
-    if (e.shiftKey) {
-      const start = Math.max(0, Math.min(activeTab.cursorIndex, index));
-      const end = Math.max(activeTab.cursorIndex, index);
-      const newSelection = [];
-      for (let i = start; i <= end; i++) {
-        newSelection.push(i);
       }
-      setCursorAndSelection(side, index, newSelection);
-    } else if (e.metaKey || e.ctrlKey) {
-      const isSelected = activeTab.selection.includes(index);
-      const newSelection = isSelected
-        ? activeTab.selection.filter(i => i !== index)
-        : [...activeTab.selection, index];
-      setCursorAndSelection(side, index, newSelection);
-    } else {
-      setCursorAndSelection(side, index, [index]);
-    }
+
+      if (ev.shiftKey) {
+        const start = Math.max(0, Math.min(activeTab.cursorIndex, idx));
+        const end = Math.max(activeTab.cursorIndex, idx);
+        const newSelection = [];
+        for (let i = start; i <= end; i++) newSelection.push(i);
+        setCursorAndSelection(side, idx, newSelection);
+      } else if (ev.metaKey || ev.ctrlKey) {
+        const isSelected = activeTab.selection.includes(idx);
+        const newSelection = isSelected
+          ? activeTab.selection.filter(i => i !== idx)
+          : [...activeTab.selection, idx];
+        setCursorAndSelection(side, idx, newSelection);
+      } else {
+        setCursorAndSelection(side, idx, [idx]);
+      }
+    }, 200); // 200ms delay — if double-click arrives within this, click is cancelled
+
     hideContextMenu();
   }, [activeTab, side, setActiveSide, setCursorAndSelection, hideContextMenu]);
+
+  const handleDoubleClickWrapper = useCallback(async (e: React.MouseEvent, file: FileInfo) => {
+    // Cancel the pending single-click
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+      clickTimerRef.current = null;
+    }
+    pendingClickRef.current = null;
+    // Now handle the double-click
+    handleDoubleClick(e, file);
+  }, [handleDoubleClick]);
 
   const handleDoubleClick = useCallback(async (_e: React.MouseEvent, file: FileInfo) => {
     if (!file || file.name === '..') {
@@ -695,7 +721,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         isRenaming={renamingIndex === index}
         columns={layout.columns}
         onClick={handleFileClick}
-        onDoubleClick={handleDoubleClick}
+        onDoubleClick={handleDoubleClickWrapper}
         onContextMenu={handleContextMenu}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
@@ -706,7 +732,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         onRenameCancel={handleRenameCancel}
       />
     );
-  }, [processedFiles, activeTab?.selection, activeTab?.cursorIndex, isActive, dragTargetIndex, renamingIndex, layout.columns, handleFileClick, handleDoubleClick, handleContextMenu, handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleDrop, handleRenameSubmit, handleRenameCancel]);
+  }, [processedFiles, activeTab?.selection, activeTab?.cursorIndex, isActive, dragTargetIndex, renamingIndex, layout.columns, handleFileClick, handleDoubleClickWrapper, handleContextMenu, handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleDrop, handleRenameSubmit, handleRenameCancel]);
 
   // -- CONDITIONAL RENDER MUST BE AT END --
   const showQuickView = !isActive && quickView;
