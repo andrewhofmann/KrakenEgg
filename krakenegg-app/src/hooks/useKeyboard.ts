@@ -91,6 +91,24 @@ export function useKeyboard() {
         return;
       }
 
+      // Ctrl+H: Toggle hidden files
+      if (e.ctrlKey && e.key === 'h') {
+        e.preventDefault();
+        const current = state.preferences.general.showHiddenFiles;
+        state.setPreference('general', 'showHiddenFiles', !current);
+        return;
+      }
+
+      // Ctrl+Enter: Open terminal at current directory
+      if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        const currentPath = state[activeSide].tabs[state[activeSide].activeTabIndex]?.path;
+        if (currentPath) {
+          invoke('open_with_default', { path: currentPath }).catch(() => {});
+        }
+        return;
+      }
+
       const otherSide = activeSide === 'left' ? 'right' : 'left';
       const activeTab = state[activeSide].tabs[state[activeSide].activeTabIndex];
 
@@ -330,6 +348,22 @@ export function useKeyboard() {
                  const newIndex = Math.min(activeTab.files.length - 1, activeTab.cursorIndex + 1);
                  setSelection(activeSide, [newIndex]);
              }
+          }
+          break;
+        case 'Home':
+          e.preventDefault();
+          {
+            const firstIndex = activeTab.path === "/" ? 0 : -1;
+            setCursor(activeSide, firstIndex);
+            if (!e.shiftKey) setSelection(activeSide, [firstIndex]);
+          }
+          break;
+        case 'End':
+          e.preventDefault();
+          {
+            const lastIndex = activeTab.files.length - 1;
+            setCursor(activeSide, lastIndex);
+            if (!e.shiftKey) setSelection(activeSide, [lastIndex]);
           }
           break;
         case ' ': // Space - Preview file OR calculate folder size (like TC)
