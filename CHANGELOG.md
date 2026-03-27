@@ -11,9 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rust unwrap() panic risk on path.parent() in compress command
 - Unnecessary braces warnings in commands.rs
 - All console.error() replaced with user-visible error notifications or silent fallbacks
-- `any` types in store loadState replaced with typed SavedState interface
+- `any` types in store loadState and SettingsModal replaced with typed interfaces
 - Config corruption fallback — loadState silently uses defaults on parse failure
 - File name validation in createNewFile (rejects special characters, reserved names)
+- Delete operations now track byte progress (was always 0/0)
+- Search results now navigable — clicking navigates to file's parent directory
+- Search results show match highlighting (yellow) and result count with limit warning
 
 ### Added
 - Async directory listing with spawn_blocking for non-blocking I/O
@@ -32,6 +35,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Loading skeleton animation replacing "Loading items..." text
 - Improved drag-drop visual feedback (rounded highlight ring)
 - Pre-computed file extension from Rust (avoids frontend recomputation)
+- Multi-Rename regex find/replace with $1/$2 capture groups
+- Multi-Rename case conversion (UPPER, lower, Title Case)
+- Enhanced Quick View panel with file type, dates, permissions, symlink info
+- Home/End keys for jump to first/last file
+- Ctrl+H to toggle hidden files visibility
+- Ctrl+Enter to open current directory in system
+- Visual type-ahead search indicator (floating badge)
+- Enhanced ConflictModal showing source and destination side-by-side
+- Search results use file type icons and proper size formatting
 - Z-index constants system (centralized, no more magic numbers)
 - ConflictResolution typed enum replacing string literals
 - File name validation utility (validateFileName)
