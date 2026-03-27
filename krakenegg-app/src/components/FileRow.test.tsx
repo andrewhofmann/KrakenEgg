@@ -142,4 +142,27 @@ describe('FileRow', () => {
     // Extension column not rendered
     expect(screen.queryByText('js')).not.toBeInTheDocument();
   });
+
+  it('shows inline rename input when isRenaming is true', () => {
+    renderRow({ isRenaming: true, file: makeFile({ name: 'document.txt' }) });
+    const input = document.querySelector('input[value="document.txt"]');
+    expect(input).toBeInTheDocument();
+  });
+
+  it('calls onRenameSubmit with old and new name on Enter', () => {
+    const onRenameSubmit = vi.fn();
+    renderRow({ isRenaming: true, file: makeFile({ name: 'old.txt' }), onRenameSubmit });
+    const input = document.querySelector('input')!;
+    fireEvent.change(input, { target: { value: 'new.txt' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onRenameSubmit).toHaveBeenCalledWith('old.txt', 'new.txt');
+  });
+
+  it('calls onRenameCancel on Escape', () => {
+    const onRenameCancel = vi.fn();
+    renderRow({ isRenaming: true, file: makeFile({ name: 'test.txt' }), onRenameCancel });
+    const input = document.querySelector('input')!;
+    fireEvent.keyDown(input, { key: 'Escape' });
+    expect(onRenameCancel).toHaveBeenCalled();
+  });
 });

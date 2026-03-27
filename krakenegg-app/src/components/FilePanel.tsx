@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { formatSize } from "../utils/format";
+import { FileRow } from "./FileRow";
+import { FileInfo } from "../store";
 // ... imports
 
   const resizingRef = useRef<{
@@ -522,29 +524,12 @@ import { formatSize } from "../utils/format";
     });
     items.push({ label: "---", action: () => {} });
 
-    items.push({ 
-      label: "Rename (Shift+F6)", 
+    items.push({
+      label: "Rename (Shift+F6)",
       action: () => {
         const currentFile = processedFiles[activeTab.cursorIndex];
         if (!currentFile || currentFile.name === "..") return;
-        
-        requestInput("Rename Item", `Enter new name for "${currentFile.name}":`, currentFile.name, (newName) => {
-            if (newName && newName !== currentFile.name) {
-                const oldPath = joinPath(activeTab.path, currentFile.name);
-                const newPath = joinPath(activeTab.path, newName);
-                 (async () => {
-                    const { showOperationStatus, setOperationError } = useStore.getState();
-                    try {
-                        showOperationStatus(`Renaming '${currentFile.name}' to '${newName}'...`);
-                        await invoke('move_items', { sources: [oldPath], dest: newPath });
-                        refreshPanel(side);
-                        showOperationStatus(`Renamed '${currentFile.name}' to '${newName}' successfully.`);
-                    } catch (err) {
-                        setOperationError(`Rename failed: ${err}`);
-                    }
-                 })();
-            }
-        });
+        setRenamingIndex(activeTab.cursorIndex);
       },
       disabled: !isSingleFile && !isSingleDir
     });
@@ -605,6 +590,57 @@ import { formatSize } from "../utils/format";
   };
 
   const gridTemplate = layout.columns.map(c => `var(--col-${c})`).join(' ');
+
+  // Inline rename state
+  const [renamingIndex, setRenamingIndex] = useState<number | null>(null);
+
+  const handleRenameSubmit = useCallback(async (oldName: string, newName: string) => {
+    if (!activeTab) return;
+    setRenamingIndex(null);
+    const oldPath = joinPath(activeTab.path, oldName);
+    const newPath = joinPath(activeTab.path, newName);
+    try {
+      useStore.getState().showOperationStatus(`Renaming '${oldName}' to '${newName}'...`);
+      await invoke('move_items', { sources: [oldPath], dest: newPath });
+      refreshPanel(side);
+      useStore.getState().showOperationStatus(`Renamed successfully.`);
+    } catch (err) {
+      useStore.getState().setOperationError(`Rename failed: ${err}`);
+    }
+  }, [activeTab, side, refreshPanel]);
+
+  const handleRenameCancel = useCallback(() => {
+    setRenamingIndex(null);
+  }, []);
+
+  // Row component for react-window FixedSizeList
+  const Row = useCallback(({ data, index, style: rowStyle }: { data: FileInfo[]; index: number; style: React.CSSProperties }) => {
+    const file = data[index];
+    if (!file) return null;
+    return (
+      <FileRow
+        file={file}
+        index={index}
+        style={rowStyle}
+        isSelected={activeTab?.selection?.includes(index) ?? false}
+        isCursor={activeTab?.cursorIndex === index}
+        isActive={isActive}
+        isDragTarget={dragTargetIndex === index}
+        isRenaming={renamingIndex === index}
+        columns={layout.columns}
+        onClick={handleFileClick}
+        onDoubleClick={handleDoubleClick}
+        onContextMenu={handleContextMenu}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onRenameSubmit={handleRenameSubmit}
+        onRenameCancel={handleRenameCancel}
+      />
+    );
+  }, [activeTab?.selection, activeTab?.cursorIndex, isActive, dragTargetIndex, renamingIndex, layout.columns, handleFileClick, handleDoubleClick, handleContextMenu, handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleDrop, handleRenameSubmit, handleRenameCancel]);
 
   // -- CONDITIONAL RENDER MUST BE AT END --
   if (!isActive && quickView) {

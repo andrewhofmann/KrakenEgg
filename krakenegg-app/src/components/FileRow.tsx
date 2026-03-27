@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState, useRef, useEffect } from "react";
 import clsx from "clsx";
 import { FileInfo, SortColumn } from "../store";
 import { SmartTooltip } from "./SmartTooltip";
@@ -13,8 +13,9 @@ interface FileRowProps {
   isCursor: boolean;
   isActive: boolean;
   isDragTarget: boolean;
-  columns: SortColumn[]; // Dynamic order
-  
+  isRenaming?: boolean;
+  columns: SortColumn[];
+
   onClick: (e: React.MouseEvent, index: number) => void;
   onDoubleClick: (e: React.MouseEvent, file: FileInfo) => void;
   onContextMenu: (e: React.MouseEvent, file: FileInfo, index: number) => void;
@@ -23,16 +24,49 @@ interface FileRowProps {
   onDragOver: (e: React.DragEvent, index: number, file: FileInfo) => void;
   onDragLeave: (e: React.DragEvent, file: FileInfo) => void;
   onDrop: (e: React.DragEvent, file: FileInfo) => void;
+  onRenameSubmit?: (oldName: string, newName: string) => void;
+  onRenameCancel?: () => void;
 }
 
 export const FileRow = memo(({
-  file, index, style, 
-  isSelected, isCursor, isActive, isDragTarget, columns,
-  onClick, onDoubleClick, onContextMenu, onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop
+  file, index, style,
+  isSelected, isCursor, isActive, isDragTarget, isRenaming, columns,
+  onClick, onDoubleClick, onContextMenu, onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
+  onRenameSubmit, onRenameCancel
 }: FileRowProps) => {
-  
-  // Construct grid-template-columns dynamically based on order
-  // e.g. var(--col-name) var(--col-size) ...
+  const [renameValue, setRenameValue] = useState(file.name);
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isRenaming && renameInputRef.current) {
+      setRenameValue(file.name);
+      renameInputRef.current.focus();
+      // Select the name without extension
+      const dotIndex = file.name.lastIndexOf('.');
+      if (dotIndex > 0 && !file.is_dir) {
+        renameInputRef.current.setSelectionRange(0, dotIndex);
+      } else {
+        renameInputRef.current.select();
+      }
+    }
+  }, [isRenaming, file.name, file.is_dir]);
+
+  const handleRenameKeyDown = (e: React.KeyboardEvent) => {
+    e.stopPropagation();
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const trimmed = renameValue.trim();
+      if (trimmed && trimmed !== file.name) {
+        onRenameSubmit?.(file.name, trimmed);
+      } else {
+        onRenameCancel?.();
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      onRenameCancel?.();
+    }
+  };
+
   const gridTemplate = columns.map(c => `var(--col-${c})`).join(' ');
 
   const mergedStyle = {
@@ -43,8 +77,8 @@ export const FileRow = memo(({
       paddingRight: '12px',
   };
 
-  const textColorClass = isSelected && isActive 
-      ? "text-white/90" 
+  const textColorClass = isSelected && isActive
+      ? "text-white/90"
       : "text-gray-500";
 
   const renderCell = (col: SortColumn) => {
@@ -55,8 +89,23 @@ export const FileRow = memo(({
               return (
                   <div className="flex items-center overflow-hidden min-w-0 pr-2 h-full text-left">
                       <Icon size={15} className={clsx("mr-2 shrink-0", iconColor, file.is_dir && "fill-current")} />
-                      <SmartTooltip text={file.name} className="pt-0.5 min-w-0" />
-                      {file.is_symlink && <span className="ml-1 text-[10px] text-gray-500 shrink-0">→</span>}
+                      {isRenaming ? (
+                        <input
+                          ref={renameInputRef}
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onKeyDown={handleRenameKeyDown}
+                          onBlur={() => onRenameCancel?.()}
+                          className="flex-1 min-w-0 bg-black/40 border border-blue-500 rounded px-1 py-0 text-white text-[inherit] outline-none"
+                          onClick={(e) => e.stopPropagation()}
+                          onDoubleClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <>
+                          <SmartTooltip text={file.name} className="pt-0.5 min-w-0" />
+                          {file.is_symlink && <span className="ml-1 text-[10px] text-gray-500 shrink-0">→</span>}
+                        </>
+                      )}
                   </div>
               );
           }
@@ -89,10 +138,10 @@ export const FileRow = memo(({
       aria-selected={isSelected}
       aria-label={`${file.is_dir ? 'Folder' : 'File'}: ${file.name}`}
       tabIndex={isCursor ? 0 : -1}
-      onClick={(e) => { e.stopPropagation(); onClick(e, index); }}
-      onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick(e, file); }}
-      onContextMenu={(e) => onContextMenu(e, file, index)}
-      draggable="true"
+      onClick={(e) => { e.stopPropagation(); if (!isRenaming) onClick(e, index); }}
+      onDoubleClick={(e) => { e.stopPropagation(); if (!isRenaming) onDoubleClick(e, file); }}
+      onContextMenu={(e) => { if (!isRenaming) onContextMenu(e, file, index); }}
+      draggable={!isRenaming}
       onDragStart={(e) => onDragStart(e, file, index)}
       onDragEnd={onDragEnd}
       onDragOver={(e) => onDragOver(e, index, file)}
@@ -101,9 +150,9 @@ export const FileRow = memo(({
       className={clsx(
         "transition-colors font-normal select-none leading-none items-center border-b border-white/[0.03]",
         isSelected && isActive
-          ? "bg-[#0058D0] text-white" 
+          ? "bg-[#0058D0] text-white"
           : isActive ? "text-white hover:bg-white/5" : "text-gray-400",
-        
+
         isDragTarget && "bg-blue-500/20 ring-2 ring-blue-400 z-20 rounded",
         isCursor && isActive && !isDragTarget && !isSelected && "ring-1 ring-white/20 z-10"
       )}
