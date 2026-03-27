@@ -11,21 +11,22 @@ export const EditorModal = () => {
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 backdrop-blur-sm bg-black/50">
-      <div className="relative flex flex-col w-full max-w-4xl h-3/4 rounded-lg shadow-2xl bg-macos-glass border border-[var(--ke-border)]">
+      <div role="dialog" aria-label="File Editor" className="relative flex flex-col w-full max-w-4xl h-3/4 rounded-lg shadow-2xl bg-macos-glass border border-[var(--ke-border)]">
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-[var(--ke-border)] shrink-0">
           <h3 className="text-sm font-semibold text-[var(--ke-text)] truncate">
             {title} {dirty && <span className="text-yellow-400 ml-2"> (Unsaved)</span>}
           </h3>
           <div className="flex space-x-2">
-            <button 
-              onClick={saveEditorContent} 
+            <button
+              aria-label="Save"
+              onClick={saveEditorContent}
               disabled={!dirty || loading}
               className="flex items-center px-2 py-1 rounded-md bg-[var(--ke-accent)] hover:bg-[var(--ke-accent-hover)] text-[var(--ke-text)] text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save size={14} className="mr-1" /> Save
             </button>
-            <button onClick={hideEditor} className="p-1 rounded-md hover:bg-[var(--ke-bg-hover)] text-macos-textSecondary hover:text-[var(--ke-text)] transition-colors">
+            <button aria-label="Close" onClick={hideEditor} className="p-1 rounded-md hover:bg-[var(--ke-bg-hover)] text-macos-textSecondary hover:text-[var(--ke-text)] transition-colors">
               <X size={16} />
             </button>
           </div>

@@ -61,11 +61,11 @@ export const ViewerModal = () => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm bg-black/50">
-      <div className="relative flex flex-col w-full max-w-4xl h-3/4 rounded-lg shadow-2xl bg-macos-glass border border-[var(--ke-border)]">
+      <div role="dialog" aria-label="File Viewer" className="relative flex flex-col w-full max-w-4xl h-3/4 rounded-lg shadow-2xl bg-macos-glass border border-[var(--ke-border)]">
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-[var(--ke-border)] shrink-0">
           <h3 className="text-sm font-semibold text-[var(--ke-text)] truncate">{title}</h3>
-          <button onClick={hideViewer} className="p-1 rounded-md hover:bg-[var(--ke-bg-hover)] text-macos-textSecondary hover:text-[var(--ke-text)] transition-colors">
+          <button aria-label="Close" onClick={hideViewer} className="p-1 rounded-md hover:bg-[var(--ke-bg-hover)] text-macos-textSecondary hover:text-[var(--ke-text)] transition-colors">
             <X size={16} />
           </button>
         </div>

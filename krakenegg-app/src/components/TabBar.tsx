@@ -53,15 +53,20 @@ export const TabBar = ({ side }: { side: "left" | "right" }) => {
         values={tabs} 
         onReorder={handleReorder} 
         className="flex items-end h-full space-x-1"
+        role="tablist"
+        aria-label={`${side} panel tabs`}
       >
         {tabs.map((tab, i) => {
             const isActive = tab.id === storeTabs[activeTabIndex]?.id;
             const tabName = tab.path === "/" ? "Root" : tab.path.split('/').pop() || "Shell";
 
             return (
-            <Reorder.Item 
-                key={tab.id} 
+            <Reorder.Item
+                key={tab.id}
                 value={tab}
+                role="tab"
+                aria-selected={isActive}
+                aria-label={tabName}
                 onDragStart={() => setIsDragging(true)}
                 onDragEnd={(_e, info) => {
                     setIsDragging(false);
@@ -99,8 +104,9 @@ export const TabBar = ({ side }: { side: "left" | "right" }) => {
                 whileDrag={{ scale: 1.05, opacity: 0.9, zIndex: 100 }}
             >
                 <span className="truncate flex-1 pointer-events-none">{tabName}</span>
-                <button 
-                onPointerDown={(e) => e.stopPropagation()} // Prevent drag start on close button
+                <button
+                aria-label={`Close ${tabName}`}
+                onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => { e.stopPropagation(); closeTab(side, i); }}
                 className={clsx(
                     "p-0.5 rounded hover:bg-[var(--ke-bg-active)] opacity-0 group-hover:opacity-100 transition-opacity ml-1",

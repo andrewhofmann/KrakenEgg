@@ -39,7 +39,7 @@ export const GoToPathModal = () => {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-macos-modal-bg p-6 rounded-lg shadow-xl border border-macos-border max-w-lg w-full">
+      <div role="dialog" aria-label="Go To Path" className="bg-macos-modal-bg p-6 rounded-lg shadow-xl border border-macos-border max-w-lg w-full">
         <h2 className="text-lg font-semibold text-[var(--ke-text)] mb-4">Go To Path</h2>
         <p className="text-sm text-macos-textSecondary mb-4">Enter the full path to navigate to:</p>
         <input
@@ -55,6 +55,7 @@ export const GoToPathModal = () => {
         />
         <div className="mt-6 flex justify-end space-x-3">
           <button
+            aria-label="Cancel"
             onClick={handleCancel}
             className={clsx(
               "px-4 py-2 rounded-md text-sm font-medium",
@@ -65,6 +66,7 @@ export const GoToPathModal = () => {
             Cancel
           </button>
           <button
+            aria-label="Go"
             onClick={handleConfirm}
             className={clsx(
               "px-4 py-2 rounded-md text-sm font-medium",

@@ -34,7 +34,7 @@ export const ConfirmationModal = () => {
           <div className="flex justify-between items-center mb-4">
             <Dialog.Title className="text-lg font-semibold" style={{ color: 'var(--ke-text)' }}>{title}</Dialog.Title>
             <Dialog.Close asChild>
-              <button className="text-macos-textSecondary hover:text-[var(--ke-text)]">
+              <button aria-label="Close" className="text-macos-textSecondary hover:text-[var(--ke-text)]">
                 <X size={16} />
               </button>
             </Dialog.Close>
@@ -72,15 +72,17 @@ export const ConfirmationModal = () => {
 
           <div className="flex justify-end gap-3">
             <Dialog.Close asChild>
-              <button 
+              <button
                 ref={cancelRef}
+                aria-label="Cancel"
                 className="px-4 py-2 bg-[var(--ke-bg-hover)] hover:bg-[var(--ke-bg-active)] text-sm rounded-md transition-colors" style={{ color: 'var(--ke-text)' }}
               >
                 Cancel
               </button>
             </Dialog.Close>
-            <button 
+            <button
               ref={confirmRef}
+              aria-label="Confirm"
               onClick={handleConfirm}
               className="px-4 py-2 bg-[var(--ke-accent)] hover:bg-[var(--ke-accent-hover)] text-[var(--ke-text)] text-sm rounded-md transition-colors font-medium"
             >

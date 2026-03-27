@@ -43,6 +43,7 @@ export const ConflictModal = () => {
           <div className="flex flex-col gap-2">
              <div className="flex gap-2 justify-end">
                 <button
+                    aria-label="Overwrite"
                     onClick={() => resolveConflict(conflict.id, 'Overwrite')}
                     className="px-3 py-1.5 rounded text-sm transition-colors font-medium"
                     style={{ backgroundColor: 'var(--ke-error)', color: 'var(--ke-text)' }}
@@ -50,6 +51,7 @@ export const ConflictModal = () => {
                     Overwrite
                 </button>
                 <button
+                    aria-label="Skip"
                     onClick={() => resolveConflict(conflict.id, 'Skip')}
                     className="px-3 py-1.5 rounded text-sm transition-colors"
                     style={{ backgroundColor: 'var(--ke-bg-hover)', color: 'var(--ke-text)' }}
@@ -59,6 +61,7 @@ export const ConflictModal = () => {
              </div>
              <div className="flex gap-2 justify-end pt-2 mt-1" style={{ borderTop: '1px solid var(--ke-border-subtle)' }}>
                 <button
+                    aria-label="Overwrite All"
                     onClick={() => resolveConflict(conflict.id, 'OverwriteAll')}
                     className="px-3 py-1.5 rounded text-xs transition-colors"
                     style={{ backgroundColor: 'var(--ke-error-bg)', color: 'var(--ke-text)' }}
@@ -66,6 +69,7 @@ export const ConflictModal = () => {
                     Overwrite All
                 </button>
                 <button
+                    aria-label="Skip All"
                     onClick={() => resolveConflict(conflict.id, 'SkipAll')}
                     className="px-3 py-1.5 rounded text-xs transition-colors"
                     style={{ backgroundColor: 'var(--ke-bg-hover)', color: 'var(--ke-text)' }}
@@ -73,6 +77,7 @@ export const ConflictModal = () => {
                     Skip All
                 </button>
                 <button
+                    aria-label="Cancel"
                     onClick={() => resolveConflict(conflict.id, 'Cancel')}
                     className="px-3 py-1.5 text-xs transition-colors ml-auto"
                     style={{ color: 'var(--ke-error)' }}
