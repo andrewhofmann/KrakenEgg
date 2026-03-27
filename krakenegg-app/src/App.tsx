@@ -114,7 +114,7 @@ function App() {
         <div className="flex space-x-4">
           <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>F5</kbd> Copy</span>
           <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>F6</kbd> Move</span>
-          <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>F8</kbd> Delete</span>
+          <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>&#8984;&#9003;</kbd> Delete</span>
           <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>F7</kbd> New Folder</span>
           <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>Ctrl+Q</kbd> Quick View</span>
         </div>

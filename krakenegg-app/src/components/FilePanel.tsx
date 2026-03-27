@@ -557,7 +557,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       disabled: !clipboard.items || clipboard.type !== 'files' || (clipboard.sourcePanel === side && clipboard.operation === 'cut')
     });
     items.push({ 
-      label: "Delete (F8)", 
+      label: "Delete (⌘⌫)", 
       action: () => {
           const sources = getSelectedPaths(processedFiles);
           if (sources.length === 0) return;

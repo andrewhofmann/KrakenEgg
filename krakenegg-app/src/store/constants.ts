@@ -9,7 +9,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
 export const DEFAULT_HOTKEYS: HotkeyState = {
   'toggle_side': 'Tab', 'go_up_dir': 'Backspace', 'go_back': 'Alt+ArrowLeft', 'go_forward': 'Alt+ArrowRight',
   'open_search': 'Alt+F7', 'swap_panes': 'CmdOrCtrl+u', 'new_file': 'Shift+F4', 'new_folder': 'F7',
-  'copy': 'CmdOrCtrl+c', 'cut': 'CmdOrCtrl+x', 'paste': 'CmdOrCtrl+v', 'delete': 'F8',
+  'copy': 'CmdOrCtrl+c', 'cut': 'CmdOrCtrl+x', 'paste': 'CmdOrCtrl+v', 'delete': 'CmdOrCtrl+Backspace',
   'rename': 'Shift+F6', 'view_file': 'F3', 'edit_file': 'F4',
   'copy_to_opposite': 'F5', 'move_to_opposite': 'F6',
   'compress_selection': 'Alt+F5', 'extract_selection': 'Alt+F9',
