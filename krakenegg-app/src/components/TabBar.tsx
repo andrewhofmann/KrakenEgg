@@ -90,9 +90,9 @@ export const TabBar = ({ side }: { side: "left" | "right" }) => {
                 }}
                 className={clsx(
                 "group flex items-center pl-3 pr-1.5 py-1 rounded-t-md text-xs cursor-default min-w-[80px] max-w-[150px] relative transition-colors border-t border-x",
-                isActive 
-                    ? "bg-macos-sidebar/80 text-white border-white/10 z-10" 
-                    : "bg-transparent text-macos-textSecondary hover:bg-white/5 hover:text-macos-text border-transparent"
+                isActive
+                    ? "z-10 border-[var(--ke-border)]"
+                    : "bg-transparent border-transparent hover:bg-[var(--ke-bg-hover)]"
                 )}
                 // Framer motion props for style
                 initial={false}
@@ -111,7 +111,7 @@ export const TabBar = ({ side }: { side: "left" | "right" }) => {
                 </button>
                 
                 {/* Active Indicator Line */}
-                {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-macos-active" />}
+                {isActive && <div className="absolute bottom-0 left-1 right-1 h-[2px] rounded-full" style={{ backgroundColor: 'var(--ke-accent)' }} />}
             </Reorder.Item>
             );
         })}

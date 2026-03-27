@@ -872,7 +872,7 @@ import { FileInfo } from "../store";
       </div>
       {/* Type-ahead search indicator */}
       {typeAheadDisplay && isActive && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/80 border border-white/20 rounded-md px-3 py-1 text-sm text-yellow-300 font-mono shadow-lg z-30 animate-in fade-in duration-100">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 rounded-md px-3 py-1.5 text-sm font-mono z-30 animate-in fade-in duration-100" style={{ backgroundColor: 'var(--ke-bg-elevated)', border: '1px solid var(--ke-border)', color: 'var(--ke-warning)', boxShadow: 'var(--ke-shadow-sm)' }}>
           {typeAheadDisplay}
         </div>
       )}
@@ -898,7 +898,7 @@ import { FileInfo } from "../store";
           );
         })()}
       </div>
-      {isActive && <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-macos-active shadow-[0_0_10px_rgba(0,122,255,0.5)]" />}
+      {isActive && <div className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full" style={{ backgroundColor: 'var(--ke-accent)', boxShadow: '0 0 8px var(--ke-accent)' }} />}
     </div>
   );
 };

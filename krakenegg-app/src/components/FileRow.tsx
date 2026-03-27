@@ -103,7 +103,7 @@ export const FileRow = memo(({
                       ) : (
                         <>
                           <SmartTooltip text={file.name} className="pt-0.5 min-w-0" />
-                          {file.is_symlink && <span className="ml-1 text-[10px] text-gray-500 shrink-0">→</span>}
+                          {file.is_symlink && <span className="ml-1 text-[11px] shrink-0" style={{ color: 'var(--ke-text-tertiary)' }}>→</span>}
                         </>
                       )}
                   </div>
