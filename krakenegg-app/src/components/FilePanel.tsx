@@ -309,13 +309,14 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       }
   };
 
+  const { setCursorAndSelection } = useStore((s) => s);
+
   const handleFileClick = useCallback((e: React.MouseEvent, index: number) => {
     setActiveSide(side);
     if (!activeTab) return;
-    
+
     if (index === -1) {
-        setCursor(side, -1);
-        setSelection(side, [-1]);
+        setCursorAndSelection(side, -1, [-1]);
         return;
     }
 
@@ -326,24 +327,18 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       for (let i = start; i <= end; i++) {
         newSelection.push(i);
       }
-      setSelection(side, newSelection);
-      setCursor(side, index);
+      setCursorAndSelection(side, index, newSelection);
     } else if (e.metaKey || e.ctrlKey) {
       const isSelected = activeTab.selection.includes(index);
-      let newSelection;
-      if (isSelected) {
-        newSelection = activeTab.selection.filter(i => i !== index);
-      } else {
-        newSelection = [...activeTab.selection, index];
-      }
-      setSelection(side, newSelection);
-      setCursor(side, index);
+      const newSelection = isSelected
+        ? activeTab.selection.filter(i => i !== index)
+        : [...activeTab.selection, index];
+      setCursorAndSelection(side, index, newSelection);
     } else {
-      setCursor(side, index);
-      setSelection(side, [index]);
+      setCursorAndSelection(side, index, [index]);
     }
     hideContextMenu();
-  }, [activeTab, side, setActiveSide, setSelection, setCursor, hideContextMenu]);
+  }, [activeTab, side, setActiveSide, setCursorAndSelection, hideContextMenu]);
 
   const handleDoubleClick = useCallback(async (_e: React.MouseEvent, file: FileInfo) => {
     const isArchiveFile = /\.(zip|tar|gz|tgz)$/i.test(file.name);
