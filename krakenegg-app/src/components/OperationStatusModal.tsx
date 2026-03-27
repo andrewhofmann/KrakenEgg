@@ -37,24 +37,24 @@ export const OperationStatusModal = () => {
       <div 
         className={clsx(
           "bg-macos-glass border rounded-lg shadow-2xl p-4 flex flex-col gap-3 animate-in slide-in-from-right-4 fade-in duration-200 pointer-events-auto backdrop-blur-xl",
-          isError ? "border-red-500/30 bg-red-900/40" : "border-white/15 bg-[#1e1e1e]/90"
+          isError ? "border-[var(--ke-error)] bg-[var(--ke-error-bg)]" : "border-[var(--ke-border)] bg-[var(--ke-bg-elevated)]"
         )}
       >
         <div className="flex items-center gap-3">
             {progress ? (
-                <Loader2 size={20} className="text-blue-400 shrink-0 animate-spin" />
+                <Loader2 size={20} className="shrink-0 animate-spin" style={{ color: 'var(--ke-accent)' }} />
             ) : isError ? (
-                <XCircle size={20} className="text-red-400 shrink-0" />
+                <XCircle size={20} className="shrink-0" style={{ color: 'var(--ke-error)' }} />
             ) : (
-                <CheckCircle size={20} className="text-green-400 shrink-0" />
+                <CheckCircle size={20} className="shrink-0" style={{ color: 'var(--ke-success)' }} />
             )}
             
             <div className="flex-1 min-w-0 overflow-hidden">
-                <div className={clsx("text-sm font-medium truncate", isError ? "text-red-200" : "text-white")}>
+                <div className="text-sm font-medium truncate" style={{ color: isError ? 'var(--ke-error)' : 'var(--ke-text)' }}>
                     {message}
                 </div>
                 {progress && (
-                    <div className="text-[11px] text-white/50 truncate mt-0.5" title={progress.path}>
+                    <div className="text-[11px] truncate mt-0.5" style={{ color: 'var(--ke-text-tertiary)' }} title={progress.path}>
                         {progress.path}
                     </div>
                 )}
@@ -64,8 +64,8 @@ export const OperationStatusModal = () => {
                 <button 
                 onClick={hideOperationStatus} 
                 className={clsx(
-                    "p-1 rounded-md hover:bg-white/10 transition-colors shrink-0",
-                    isError ? "text-red-300 hover:text-red-100" : "text-macos-textSecondary hover:text-white"
+                    "p-1 rounded-md transition-colors shrink-0 hover:bg-[var(--ke-bg-hover)]",
+                    isError ? "text-[var(--ke-error)]" : "text-[var(--ke-text-secondary)]"
                 )}
                 >
                 <X size={14} />
@@ -81,14 +81,14 @@ export const OperationStatusModal = () => {
                 : 0;
             return (
               <div className="w-full pl-8">
-                <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden mb-2">
+                <div className="h-1.5 w-full rounded-full overflow-hidden mb-2 bg-[var(--ke-bg-hover)]">
                     <div
                         className="h-full bg-blue-500 transition-all duration-300 ease-out rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"
                         style={{ width: `${pct}%` }}
                     />
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-[11px] text-white/50 tabular-nums">
+                    <span className="text-[11px] tabular-nums" style={{ color: 'var(--ke-text-tertiary)' }}>
                         {progress.bytes_total > 0
                           ? `${formatSize(progress.bytes_done)} / ${formatSize(progress.bytes_total)} (${pct}%)`
                           : `${progress.current} items processed`
@@ -96,7 +96,8 @@ export const OperationStatusModal = () => {
                     </span>
                     <button
                         onClick={cancelOperation}
-                        className="text-[11px] text-red-300 hover:text-white hover:bg-red-500/20 px-2 py-0.5 rounded transition-colors font-medium"
+                        className="text-[11px] px-2 py-0.5 rounded transition-colors font-medium hover:bg-[var(--ke-bg-hover)]"
+                        style={{ color: 'var(--ke-error)' }}
                     >
                         Cancel
                     </button>

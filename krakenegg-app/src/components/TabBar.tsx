@@ -41,7 +41,7 @@ export const TabBar = ({ side }: { side: "left" | "right" }) => {
     <div 
         id={`tabbar-${side}`}
         className={clsx(
-            "flex items-end h-8 bg-black/20 px-1 space-x-1 shrink-0 relative",
+            "flex items-end h-8 bg-[var(--ke-bg-secondary)] px-1 space-x-1 shrink-0 relative",
             // If dragging, remove overflow clipping to allow tab to "escape" visually
             // Note: This works if content fits. If content scrolls, disabling overflow might expand container or hide scrollbar.
             // It's a tradeoff for the visual pop-out.
@@ -103,7 +103,7 @@ export const TabBar = ({ side }: { side: "left" | "right" }) => {
                 onPointerDown={(e) => e.stopPropagation()} // Prevent drag start on close button
                 onClick={(e) => { e.stopPropagation(); closeTab(side, i); }}
                 className={clsx(
-                    "p-0.5 rounded hover:bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity ml-1",
+                    "p-0.5 rounded hover:bg-[var(--ke-bg-active)] opacity-0 group-hover:opacity-100 transition-opacity ml-1",
                     isActive && "opacity-100" 
                 )}
                 >
@@ -123,7 +123,8 @@ export const TabBar = ({ side }: { side: "left" | "right" }) => {
           e.stopPropagation(); 
           addTab(side, activePath || "/"); 
         }}
-        className="p-1 text-macos-textSecondary hover:text-white hover:bg-white/10 rounded mb-0.5"
+        className="p-1 rounded mb-0.5 hover:bg-[var(--ke-bg-hover)]"
+        style={{ color: 'var(--ke-text-secondary)' }}
       >
         <Plus size={12} />
       </button>

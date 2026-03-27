@@ -97,10 +97,10 @@ function App() {
   }, []);
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-neutral-900 text-white overflow-hidden font-sans select-none text-[13px]">
+    <div className="h-screen w-screen flex flex-col overflow-hidden font-sans select-none text-[13px]" style={{ backgroundColor: 'var(--ke-bg)', color: 'var(--ke-text)' }}>
       
       {/* Main Dual Pane Area */}
-      <div className="flex-1 flex overflow-hidden bg-black/40 backdrop-blur-2xl">
+      <div className="flex-1 flex overflow-hidden backdrop-blur-2xl" style={{ backgroundColor: 'var(--ke-bg-panel)' }}>
         <ErrorBoundary fallbackTitle="Left panel crashed">
           <FilePanel side="left" usePanelDataHook={usePanelData} />
         </ErrorBoundary>
@@ -110,11 +110,13 @@ function App() {
       </div>
 
       {/* Bottom Status Bar */}
-      <div className="h-8 bg-macos-sidebar/80 backdrop-blur-md border-t border-white/5 flex items-center px-4 text-xs text-macos-textSecondary justify-between shrink-0">
+      <div className="h-8 backdrop-blur-md flex items-center px-4 text-xs justify-between shrink-0" style={{ backgroundColor: 'var(--ke-bg-secondary)', borderTop: '1px solid var(--ke-border-subtle)', color: 'var(--ke-text-secondary)' }}>
         <div className="flex space-x-4">
-          <span><strong className="text-macos-text">F5</strong> Copy</span>
-          <span><strong className="text-macos-text">F6</strong> Move</span>
-          <span><strong className="text-macos-text">F8</strong> Delete</span>
+          <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>F5</kbd> Copy</span>
+          <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>F6</kbd> Move</span>
+          <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>F8</kbd> Delete</span>
+          <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>F7</kbd> New Folder</span>
+          <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>Ctrl+Q</kbd> Quick View</span>
         </div>
         <div>
           {(() => {

@@ -683,7 +683,7 @@ import { FileInfo } from "../store";
                }}
            >
               <div className="flex items-center">
-                {isArchive ? <Package size={13} className="text-blue-300 mr-2 shrink-0" /> : <HardDrive size={13} className="text-macos-textSecondary mr-2 shrink-0" />}
+                {isArchive ? <Package size={13} className="mr-2 shrink-0" style={{ color: 'var(--ke-accent)' }} /> : <HardDrive size={13} className="text-macos-textSecondary mr-2 shrink-0" />}
                 
                 {isPathEditing ? (
                     <input 
@@ -693,27 +693,29 @@ import { FileInfo } from "../store";
                         onChange={(e) => setPathInputValue(e.target.value)}
                         onKeyDown={handlePathKeyDown}
                         onBlur={() => setIsPathEditing(false)}
-                        className="flex-1 text-[11px] font-medium bg-black/30 text-white px-1 py-0.5 rounded border border-blue-500/50 outline-none"
+                        className="flex-1 text-[11px] font-medium px-1 py-0.5 rounded outline-none"
+                        style={{ backgroundColor: 'var(--ke-bg-input)', color: 'var(--ke-text)', border: '1px solid var(--ke-accent)' }}
                     />
                 ) : (
                     <div className="flex items-center min-w-0 overflow-hidden" title={activeTab.path}>
                         {(() => {
                             const parts = activeTab.path.split('/').filter(Boolean);
                             if (parts.length === 0) {
-                                return <span className={clsx("text-[11px] font-medium opacity-90 cursor-pointer", isArchive ? "text-blue-300" : "text-macos-text")} onClick={handlePathClick}>/</span>;
+                                return <span className={clsx("text-[11px] font-medium opacity-90 cursor-pointer", !isArchive && "text-macos-text")} style={isArchive ? { color: 'var(--ke-accent)' } : undefined} onClick={handlePathClick}>/</span>;
                             }
                             return parts.map((segment, i) => {
                                 const targetPath = '/' + parts.slice(0, i + 1).join('/');
                                 const isLast = i === parts.length - 1;
                                 return (
                                     <span key={i} className="flex items-center shrink-0">
-                                        {i > 0 && <ChevronRight size={10} className="text-gray-500 mx-0.5 shrink-0" />}
+                                        {i > 0 && <ChevronRight size={10} className="mx-0.5 shrink-0" style={{ color: 'var(--ke-text-tertiary)' }} />}
                                         <span
                                             className={clsx(
                                                 "text-[11px] font-medium cursor-pointer rounded px-0.5 transition-colors",
                                                 isLast ? "opacity-100" : "opacity-70 hover:opacity-100",
-                                                isArchive ? "text-blue-300 hover:bg-blue-500/20" : "text-macos-text hover:bg-white/10"
+                                                isArchive ? "hover:bg-[var(--ke-selection-light)]" : "text-macos-text hover:bg-[var(--ke-bg-hover)]"
                                             )}
+                                            style={isArchive ? { color: 'var(--ke-accent)' } : undefined}
                                             onClick={(e) => { e.stopPropagation(); if (!isLast) setPath(side, targetPath); }}
                                             onDoubleClick={(e) => { e.stopPropagation(); handlePathClick(); }}
                                         >
@@ -731,27 +733,27 @@ import { FileInfo } from "../store";
            <div className="flex items-center space-x-1">
               <button 
                   onClick={() => setShowHistory(!showHistory)}
-                  className={clsx("p-0.5 rounded transition-colors", showHistory ? "bg-white/20 text-white" : "text-macos-textSecondary hover:bg-white/10 hover:text-white")}
+                  className={clsx("p-0.5 rounded transition-colors", showHistory ? "bg-[var(--ke-bg-active)]" : "text-macos-textSecondary hover:bg-[var(--ke-bg-hover)]")}
                   title="History & Bookmarks (Alt+Down)"
               >
                   <ChevronDown size={12} />
               </button>
               
               {activeTab.showFilterWidget && <SearchFilter value={activeTab.filterQuery || ''} onChange={(val) => setFilterQuery(side, val)} onClear={() => setFilterQuery(side, '')} className="w-32 focus-within:w-48 transition-all duration-200" focusSignal={activeTab.filterFocusSignal} autoFocus={true} />}
-              <button onClick={handleUpDir} className="p-0.5 hover:bg-white/10 rounded text-macos-textSecondary hover:text-white transition-colors" aria-label="Go Up"><ChevronRight size={14} className="rotate-270" /></button>
+              <button onClick={handleUpDir} className="p-0.5 hover:bg-[var(--ke-bg-hover)] rounded text-macos-textSecondary transition-colors" aria-label="Go Up"><ChevronRight size={14} className="rotate-270" /></button>
            </div>
 
            {/* History Dropdown */}
            {showHistory && (
-               <div className="absolute top-full left-0 w-full bg-[#252525] border border-white/10 rounded-b-md shadow-2xl z-50 flex flex-col animate-in slide-in-from-top-2 duration-100">
+               <div className="absolute top-full left-0 w-full rounded-b-md shadow-2xl z-50 flex flex-col animate-in slide-in-from-top-2 duration-100" style={{ backgroundColor: 'var(--ke-bg-elevated)', border: '1px solid var(--ke-border)' }}>
                    {/* Backdrop to close */}
                    <div className="fixed inset-0 z-[-1]" onClick={() => setShowHistory(false)} />
                    
-                   <div className="p-1 border-b border-white/5 bg-[#1e1e1e]">
-                        <div className="px-2 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Bookmarks</div>
-                        {hotlist.length === 0 && <div className="px-2 py-1 text-xs text-gray-500 italic">No bookmarks</div>}
+                   <div className="p-1" style={{ borderBottom: '1px solid var(--ke-border-subtle)', backgroundColor: 'var(--ke-bg-secondary)' }}>
+                        <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--ke-text-tertiary)' }}>Bookmarks</div>
+                        {hotlist.length === 0 && <div className="px-2 py-1 text-xs italic" style={{ color: 'var(--ke-text-tertiary)' }}>No bookmarks</div>}
                         {hotlist.map(path => (
-                            <div key={path} className="flex items-center justify-between px-2 py-1 hover:bg-blue-600 rounded cursor-pointer group" onClick={() => { setPath(side, path); setShowHistory(false); }}>
+                            <div key={path} className="flex items-center justify-between px-2 py-1 hover:bg-[var(--ke-accent)] rounded cursor-pointer group" onClick={() => { setPath(side, path); setShowHistory(false); }}>
                                 <div className="flex items-center truncate">
                                     <Star size={12} className="mr-2 text-yellow-500" />
                                     <span className="truncate text-xs">{path}</span>
@@ -760,19 +762,19 @@ import { FileInfo } from "../store";
                             </div>
                         ))}
                         <button 
-                            className="w-full text-left px-2 py-1 text-[10px] text-blue-400 hover:text-blue-300 hover:bg-white/5 rounded mt-1 flex items-center"
+                            className="w-full text-left px-2 py-1 text-[10px] hover:bg-[var(--ke-bg-hover)] rounded mt-1 flex items-center" style={{ color: 'var(--ke-accent)' }}
                             onClick={() => { addToHotlist(activeTab.path); setShowHistory(false); }}
                         >
                             <Star size={10} className="mr-1" /> Add current
                         </button>
                    </div>
 
-                   <div className="p-1 bg-[#1e1e1e] max-h-60 overflow-y-auto">
-                        <div className="px-2 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">History</div>
-                        {globalHistory.length === 0 && <div className="px-2 py-1 text-xs text-gray-500 italic">No history</div>}
+                   <div className="p-1 max-h-60 overflow-y-auto" style={{ backgroundColor: 'var(--ke-bg-secondary)' }}>
+                        <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--ke-text-tertiary)' }}>History</div>
+                        {globalHistory.length === 0 && <div className="px-2 py-1 text-xs italic" style={{ color: 'var(--ke-text-tertiary)' }}>No history</div>}
                         {globalHistory.map(path => (
-                            <div key={path} className="flex items-center px-2 py-1 hover:bg-blue-600 rounded cursor-pointer text-xs" onClick={() => { setPath(side, path); setShowHistory(false); }}>
-                                <Clock size={12} className="mr-2 text-gray-500" />
+                            <div key={path} className="flex items-center px-2 py-1 hover:bg-[var(--ke-accent)] rounded cursor-pointer text-xs" onClick={() => { setPath(side, path); setShowHistory(false); }}>
+                                <Clock size={12} className="mr-2" style={{ color: 'var(--ke-text-tertiary)' }} />
                                 <span className="truncate">{path}</span>
                             </div>
                         ))}
@@ -781,12 +783,12 @@ import { FileInfo } from "../store";
            )}
         </div>
 
-        <div className="grid text-[11px] px-3 py-0.5 border-t border-white/5 bg-black/20 text-macos-textSecondary sticky top-0 z-10 backdrop-blur-sm select-none" style={{ gridTemplateColumns: gridTemplate }}>
+        <div className="grid text-[11px] px-3 py-0.5 text-macos-textSecondary sticky top-0 z-10 backdrop-blur-sm select-none" style={{ borderTop: '1px solid var(--ke-border-subtle)', backgroundColor: 'var(--ke-bg-secondary)' }} style={{ gridTemplateColumns: gridTemplate }}>
             {layout.columns.map((col, index) => (
                 <div 
                     key={col} 
                     className={clsx(
-                        "relative flex items-center cursor-pointer hover:text-white group",
+                        "relative flex items-center cursor-pointer group",
                         // Alignment Logic
                         col !== 'name' ? "justify-end text-right" : "",
                         col !== 'name' && index !== layout.columns.length - 1 ? "pr-2" : "",
@@ -827,9 +829,9 @@ import { FileInfo } from "../store";
           <div className="p-2 space-y-0.5 animate-pulse">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="flex items-center px-3 gap-2" style={{ height: preferences.appearance.rowHeight }}>
-                <div className="w-4 h-3.5 bg-white/5 rounded" />
-                <div className="h-3 bg-white/5 rounded" style={{ width: `${45 + (i * 7) % 40}%` }} />
-                <div className="w-10 h-3 bg-white/5 rounded ml-auto" />
+                <div className="w-4 h-3.5 bg-[var(--ke-bg-hover)] rounded" />
+                <div className="h-3 bg-[var(--ke-bg-hover)] rounded" style={{ width: `${45 + (i * 7) % 40}%` }} />
+                <div className="w-10 h-3 bg-[var(--ke-bg-hover)] rounded ml-auto" />
               </div>
             ))}
           </div>
@@ -846,7 +848,7 @@ import { FileInfo } from "../store";
         {!activeTab.loading && !activeTab.error && (
           <>
             {activeTab.path !== "/" && (
-              <div id={`${side}-row--1`} onClick={(e) => { e.stopPropagation(); handleFileClick(e, -1); }} onDoubleClick={handleUpDir} style={{ gridTemplateColumns: gridTemplate }} className={clsx("grid items-center px-3 py-0.5 border-b border-white/5 cursor-default text-[13px] transition-colors", activeTab.cursorIndex === -1 && isActive ? "bg-macos-active text-white ring-1 ring-white/40" : "hover:bg-macos-hover text-macos-textSecondary hover:text-white")}>
+              <div id={`${side}-row--1`} onClick={(e) => { e.stopPropagation(); handleFileClick(e, -1); }} onDoubleClick={handleUpDir} style={{ gridTemplateColumns: gridTemplate, borderBottom: '1px solid var(--ke-border-subtle)', ...(activeTab.cursorIndex === -1 && isActive ? { backgroundColor: 'var(--ke-accent)' } : {}) }} className={clsx("grid items-center px-3 py-0.5 cursor-default text-[13px] transition-colors", activeTab.cursorIndex === -1 && isActive ? "ring-1 ring-[var(--ke-border)]" : "hover:bg-[var(--ke-bg-hover)] text-macos-textSecondary")}>
                 <div className="flex items-center"><ChevronRight size={14} className="mr-2 rotate-180 opacity-50" /><span>..</span></div>
                 {layout.columns.slice(1).map(c => <div key={c}></div>)}
               </div>
@@ -889,7 +891,7 @@ import { FileInfo } from "../store";
             <>
               <span>{dirs} folder{dirs !== 1 ? 's' : ''}, {files} file{files !== 1 ? 's' : ''}</span>
               {selectedIndices.length > 0 && (
-                <span className="text-blue-400">
+                <span style={{ color: 'var(--ke-accent)' }}>
                   {selectedIndices.length} selected
                   {selectedSize > 0 && ` (${formatSize(selectedSize)})`}
                 </span>

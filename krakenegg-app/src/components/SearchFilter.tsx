@@ -38,7 +38,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
 
   return (
     <div className={clsx("relative flex items-center", className)}>
-      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-macos-textSecondary" />
+      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--ke-text-secondary)' }} />
       <input
         ref={inputRef}
         type="text"
@@ -46,15 +46,23 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={clsx(
-          "w-full bg-black/20 border border-white/10 rounded-md py-1.5 pl-9 pr-3 text-sm text-macos-text",
-          "focus:outline-none focus:bg-black/40 focus:border-macos-active/50 transition-all",
-          "placeholder:text-white/20"
+          "w-full rounded-md py-1.5 pl-9 pr-3 text-sm border transition-all",
+          "focus:outline-none",
+          "[&::placeholder]:opacity-30"
         )}
+        style={{
+          backgroundColor: 'var(--ke-bg-input)',
+          borderColor: 'var(--ke-border-subtle)',
+          color: 'var(--ke-text)',
+        }}
       />
       {value && (
         <button
           onClick={onClear}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-macos-textSecondary hover:text-white"
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 transition-colors"
+          style={{ color: 'var(--ke-text-secondary)' }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--ke-text)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--ke-text-secondary)'}
           aria-label="Clear filter"
         >
           <XCircle size={16} />

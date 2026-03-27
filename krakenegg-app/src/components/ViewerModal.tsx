@@ -61,19 +61,19 @@ export const ViewerModal = () => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm bg-black/50">
-      <div className="relative flex flex-col w-full max-w-4xl h-3/4 rounded-lg shadow-2xl bg-macos-glass border border-white/10">
+      <div className="relative flex flex-col w-full max-w-4xl h-3/4 rounded-lg shadow-2xl bg-macos-glass border border-[var(--ke-border)]">
         {/* Header */}
-        <div className="flex items-center justify-between p-3 border-b border-white/10 shrink-0">
-          <h3 className="text-sm font-semibold text-white truncate">{title}</h3>
-          <button onClick={hideViewer} className="p-1 rounded-md hover:bg-white/10 text-macos-textSecondary hover:text-white transition-colors">
+        <div className="flex items-center justify-between p-3 border-b border-[var(--ke-border)] shrink-0">
+          <h3 className="text-sm font-semibold text-[var(--ke-text)] truncate">{title}</h3>
+          <button onClick={hideViewer} className="p-1 rounded-md hover:bg-[var(--ke-bg-hover)] text-macos-textSecondary hover:text-[var(--ke-text)] transition-colors">
             <X size={16} />
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-4 overflow-auto text-white/80 no-scrollbar">
+        <div className="flex-1 p-4 overflow-auto text-[var(--ke-text-secondary)] no-scrollbar">
           {loading && <div className="text-center py-8">Loading...</div>}
-          {error && <div className="text-red-400 py-8">Error: {error}</div>}
+          {error && <div className="text-[var(--ke-error)] py-8">Error: {error}</div>}
           {!loading && !error && (
             isImage ? (
               <img src={content} alt={title} className="max-w-full max-h-full object-contain mx-auto" />

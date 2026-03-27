@@ -28,23 +28,24 @@ export const ConfirmationModal = () => {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[150] animate-fade-in" />
         <Dialog.Content 
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-macos-glass border border-white/10 rounded-lg shadow-2xl p-6 z-[151] focus:outline-none animate-scale-in"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-macos-glass rounded-lg shadow-2xl p-6 z-[151] focus:outline-none animate-scale-in"
+            style={{ border: '1px solid var(--ke-border)' }}
         >
           <div className="flex justify-between items-center mb-4">
-            <Dialog.Title className="text-lg font-semibold text-white">{title}</Dialog.Title>
+            <Dialog.Title className="text-lg font-semibold" style={{ color: 'var(--ke-text)' }}>{title}</Dialog.Title>
             <Dialog.Close asChild>
-              <button className="text-macos-textSecondary hover:text-white">
+              <button className="text-macos-textSecondary hover:text-[var(--ke-text)]">
                 <X size={16} />
               </button>
             </Dialog.Close>
           </div>
           
-          <Dialog.Description className="text-sm text-white/80 mb-6">
+          <Dialog.Description className="text-sm mb-6" style={{ color: 'var(--ke-text-secondary)' }}>
             {message}
           </Dialog.Description>
 
           {showConflictOptions && (
-              <div className="mb-6 space-y-3 bg-black/20 p-3 rounded-md border border-white/5">
+              <div className="mb-6 space-y-3 p-3 rounded-md" style={{ backgroundColor: 'var(--ke-bg-secondary)', border: '1px solid var(--ke-border-subtle)' }}>
                   <div className="text-xs font-semibold text-macos-textSecondary uppercase tracking-wider">Conflict Resolution</div>
                   <div className="space-y-2">
                       {[
@@ -53,7 +54,7 @@ export const ConfirmationModal = () => {
                           { id: 'skip', label: 'Skip Existing' },
                           { id: 'newer', label: 'Overwrite only if newer' }
                       ].map(opt => (
-                          <label key={opt.id} className="flex items-center space-x-3 text-sm text-white/90 cursor-pointer hover:bg-white/5 p-1 rounded -ml-1">
+                          <label key={opt.id} className="flex items-center space-x-3 text-sm cursor-pointer hover:bg-[var(--ke-bg-hover)] p-1 rounded -ml-1" style={{ color: 'var(--ke-text)' }}>
                               <input 
                                   type="radio" 
                                   name="conflictStrategy" 
@@ -73,7 +74,7 @@ export const ConfirmationModal = () => {
             <Dialog.Close asChild>
               <button 
                 ref={cancelRef}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-md transition-colors"
+                className="px-4 py-2 bg-[var(--ke-bg-hover)] hover:bg-[var(--ke-bg-active)] text-sm rounded-md transition-colors" style={{ color: 'var(--ke-text)' }}
               >
                 Cancel
               </button>
@@ -81,7 +82,7 @@ export const ConfirmationModal = () => {
             <button 
               ref={confirmRef}
               onClick={handleConfirm}
-              className="px-4 py-2 bg-macos-active hover:bg-macos-activeHover text-white text-sm rounded-md transition-colors font-medium"
+              className="px-4 py-2 bg-[var(--ke-accent)] hover:bg-[var(--ke-accent-hover)] text-[var(--ke-text)] text-sm rounded-md transition-colors font-medium"
             >
               Confirm
             </button>

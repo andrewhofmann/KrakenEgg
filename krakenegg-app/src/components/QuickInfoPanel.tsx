@@ -76,15 +76,15 @@ export const QuickInfoPanel = ({ side: _side }: { side: 'left' | 'right' }) => {
     if (!targetTab) return null;
 
     return (
-        <div className="flex-1 flex flex-col bg-black/40 text-white p-6 border-r border-macos-border overflow-auto font-mono text-sm h-full">
-            <div className="text-lg font-bold mb-4 border-b border-white/10 pb-2 truncate">
+        <div className="flex-1 flex flex-col p-6 border-r overflow-auto font-mono text-sm h-full" style={{ backgroundColor: 'var(--ke-bg-panel)', color: 'var(--ke-text)', borderColor: 'var(--ke-border)' }}>
+            <div className="text-lg font-bold mb-4 border-b pb-2 truncate" style={{ borderColor: 'var(--ke-border)' }}>
                 {currentItem || "No Selection"}
             </div>
 
-            {loading && <div className="text-macos-textSecondary animate-pulse">Calculating stats...</div>}
+            {loading && <div className="animate-pulse" style={{ color: 'var(--ke-text-secondary)' }}>Calculating stats...</div>}
             
             {error && (
-                <div className="text-red-400 bg-red-900/20 p-3 rounded border border-red-500/20">
+                <div className="p-3 rounded border" style={{ color: 'var(--ke-error)', backgroundColor: 'var(--ke-error-bg)', borderColor: 'var(--ke-error)' }}>
                     Error: {error}
                 </div>
             )}
@@ -96,69 +96,69 @@ export const QuickInfoPanel = ({ side: _side }: { side: 'left' | 'right' }) => {
                 return (
                     <div className="space-y-3">
                         <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs">
-                            <div className="text-macos-textSecondary text-right">Size:</div>
+                            <div className="text-right" style={{ color: 'var(--ke-text-secondary)' }}>Size:</div>
                             <div className="font-semibold">{formatSize(info.size)}</div>
 
                             {info.files > 0 && (
                                 <>
-                                    <div className="text-macos-textSecondary text-right">Files:</div>
+                                    <div className="text-right" style={{ color: 'var(--ke-text-secondary)' }}>Files:</div>
                                     <div>{info.files.toLocaleString()}</div>
                                 </>
                             )}
 
                             {info.folders > 0 && (
                                 <>
-                                    <div className="text-macos-textSecondary text-right">Folders:</div>
+                                    <div className="text-right" style={{ color: 'var(--ke-text-secondary)' }}>Folders:</div>
                                     <div>{info.folders.toLocaleString()}</div>
                                 </>
                             )}
 
                             {file && !file.is_dir && file.extension && (
                                 <>
-                                    <div className="text-macos-textSecondary text-right">Type:</div>
+                                    <div className="text-right" style={{ color: 'var(--ke-text-secondary)' }}>Type:</div>
                                     <div>.{file.extension} file</div>
                                 </>
                             )}
 
                             {file?.is_dir && (
                                 <>
-                                    <div className="text-macos-textSecondary text-right">Type:</div>
+                                    <div className="text-right" style={{ color: 'var(--ke-text-secondary)' }}>Type:</div>
                                     <div>Folder</div>
                                 </>
                             )}
 
                             {file?.modified_at && (
                                 <>
-                                    <div className="text-macos-textSecondary text-right">Modified:</div>
+                                    <div className="text-right" style={{ color: 'var(--ke-text-secondary)' }}>Modified:</div>
                                     <div>{new Date(file.modified_at * 1000).toLocaleString()}</div>
                                 </>
                             )}
 
                             {file?.created_at && (
                                 <>
-                                    <div className="text-macos-textSecondary text-right">Created:</div>
+                                    <div className="text-right" style={{ color: 'var(--ke-text-secondary)' }}>Created:</div>
                                     <div>{new Date(file.created_at * 1000).toLocaleString()}</div>
                                 </>
                             )}
 
                             {file?.permissions !== undefined && (
                                 <>
-                                    <div className="text-macos-textSecondary text-right">Permissions:</div>
+                                    <div className="text-right" style={{ color: 'var(--ke-text-secondary)' }}>Permissions:</div>
                                     <div className="font-mono">{file.permissions.toString(8)}</div>
                                 </>
                             )}
 
                             {file?.is_symlink && (
                                 <>
-                                    <div className="text-macos-textSecondary text-right">Symlink:</div>
+                                    <div className="text-right" style={{ color: 'var(--ke-text-secondary)' }}>Symlink:</div>
                                     <div>Yes</div>
                                 </>
                             )}
                         </div>
 
-                        <div className="pt-2 border-t border-white/10">
-                            <div className="text-[10px] text-macos-textSecondary mb-1">Full Path</div>
-                            <div className="break-all bg-black/20 p-2 rounded text-[10px] select-text font-mono">
+                        <div className="pt-2 border-t" style={{ borderColor: 'var(--ke-border)' }}>
+                            <div className="text-[10px] mb-1" style={{ color: 'var(--ke-text-secondary)' }}>Full Path</div>
+                            <div className="break-all p-2 rounded text-[10px] select-text font-mono" style={{ backgroundColor: 'var(--ke-bg-input)' }}>
                                 {fullPath}
                             </div>
                         </div>
@@ -166,7 +166,7 @@ export const QuickInfoPanel = ({ side: _side }: { side: 'left' | 'right' }) => {
                 );
             })()}
             
-            <div className="mt-auto pt-4 text-center text-xs text-macos-textSecondary opacity-50">
+            <div className="mt-auto pt-4 text-center text-xs opacity-50" style={{ color: 'var(--ke-text-secondary)' }}>
                 Quick Info (Ctrl+Q)
             </div>
         </div>

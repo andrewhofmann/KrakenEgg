@@ -50,24 +50,24 @@ export const SearchModal = () => {
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 backdrop-blur-sm bg-black/50">
-      <div className="relative flex flex-col w-full max-w-2xl h-3/4 rounded-lg shadow-2xl bg-macos-glass border border-white/10">
+      <div className="relative flex flex-col w-full max-w-2xl h-3/4 rounded-lg shadow-2xl bg-macos-glass border border-[var(--ke-border)]">
         {/* Header */}
-        <div className="flex items-center justify-between p-3 border-b border-white/10 shrink-0">
-          <h3 className="text-sm font-semibold text-white">Search Files</h3>
-          <button onClick={hideSearch} className="p-1 rounded-md hover:bg-white/10 text-macos-textSecondary hover:text-white transition-colors" aria-label="Close search">
+        <div className="flex items-center justify-between p-3 border-b border-[var(--ke-border)] shrink-0">
+          <h3 className="text-sm font-semibold text-[var(--ke-text)]">Search Files</h3>
+          <button onClick={hideSearch} className="p-1 rounded-md hover:bg-[var(--ke-bg-hover)] text-macos-textSecondary hover:text-[var(--ke-text)] transition-colors" aria-label="Close search">
             <X size={16} />
           </button>
         </div>
 
         {/* Search Bar */}
-        <div className="p-4 border-b border-white/10 flex flex-col gap-3">
+        <div className="p-4 border-b border-[var(--ke-border)] flex flex-col gap-3">
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-macos-textSecondary" />
               <input
                 ref={inputRef}
                 type="text"
-                className="w-full bg-black/20 border border-white/10 rounded-md py-2 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-macos-active placeholder:text-white/20"
+                className="w-full bg-[var(--ke-bg-input)] border border-[var(--ke-border)] rounded-md py-2 pl-10 pr-4 text-sm text-[var(--ke-text)] focus:outline-none focus:border-macos-active placeholder:text-[var(--ke-text-disabled)]"
                 placeholder="Search filename or content..."
                 value={query}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -77,14 +77,14 @@ export const SearchModal = () => {
             <button
               onClick={() => executeSearch()}
               disabled={loading || !query}
-              className="px-4 py-2 bg-macos-active hover:bg-macos-activeHover text-white text-sm rounded-md disabled:opacity-50 transition-colors"
+              className="px-4 py-2 bg-[var(--ke-accent)] hover:bg-[var(--ke-accent-hover)] text-[var(--ke-text)] text-sm rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Search
             </button>
           </div>
 
           <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 text-sm text-white/80 cursor-pointer select-none">
+            <label className="flex items-center gap-2 text-sm text-[var(--ke-text-secondary)] cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={searchContent}
@@ -100,8 +100,8 @@ export const SearchModal = () => {
                   onClick={() => setSearchMode(mode)}
                   className={`px-2 py-0.5 rounded text-[11px] transition-colors ${
                     searchMode === mode
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80'
+                      ? 'bg-[var(--ke-accent)] text-[var(--ke-text)]'
+                      : 'bg-[var(--ke-bg-hover)] text-[var(--ke-text-tertiary)] hover:bg-[var(--ke-bg-active)] hover:text-[var(--ke-text-secondary)]'
                   }`}
                 >
                   {mode === 'substring' ? 'Text' : mode === 'glob' ? 'Glob' : 'Regex'}
@@ -113,16 +113,16 @@ export const SearchModal = () => {
 
         {/* Results */}
         <div className="flex-1 overflow-y-auto p-2 no-scrollbar">
-          {loading && <div className="text-center py-8 text-white/60">Searching...</div>}
-          {error && <div className="text-red-400 py-8 text-center">Error: {error}</div>}
+          {loading && <div className="text-center py-8 text-[var(--ke-text-secondary)]">Searching...</div>}
+          {error && <div className="text-[var(--ke-error)] py-8 text-center">Error: {error}</div>}
 
           {!loading && !error && results.length === 0 && query && (
-            <div className="text-center py-8 text-white/40">No results found.</div>
+            <div className="text-center py-8 text-[var(--ke-text-tertiary)]">No results found.</div>
           )}
 
           {!loading && !error && results.length > 0 && (
             <>
-              <div className="px-3 py-1 text-[10px] text-white/40 font-medium">
+              <div className="px-3 py-1 text-[10px] text-[var(--ke-text-tertiary)] font-medium">
                 {results.length} result{results.length !== 1 ? 's' : ''} found
                 {results.length >= 1000 && ' (limit reached — refine your search)'}
               </div>
@@ -138,18 +138,18 @@ export const SearchModal = () => {
                   <div
                     key={i}
                     onClick={() => handleResultClick(file.name)}
-                    className="flex items-center px-3 py-2 rounded-md hover:bg-white/10 cursor-pointer group transition-colors"
+                    className="flex items-center px-3 py-2 rounded-md hover:bg-[var(--ke-bg-hover)] cursor-pointer group transition-colors"
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleResultClick(file.name); }}
                   >
                     <Icon size={16} className={`${iconColor} mr-3 shrink-0`} />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm text-white truncate">
+                      <div className="text-sm text-[var(--ke-text)] truncate">
                         {matchIndex >= 0 ? (
                           <>
                             {file.name.slice(0, matchIndex)}
-                            <span className="bg-yellow-500/30 text-yellow-200 rounded-sm px-0.5">
+                            <span className="bg-[var(--ke-selection-light)] text-[var(--ke-warning)] rounded-sm px-0.5">
                               {file.name.slice(matchIndex, matchIndex + query.length)}
                             </span>
                             {file.name.slice(matchIndex + query.length)}
@@ -158,9 +158,9 @@ export const SearchModal = () => {
                           file.name
                         )}
                       </div>
-                      <div className="text-[10px] text-white/30 truncate">{activeTab?.path}/{file.name}</div>
+                      <div className="text-[10px] text-[var(--ke-text-tertiary)] truncate">{activeTab?.path}/{file.name}</div>
                     </div>
-                    <div className="text-xs text-white/40 shrink-0 ml-2">
+                    <div className="text-xs text-[var(--ke-text-tertiary)] shrink-0 ml-2">
                       {file.is_dir ? '<DIR>' : formatSize(file.size)}
                     </div>
                   </div>

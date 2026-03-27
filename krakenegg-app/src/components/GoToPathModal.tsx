@@ -40,7 +40,7 @@ export const GoToPathModal = () => {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-macos-modal-bg p-6 rounded-lg shadow-xl border border-macos-border max-w-lg w-full">
-        <h2 className="text-lg font-semibold text-white mb-4">Go To Path</h2>
+        <h2 className="text-lg font-semibold text-[var(--ke-text)] mb-4">Go To Path</h2>
         <p className="text-sm text-macos-textSecondary mb-4">Enter the full path to navigate to:</p>
         <input
           ref={inputRef}
@@ -48,7 +48,7 @@ export const GoToPathModal = () => {
           defaultValue={initialPath}
           onKeyDown={handleKeyDown}
           className={clsx(
-            "w-full px-3 py-2 rounded-md bg-macos-input-bg text-white border",
+            "w-full px-3 py-2 rounded-md bg-macos-input-bg text-[var(--ke-text)] border",
             "border-macos-border focus:outline-none focus:ring-1 focus:ring-macos-active"
           )}
           placeholder="/Users/username/Documents"
@@ -58,8 +58,8 @@ export const GoToPathModal = () => {
             onClick={handleCancel}
             className={clsx(
               "px-4 py-2 rounded-md text-sm font-medium",
-              "bg-gray-700 hover:bg-gray-600 text-white",
-              "focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-macos-modal-bg"
+              "bg-[var(--ke-bg-hover)] hover:bg-[var(--ke-bg-active)] text-[var(--ke-text)]",
+              "focus:outline-none focus:ring-2 focus:ring-[var(--ke-border)] focus:ring-offset-2 focus:ring-offset-macos-modal-bg"
             )}
           >
             Cancel
@@ -68,7 +68,7 @@ export const GoToPathModal = () => {
             onClick={handleConfirm}
             className={clsx(
               "px-4 py-2 rounded-md text-sm font-medium",
-              "bg-macos-active hover:bg-macos-active-hover text-white",
+              "bg-[var(--ke-accent)] hover:bg-[var(--ke-accent-hover)] text-[var(--ke-text)]",
               "focus:outline-none focus:ring-2 focus:ring-macos-active focus:ring-offset-2 focus:ring-offset-macos-modal-bg"
             )}
           >

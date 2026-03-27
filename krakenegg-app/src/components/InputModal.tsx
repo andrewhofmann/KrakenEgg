@@ -39,12 +39,12 @@ export const InputModal = () => {
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-sm bg-black/50">
-      <div className="relative flex flex-col w-full max-w-md rounded-lg shadow-2xl bg-macos-glass border border-white/10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative flex flex-col w-full max-w-md rounded-lg shadow-2xl bg-macos-glass border border-[var(--ke-border)] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-3 border-b border-white/10 bg-white/5">
-          <h3 className="text-sm font-semibold text-white">{title}</h3>
-          <button onClick={closeInputModal} className="p-1 rounded-md hover:bg-white/10 text-macos-textSecondary hover:text-white transition-colors">
+        <div className="flex items-center justify-between p-3 border-b border-[var(--ke-border)] bg-[var(--ke-bg-secondary)]">
+          <h3 className="text-sm font-semibold text-[var(--ke-text)]">{title}</h3>
+          <button onClick={closeInputModal} className="p-1 rounded-md hover:bg-[var(--ke-bg-hover)] text-macos-textSecondary hover:text-[var(--ke-text)] transition-colors">
             <X size={16} />
           </button>
         </div>
@@ -58,21 +58,21 @@ export const InputModal = () => {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="w-full bg-black/20 border border-white/10 rounded-md py-2 px-3 text-sm text-white focus:outline-none focus:border-macos-active transition-all"
+            className="w-full bg-[var(--ke-bg-input)] border border-[var(--ke-border)] rounded-md py-2 px-3 text-sm text-[var(--ke-text)] focus:outline-none focus:border-macos-active transition-all"
           />
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 p-3 border-t border-white/10 bg-white/5">
+        <div className="flex justify-end gap-2 p-3 border-t border-[var(--ke-border)] bg-[var(--ke-bg-secondary)]">
           <button 
             onClick={closeInputModal}
-            className="px-4 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 rounded-md transition-colors"
+            className="px-4 py-1.5 text-xs font-medium text-[var(--ke-text)] bg-[var(--ke-bg-hover)] hover:bg-[var(--ke-bg-active)] rounded-md transition-colors"
           >
             Cancel
           </button>
           <button 
             onClick={handleConfirm}
-            className="px-4 py-1.5 text-xs font-medium text-white bg-macos-active hover:bg-macos-activeHover rounded-md transition-colors shadow-sm"
+            className="px-4 py-1.5 text-xs font-medium text-[var(--ke-text)] bg-[var(--ke-accent)] hover:bg-[var(--ke-accent-hover)] rounded-md transition-colors shadow-sm"
           >
             OK
           </button>
