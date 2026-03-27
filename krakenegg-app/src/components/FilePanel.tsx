@@ -355,20 +355,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     hideContextMenu();
   }, [activeTab, side, setActiveSide, setCursorAndSelection, hideContextMenu]);
 
-  const handleDoubleClickWrapper = useCallback(async (e: React.MouseEvent, file: FileInfo) => {
-    // Cancel the pending single-click
-    if (clickTimerRef.current) {
-      clearTimeout(clickTimerRef.current);
-      clickTimerRef.current = null;
-    }
-    pendingClickRef.current = null;
-    // Now handle the double-click
-    handleDoubleClick(e, file);
-  }, [handleDoubleClick]);
-
   const handleDoubleClick = useCallback(async (_e: React.MouseEvent, file: FileInfo) => {
     if (!file || file.name === '..') {
-      // Double-click on ".." → go up
       if (activeTab && activeTab.path !== '/') {
         const parentPath = activeTab.path.substring(0, activeTab.path.lastIndexOf('/')) || '/';
         setPath(side, parentPath);
@@ -391,6 +379,15 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     }
     hideContextMenu();
   }, [activeTab, side, setPath, hideContextMenu]);
+
+  const handleDoubleClickWrapper = useCallback(async (e: React.MouseEvent, file: FileInfo) => {
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+      clickTimerRef.current = null;
+    }
+    pendingClickRef.current = null;
+    handleDoubleClick(e, file);
+  }, [handleDoubleClick]);
 
   const handleUpDir = () => {
     if (!activeTab) return;
@@ -873,7 +870,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
            )}
         </div>
 
-        <div className="grid text-[11px] px-3 py-0.5 text-macos-textSecondary sticky top-0 z-10 backdrop-blur-sm select-none" style={{ borderTop: '1px solid var(--ke-border-subtle)', backgroundColor: 'var(--ke-bg-secondary)' }} style={{ gridTemplateColumns: gridTemplate }}>
+        <div className="grid text-[11px] px-3 py-0.5 text-macos-textSecondary sticky top-0 z-10 backdrop-blur-sm select-none" style={{ borderTop: '1px solid var(--ke-border-subtle)', backgroundColor: 'var(--ke-bg-secondary)', gridTemplateColumns: gridTemplate }}>
             {layout.columns.map((col, index) => (
                 <div 
                     key={col} 
