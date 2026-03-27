@@ -37,7 +37,7 @@ export const useStore = create<AppState>((set, get) => {
 
   const initialViewerState: ViewerState = { show: false, title: '', content: '', loading: false, error: null, isImage: false };
   const initialEditorState: EditorState = { show: false, title: '', path: '', content: '', loading: false, error: null, dirty: false };
-  const initialSearchState: SearchState = { show: false, query: '', searchContent: false, results: [], loading: false, error: null };
+  const initialSearchState: SearchState = { show: false, query: '', searchContent: false, searchMode: 'substring', results: [], loading: false, error: null };
   const initialConfirmationState: ConfirmationState = { show: false, title: '', message: '', showConflictOptions: false, onConfirm: () => {}, };
   const initialContextMenuState: ContextMenuState = { show: false, x: 0, y: 0, items: [], };
   const initialClipboardState: ClipboardState = { type: null, items: null, operation: null, sourcePanel: null, };
@@ -252,15 +252,16 @@ export const useStore = create<AppState>((set, get) => {
     hideSearch: () => set((state) => ({ search: { ...state.search, show: false, query: '' } })),
     setSearchQuery: (query: string) => set((state) => ({ search: { ...state.search, query } })),
     setSearchContent: (enabled: boolean) => set((state) => ({ search: { ...state.search, searchContent: enabled } })),
+    setSearchMode: (mode: 'substring' | 'glob' | 'regex') => set((state) => ({ search: { ...state.search, searchMode: mode } })),
     executeSearch: async () => {
       const currentAppState = get();
       const activePanel = currentAppState[currentAppState.activeSide];
       const activeTab = activePanel.tabs[activePanel.activeTabIndex];
-      const { query, searchContent } = currentAppState.search;
+      const { query, searchContent, searchMode } = currentAppState.search;
       if (!query || !activeTab) return;
       set((state) => ({ search: { ...state.search, loading: true, error: null } }));
       try {
-        const results = await invoke<FileInfo[]>('search_files', { query, path: activeTab.path, search_content: searchContent });
+        const results = await invoke<FileInfo[]>('search_files', { query, path: activeTab.path, searchContent, searchMode });
         set((state) => ({ search: { ...state.search, results, loading: false } }));
       } catch (err) {
         set((state) => ({ search: { ...state.search, error: String(err), loading: false } }));

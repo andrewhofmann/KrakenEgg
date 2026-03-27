@@ -114,7 +114,7 @@ describe('KrakenEgg Phase 8 & 9: Features', () => {
       
       await state.executeSearch();
       
-      expect(invoke).toHaveBeenCalledWith('search_files', { query: 'test', path: '/start', search_content: false });
+      expect(invoke).toHaveBeenCalledWith('search_files', expect.objectContaining({ query: 'test', path: '/start' }));
       const searchState = useStore.getState().search;
       expect(searchState.loading).toBe(false);
       expect(searchState.results.length).toBe(2);

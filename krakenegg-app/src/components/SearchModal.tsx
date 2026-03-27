@@ -5,10 +5,11 @@ import { formatSize } from "../utils/format";
 import { getFileIcon, getFileIconColor } from "../utils/fileIcons";
 
 export const SearchModal = () => {
-  const { show, query, results, loading, error, searchContent } = useStore((state) => state.search);
+  const { show, query, results, loading, error, searchContent, searchMode } = useStore((state) => state.search);
   const hideSearch = useStore((state) => state.hideSearch);
   const setSearchQuery = useStore((state) => state.setSearchQuery);
   const setSearchContent = useStore((state) => state.setSearchContent);
+  const setSearchMode = useStore((state) => state.setSearchMode);
   const executeSearch = useStore((state) => state.executeSearch);
   const setPath = useStore((state) => state.setPath);
   const activeSide = useStore((state) => state.activeSide);
@@ -82,15 +83,32 @@ export const SearchModal = () => {
             </button>
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-white/80 cursor-pointer select-none w-fit">
-            <input
-              type="checkbox"
-              checked={searchContent}
-              onChange={(e) => setSearchContent(e.target.checked)}
-              className="accent-macos-active"
-            />
-            Search file content
-          </label>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-white/80 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={searchContent}
+                onChange={(e) => setSearchContent(e.target.checked)}
+                className="accent-macos-active"
+              />
+              Search content
+            </label>
+            <div className="flex gap-1 ml-auto">
+              {(['substring', 'glob', 'regex'] as const).map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setSearchMode(mode)}
+                  className={`px-2 py-0.5 rounded text-[11px] transition-colors ${
+                    searchMode === mode
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80'
+                  }`}
+                >
+                  {mode === 'substring' ? 'Text' : mode === 'glob' ? 'Glob' : 'Regex'}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Results */}

@@ -39,7 +39,7 @@ describe('SearchModal', () => {
     expect(screen.getByText('Search Files')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Search filename or content...')).toBeInTheDocument();
     expect(screen.getByText('Search', { selector: 'button' })).toBeInTheDocument();
-    expect(screen.getByText('Search file content')).toBeInTheDocument();
+    expect(screen.getByText('Search content')).toBeInTheDocument();
   });
 
   it('calls setSearchQuery on input change', () => {
@@ -249,7 +249,7 @@ describe('SearchModal', () => {
 
     render(<SearchModal />);
 
-    const checkbox = screen.getByText('Search file content').closest('label')!.querySelector('input')!;
+    const checkbox = screen.getByText('Search content').closest('label')!.querySelector('input')!;
     fireEvent.click(checkbox);
 
     expect(setSearchContent).toHaveBeenCalledWith(true);

@@ -875,11 +875,38 @@ pub async fn load_app_state() -> Result<Option<AppStateConfig>, String> {
     load_state_from_file(&config_path)
 }
 
+use regex::Regex;
+
 #[tauri::command]
-pub async fn search_files(query: String, path: String, search_content: bool) -> Result<Vec<FileInfo>, String> {
+pub async fn search_files(query: String, path: String, search_content: bool, search_mode: Option<String>) -> Result<Vec<FileInfo>, String> {
     let mut files: Vec<FileInfo> = Vec::new();
     let query_lower = query.to_lowercase();
     let root_path = Path::new(&path);
+    let mode = search_mode.as_deref().unwrap_or("substring");
+
+    // Build matcher based on mode
+    let regex = match mode {
+        "regex" => {
+            Some(Regex::new(&query).map_err(|e| format!("Invalid regex: {}", e))?)
+        }
+        "glob" => {
+            // Convert glob to regex: * → .*, ? → ., escape other special chars
+            let pattern = query.chars().fold(String::new(), |mut acc, c| {
+                match c {
+                    '*' => acc.push_str(".*"),
+                    '?' => acc.push('.'),
+                    '.' | '+' | '(' | ')' | '[' | ']' | '{' | '}' | '^' | '$' | '|' | '\\' => {
+                        acc.push('\\');
+                        acc.push(c);
+                    }
+                    _ => acc.push(c),
+                }
+                acc
+            });
+            Some(Regex::new(&format!("(?i)^{}$", pattern)).map_err(|e| format!("Invalid glob: {}", e))?)
+        }
+        _ => None, // substring mode
+    };
 
     let walker = WalkDir::new(root_path).into_iter().filter_map(|e| e.ok());
 
@@ -887,11 +914,11 @@ pub async fn search_files(query: String, path: String, search_content: bool) -> 
         let entry_path = entry.path();
         let file_name_os = entry.file_name();
         let file_name = file_name_os.to_string_lossy();
-        
+
         if file_name.starts_with('.') {
             if entry.file_type().is_dir() {
                 if let Some(s) = entry.depth().checked_sub(1) {
-                    if s == 0 { continue; } 
+                    if s == 0 { continue; }
                 }
             } else {
                 continue;
@@ -900,8 +927,17 @@ pub async fn search_files(query: String, path: String, search_content: bool) -> 
 
         let mut match_found = false;
 
-        if file_name.to_lowercase().contains(&query_lower) {
-            match_found = true;
+        match (&regex, mode) {
+            (Some(rx), _) => {
+                if rx.is_match(&file_name) {
+                    match_found = true;
+                }
+            }
+            _ => {
+                if file_name.to_lowercase().contains(&query_lower) {
+                    match_found = true;
+                }
+            }
         }
 
         if !match_found && search_content && entry.file_type().is_file() && is_text_file_by_extension(entry_path) {

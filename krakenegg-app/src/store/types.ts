@@ -37,7 +37,8 @@ export interface TabState {
 
 export interface ViewerState { show: boolean; title: string; content: string; loading: boolean; error: string | null; isImage: boolean; }
 export interface EditorState { show: boolean; title: string; path: string; content: string; loading: boolean; error: string | null; dirty: boolean; }
-export interface SearchState { show: boolean; query: string; searchContent: boolean; results: FileInfo[]; loading: boolean; error: string | null; }
+export type SearchMode = 'substring' | 'glob' | 'regex';
+export interface SearchState { show: boolean; query: string; searchContent: boolean; searchMode: SearchMode; results: FileInfo[]; loading: boolean; error: string | null; }
 export interface ConfirmationState { show: boolean; title: string; message: string; showConflictOptions: boolean; onConfirm: (option?: string) => void; }
 export interface MultiRenameState { show: boolean; files: string[]; }
 export interface ContextMenuItem { label: string; action: () => void; disabled?: boolean; }
@@ -138,7 +139,7 @@ export interface AppState {
 
   viewer: ViewerState; setViewerContent: (title: string, content: string, isImage: boolean) => void; showViewer: (title: string, path: string) => Promise<void>; hideViewer: () => void;
   editor: EditorState; showEditor: (title: string, path: string) => Promise<void>; hideEditor: () => void; setEditorContent: (content: string) => void; saveEditorContent: () => Promise<void>;
-  search: SearchState; showSearch: () => void; hideSearch: () => void; setSearchQuery: (query: string) => void; setSearchContent: (enabled: boolean) => void; executeSearch: () => Promise<void>;
+  search: SearchState; showSearch: () => void; hideSearch: () => void; setSearchQuery: (query: string) => void; setSearchContent: (enabled: boolean) => void; setSearchMode: (mode: SearchMode) => void; executeSearch: () => Promise<void>;
   archive: {
       compressSelection: (side: 'left' | 'right') => void;
       extractSelection: (side: 'left' | 'right') => Promise<void>;
