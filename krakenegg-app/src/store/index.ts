@@ -187,6 +187,7 @@ export const useStore = create<AppState>((set, get) => {
 
   const cursorActions = {
     setCursor: (side: 'left' | 'right', index: number) => set((state) => updateActiveTab(state, side, () => ({ cursorIndex: index }))),
+    setCursorAndSelection: (side: 'left' | 'right', cursor: number, selection: number[]) => set((state) => updateActiveTab(state, side, () => ({ cursorIndex: cursor, selection }))),
     moveCursor: (side: 'left' | 'right', delta: number) => set((state) => updateActiveTab(state, side, (tab) => {
       const showHidden = state.preferences.general.showHiddenFiles;
       const files = getProcessedFiles(tab.files, state[side].layout, tab.filterQuery, showHidden);

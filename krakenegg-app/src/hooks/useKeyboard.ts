@@ -43,6 +43,7 @@ export function useKeyboard() {
         pasteFiles,
         setSelection,
         setCursor,
+        setCursorAndSelection,
         setPath,
         showViewer,
         showEditor,
@@ -319,33 +320,32 @@ export function useKeyboard() {
           const minIdx = activeTab.path === "/" ? 0 : -1;
           const upIndex = Math.max(minIdx, activeTab.cursorIndex - 1);
           if (e.shiftKey) {
-             const newSelection = [...activeTab.selection];
-             if (!newSelection.includes(upIndex)) newSelection.push(upIndex);
+             const newSel = [...activeTab.selection];
+             if (!newSel.includes(upIndex)) newSel.push(upIndex);
+             setCursorAndSelection(activeSide, upIndex, newSel);
+          } else if (e.ctrlKey || e.metaKey) {
              setCursor(activeSide, upIndex);
-             setSelection(activeSide, newSelection);
           } else {
-             setCursor(activeSide, upIndex);
-             if (!e.ctrlKey && !e.metaKey) setSelection(activeSide, [upIndex]);
+             setCursorAndSelection(activeSide, upIndex, [upIndex]);
           }
           break;
         }
         case 'ArrowDown': {
           e.preventDefault();
-          // Use processedFiles length for proper bounds (respects filters/hidden files)
           const showHidden = state.preferences.general.showHiddenFiles;
           const panel = state[activeSide];
           const processed = getProcessedFiles(activeTab.files, panel.layout, activeTab.filterQuery, showHidden);
           const maxIdx = processed.length - 1;
           const downIndex = Math.min(maxIdx, activeTab.cursorIndex + 1);
-          if (downIndex < 0) break; // empty list
+          if (downIndex < 0) break;
           if (e.shiftKey) {
-             const newSelection = [...activeTab.selection];
-             if (!newSelection.includes(downIndex)) newSelection.push(downIndex);
+             const newSel = [...activeTab.selection];
+             if (!newSel.includes(downIndex)) newSel.push(downIndex);
+             setCursorAndSelection(activeSide, downIndex, newSel);
+          } else if (e.ctrlKey || e.metaKey) {
              setCursor(activeSide, downIndex);
-             setSelection(activeSide, newSelection);
           } else {
-             setCursor(activeSide, downIndex);
-             if (!e.ctrlKey && !e.metaKey) setSelection(activeSide, [downIndex]);
+             setCursorAndSelection(activeSide, downIndex, [downIndex]);
           }
           break;
         }

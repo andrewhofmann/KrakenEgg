@@ -135,6 +135,7 @@ export interface AppState {
   // Cursor
   moveCursor: (side: 'left' | 'right', delta: number) => void;
   setCursor: (side: 'left' | 'right', index: number) => void;
+  setCursorAndSelection: (side: 'left' | 'right', cursor: number, selection: number[]) => void;
   toggleSelection: (side: 'left' | 'right') => void;
 
   viewer: ViewerState; setViewerContent: (title: string, content: string, isImage: boolean) => void; showViewer: (title: string, path: string) => Promise<void>; hideViewer: () => void;
