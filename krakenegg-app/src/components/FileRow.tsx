@@ -63,7 +63,7 @@ export const FileRow = memo(({
           case 'ext':
               return (
                   <div className={clsx("text-right tabular-nums h-full flex items-center justify-end overflow-hidden pr-2", textColorClass)}>
-                      <SmartTooltip text={file.is_dir ? "" : getExtension(file.name)} className="pt-0.5" />
+                      <SmartTooltip text={file.is_dir ? "" : (file.extension || getExtension(file.name))} className="pt-0.5" />
                   </div>
               );
           case 'size':
@@ -100,7 +100,7 @@ export const FileRow = memo(({
           ? "bg-[#0058D0] text-white" 
           : isActive ? "text-white hover:bg-white/5" : "text-gray-400",
         
-        isDragTarget && "bg-blue-500/20 ring-1 ring-blue-500 z-20",
+        isDragTarget && "bg-blue-500/20 ring-2 ring-blue-400 z-20 rounded",
         isCursor && isActive && !isDragTarget && !isSelected && "ring-1 ring-white/20 z-10"
       )}
     >

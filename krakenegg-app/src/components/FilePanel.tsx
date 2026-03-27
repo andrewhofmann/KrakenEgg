@@ -785,7 +785,17 @@ import { formatSize } from "../utils/format";
       </div>
 
       <div className="flex-1 overflow-hidden relative">
-        {activeTab.loading && <div className="p-8 text-center text-macos-textSecondary text-xs animate-pulse">Loading items...</div>}
+        {activeTab.loading && (
+          <div className="p-2 space-y-0.5 animate-pulse">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex items-center px-3 gap-2" style={{ height: preferences.appearance.rowHeight }}>
+                <div className="w-4 h-3.5 bg-white/5 rounded" />
+                <div className="h-3 bg-white/5 rounded" style={{ width: `${45 + (i * 7) % 40}%` }} />
+                <div className="w-10 h-3 bg-white/5 rounded ml-auto" />
+              </div>
+            ))}
+          </div>
+        )}
         {activeTab.error && <div className="p-4 m-2 rounded bg-red-500/10 border border-red-500/20 text-red-200 text-xs"><div className="font-bold mb-1">Access Error</div>{activeTab.error}<button onClick={handleUpDir} className="block mt-2 text-white bg-white/10 px-2 py-1 rounded hover:bg-white/20 transition-colors">Go Up</button></div>}
         {!activeTab.loading && !activeTab.error && (
           <>

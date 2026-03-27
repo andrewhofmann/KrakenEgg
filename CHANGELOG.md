@@ -16,6 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clickable breadcrumb path navigation bar
 - Status bar with folder/file count and selection size
 - Symlink indicator on file names
+- Byte-based progress tracking for file operations (bytes_done/bytes_total)
+- On-demand folder size calculation (Space key on folder, like Total Commander)
+- Invert selection (Cmd+Shift+A)
+- Select by glob pattern (Cmd+Shift+P) with *, ?, {a,b} syntax
+- Deselect all (Cmd+D)
+- Loading skeleton animation replacing "Loading items..." text
+- Improved drag-drop visual feedback (rounded highlight ring)
+- Pre-computed file extension from Rust (avoids frontend recomputation)
 - Git version control with develop/feature branching strategy
 - Comprehensive test suite: 259 tests (216 frontend unit, 33 Rust unit, 10 E2E)
 - Vitest test infrastructure with jsdom, @testing-library/react, coverage reporting
