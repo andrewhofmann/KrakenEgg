@@ -918,6 +918,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
                   rowCount={processedFiles.length}
                   rowHeight={preferences.appearance.rowHeight}
                   rowComponent={RowComponent}
+                  rowProps={{}}
                 />
               )}</AutoSizer>
             ) : (
