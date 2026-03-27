@@ -670,9 +670,9 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     setRenamingIndex(null);
   }, []);
 
-  // Row component for react-window FixedSizeList
-  const Row = useCallback(({ data, index, style: rowStyle }: { data: FileInfo[]; index: number; style: React.CSSProperties }) => {
-    const file = data[index];
+  // Row component for react-window v2 List
+  const RowComponent = useCallback(({ index, style: rowStyle }: { index: number; style: React.CSSProperties }) => {
+    const file = processedFiles[index];
     if (!file) return null;
     return (
       <FileRow
@@ -697,7 +697,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         onRenameCancel={handleRenameCancel}
       />
     );
-  }, [activeTab?.selection, activeTab?.cursorIndex, isActive, dragTargetIndex, renamingIndex, layout.columns, handleFileClick, handleDoubleClick, handleContextMenu, handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleDrop, handleRenameSubmit, handleRenameCancel]);
+  }, [processedFiles, activeTab?.selection, activeTab?.cursorIndex, isActive, dragTargetIndex, renamingIndex, layout.columns, handleFileClick, handleDoubleClick, handleContextMenu, handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleDrop, handleRenameSubmit, handleRenameCancel]);
 
   // -- CONDITIONAL RENDER MUST BE AT END --
   if (!isActive && quickView) {
@@ -911,7 +911,15 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
               </div>
             )}
             {processedFiles.length > 0 ? (
-              <AutoSizer>{({ height, width }: { height: number; width: number }) => (<FixedSizeList ref={listRef} height={height - (activeTab.path !== "/" ? 24 : 0)} itemCount={processedFiles.length} itemSize={preferences.appearance.rowHeight} width={width} itemData={processedFiles}>{Row}</FixedSizeList>)}</AutoSizer>
+              <AutoSizer>{({ height, width }: { height: number; width: number }) => (
+                <FixedSizeList
+                  listRef={listRef}
+                  style={{ height: height - (activeTab.path !== "/" ? 24 : 0), width }}
+                  rowCount={processedFiles.length}
+                  rowHeight={preferences.appearance.rowHeight}
+                  rowComponent={RowComponent}
+                />
+              )}</AutoSizer>
             ) : (
               <div className="flex-1 flex items-center justify-center p-8">
                 <div className="text-center" style={{ color: 'var(--ke-text-tertiary)' }}>
