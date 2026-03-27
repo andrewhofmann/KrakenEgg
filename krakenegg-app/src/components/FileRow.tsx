@@ -82,9 +82,13 @@ export const FileRow = memo(({
   };
 
   return (
-    <div 
+    <div
       style={mergedStyle}
       id={`row-${index}`}
+      role="row"
+      aria-selected={isSelected}
+      aria-label={`${file.is_dir ? 'Folder' : 'File'}: ${file.name}`}
+      tabIndex={isCursor ? 0 : -1}
       onClick={(e) => { e.stopPropagation(); onClick(e, index); }}
       onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick(e, file); }}
       onContextMenu={(e) => onContextMenu(e, file, index)}

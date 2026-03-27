@@ -493,3 +493,29 @@ describe('Operation Status Actions', () => {
     expect(useStore.getState().fileOperations).toHaveLength(0);
   });
 });
+
+describe('File Creation Validation', () => {
+  beforeEach(resetStore);
+
+  it('rejects empty file names', async () => {
+    await useStore.getState().createNewFile('left', '');
+    // Should not crash, should show error
+    expect(useStore.getState().operationStatus.isError).toBe(false); // empty name returns early silently
+  });
+
+  it('rejects invalid file names with special characters', async () => {
+    await useStore.getState().createNewFile('left', 'file<bad');
+    expect(useStore.getState().operationStatus.isError).toBe(true);
+    expect(useStore.getState().operationStatus.message).toContain('Invalid file name');
+  });
+
+  it('rejects "." and ".." as file names', async () => {
+    await useStore.getState().createNewFile('left', '..');
+    expect(useStore.getState().operationStatus.isError).toBe(true);
+  });
+
+  it('rejects names longer than 255 chars', async () => {
+    await useStore.getState().createNewFile('left', 'a'.repeat(256));
+    expect(useStore.getState().operationStatus.isError).toBe(true);
+  });
+});

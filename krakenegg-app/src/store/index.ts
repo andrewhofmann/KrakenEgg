@@ -538,11 +538,19 @@ export const useStore = create<AppState>((set, get) => {
       const currentAppState = get();
       const activeTab = currentAppState[side].tabs[currentAppState[side].activeTabIndex];
       if (!activeTab || !fileName) return;
-      const filePath = `${activeTab.path === "/" ? "" : activeTab.path}/${fileName}`;
+
+      // Validate file name
+      const trimmed = fileName.trim();
+      if (!trimmed || trimmed === '.' || trimmed === '..' || /[<>:"|?*\x00-\x1f]/.test(trimmed) || trimmed.length > 255) {
+        currentAppState.setOperationError(`Invalid file name: "${fileName}"`);
+        return;
+      }
+
+      const filePath = `${activeTab.path === "/" ? "" : activeTab.path}/${trimmed}`;
       try {
         await invoke('create_empty_file', { path: filePath });
         get().refreshPaths([activeTab.path]);
-        currentAppState.showOperationStatus(`File '${fileName}' created successfully.`);
+        currentAppState.showOperationStatus(`File '${trimmed}' created successfully.`);
       } catch (err) { currentAppState.setOperationError(`Failed to create file: ${err}`); }
     },
   };
