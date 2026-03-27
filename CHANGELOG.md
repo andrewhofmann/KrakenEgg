@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Status bar selection count bug (was using wrong file list for index mapping)
+- Archive extraction progress now shows item count instead of 0/0
+
+### Added
+- Inline rename: click Rename in context menu to edit filename in-place
+  (auto-selects name without extension, Enter saves, Escape cancels)
+- Glob search: wildcard patterns (*.txt, photo*, *.{js,ts})
+- Regex search: full regex support via regex crate
+- Search mode toggle (Text/Glob/Regex) in search modal UI
+- Status bar shows total size of selected files
+- Operations drawer shows item counts and completion status
+- Row component properly defined for react-window virtual list
+- FileRow imported into FilePanel (was previously embedded)
+
 ## [0.2.0] - 2026-03-26
 
 ### Fixed

@@ -1,6 +1,7 @@
 import { useStore } from '../store';
-import { X, ChevronUp, ChevronDown, Activity, AlertCircle } from 'lucide-react';
+import { X, ChevronUp, ChevronDown, Activity, AlertCircle, CheckCircle } from 'lucide-react';
 import { useState } from 'react';
+import { formatSize } from '../utils/format';
 import clsx from 'clsx';
 
 export const OperationsDrawer = () => {
@@ -71,8 +72,14 @@ export const OperationsDrawer = () => {
                                         <span className="truncate max-w-[200px]" title={op.currentPath}>
                                             {op.status === 'completed' ? 'Done' : op.currentPath || 'Preparing...'}
                                         </span>
-                                        <span>
-                                            {op.status === 'completed' ? '100%' : `${Math.round((op.current / (op.total || 1)) * 100)}%`}
+                                        <span className="tabular-nums">
+                                            {op.status === 'completed' ? (
+                                                <span className="text-green-400">Complete</span>
+                                            ) : op.total > 0 ? (
+                                                `${op.current}/${op.total} items · ${Math.round((op.current / op.total) * 100)}%`
+                                            ) : (
+                                                `${op.current} items`
+                                            )}
                                         </span>
                                     </div>
                                     <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
