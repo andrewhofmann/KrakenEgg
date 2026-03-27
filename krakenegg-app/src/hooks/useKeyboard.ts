@@ -342,6 +342,7 @@ export function useKeyboard() {
              if (!e.ctrlKey && !e.metaKey) setSelection(activeSide, [downIndex]);
           }
           break;
+        }
         case 'Home':
           e.preventDefault();
           {
