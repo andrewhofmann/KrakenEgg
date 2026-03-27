@@ -341,8 +341,17 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   }, [activeTab, side, setActiveSide, setCursorAndSelection, hideContextMenu]);
 
   const handleDoubleClick = useCallback(async (_e: React.MouseEvent, file: FileInfo) => {
+    if (!file || file.name === '..') {
+      // Double-click on ".." → go up
+      if (activeTab && activeTab.path !== '/') {
+        const parentPath = activeTab.path.substring(0, activeTab.path.lastIndexOf('/')) || '/';
+        setPath(side, parentPath);
+      }
+      hideContextMenu();
+      return;
+    }
     const isArchiveFile = /\.(zip|tar|gz|tgz)$/i.test(file.name);
-    
+
     if ((file.is_dir || isArchiveFile) && activeTab) {
       const newPath = activeTab.path === "/" ? `/${file.name}` : `${activeTab.path}/${file.name}`;
       setPath(side, newPath);

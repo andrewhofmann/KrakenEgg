@@ -115,6 +115,12 @@ export function useKeyboard() {
 
       if (!activeTab) return;
 
+      // Compute processedFiles ONCE — cursor indices refer to this sorted/filtered list
+      const _showHidden = state.preferences.general.showHiddenFiles;
+      const _panel = state[activeSide];
+      const visibleFiles = getProcessedFiles(activeTab.files, _panel.layout, activeTab.filterQuery, _showHidden);
+      const cursorFile = visibleFiles[activeTab.cursorIndex];
+
       // --- Hotkey handling based on stored hotkeys ---
       const handleHotkeyAction = async (actionId: HotkeyAction) => {
         e.preventDefault(); // Prevent default browser action for this hotkey
@@ -190,7 +196,7 @@ export function useKeyboard() {
             deleteSelectedFiles(activeSide);
             break;
           case 'rename':
-            const currentFile = activeTab.files[activeTab.cursorIndex];
+            const currentFile = cursorFile;
             if (!currentFile || currentFile.name === "..") return;
             requestInput(
               "Rename Item",
@@ -213,7 +219,7 @@ export function useKeyboard() {
             );
             break;
           case 'view_file':
-            const fileToView = activeTab.files[activeTab.cursorIndex];
+            const fileToView = cursorFile;
             if (fileToView && !fileToView.is_dir && fileToView.name !== "..") {
               const filePath = joinPath(activeTab.path, fileToView.name);
               showViewer(fileToView.name, filePath);
@@ -222,7 +228,7 @@ export function useKeyboard() {
             }
             break;
           case 'edit_file':
-            const fileToEdit = activeTab.files[activeTab.cursorIndex];
+            const fileToEdit = cursorFile;
             if (fileToEdit && !fileToEdit.is_dir && fileToEdit.name !== "..") {
               const filePath = joinPath(activeTab.path, fileToEdit.name);
               showEditor(fileToEdit.name, filePath);
@@ -234,7 +240,7 @@ export function useKeyboard() {
             compressSelection(activeSide);
             break;
           case 'extract_selection':
-            const fileToExtract = activeTab.files[activeTab.cursorIndex];
+            const fileToExtract = cursorFile;
             if (fileToExtract && !fileToExtract.is_dir && (fileToExtract.name.endsWith('.zip') || fileToExtract.name.endsWith('.tar.gz') || fileToExtract.name.endsWith('.tgz') || fileToExtract.name.endsWith('.tar'))) {
                 requestConfirmation(
                 "Extract Archive",
@@ -246,12 +252,12 @@ export function useKeyboard() {
             }
             break;
           case 'select_all': {
-            const allIndices = activeTab.files.map((_: unknown, i: number) => i);
+            const allIndices = visibleFiles.map((_: unknown, i: number) => i);
             setSelection(activeSide, allIndices);
             break;
           }
           case 'invert_selection': {
-            const allFileIndices = activeTab.files.map((_: unknown, i: number) => i);
+            const allFileIndices = visibleFiles.map((_: unknown, i: number) => i);
             const currentSelection = new Set(activeTab.selection);
             const inverted = allFileIndices.filter((i: number) => !currentSelection.has(i));
             setSelection(activeSide, inverted);
@@ -332,10 +338,7 @@ export function useKeyboard() {
         }
         case 'ArrowDown': {
           e.preventDefault();
-          const showHidden = state.preferences.general.showHiddenFiles;
-          const panel = state[activeSide];
-          const processed = getProcessedFiles(activeTab.files, panel.layout, activeTab.filterQuery, showHidden);
-          const maxIdx = processed.length - 1;
+          const maxIdx = visibleFiles.length - 1;
           const downIndex = Math.min(maxIdx, activeTab.cursorIndex + 1);
           if (downIndex < 0) break;
           if (e.shiftKey) {
@@ -371,7 +374,7 @@ export function useKeyboard() {
           break;
         case ' ': // Space - Preview file OR calculate folder size (like TC)
           e.preventDefault();
-          const fileToPreview = activeTab.files[activeTab.cursorIndex];
+          const fileToPreview = cursorFile;
           if (fileToPreview && fileToPreview.name !== "..") {
             const filePath = joinPath(activeTab.path, fileToPreview.name);
             if (fileToPreview.is_dir) {
@@ -408,7 +411,7 @@ export function useKeyboard() {
               break;
           }
 
-          const file = activeTab.files[activeTab.cursorIndex];
+          const file = cursorFile;
           if (file) {
             const isArchiveFile = /\.(zip|tar|gz|tgz)$/i.test(file.name);
             if (file.is_dir || isArchiveFile) {
