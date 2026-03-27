@@ -226,8 +226,9 @@ describe('SearchModal', () => {
 
     render(<SearchModal />);
 
-    expect(screen.getByText('test-folder')).toBeInTheDocument();
-    expect(screen.getByText('test-file.txt')).toBeInTheDocument();
+    // Text may be split by highlight spans, so use partial matching
+    expect(screen.getByText(/test-folder/)).toBeInTheDocument();
+    expect(screen.getByText(/test-file\.txt/)).toBeInTheDocument();
     expect(screen.getByText('2.0 KB')).toBeInTheDocument();
   });
 

@@ -594,33 +594,54 @@ pub async fn delete_items_with_progress(
         remove_files_from_zip(&archive, &targets).map_err(|e| e.to_string())?;
     }
 
-    let mut _total = physical_deletions.len();
+    // Pre-calculate total bytes for progress
+    let mut bytes_total: u64 = 0;
+    for path in &physical_deletions {
+        let p = Path::new(path);
+        if p.is_file() {
+            bytes_total += fs::metadata(p).map(|m| m.len()).unwrap_or(0);
+        } else if p.is_dir() {
+            for entry in WalkDir::new(p) {
+                if let Ok(e) = entry {
+                    if e.path().is_file() {
+                        bytes_total += e.metadata().map(|m| m.len()).unwrap_or(0);
+                    }
+                }
+            }
+        }
+    }
+
     let mut current = 0;
+    let mut bytes_done: u64 = 0;
 
     for path in physical_deletions {
-        if token.load(Ordering::Relaxed) { break; } 
+        if token.load(Ordering::Relaxed) { break; }
         let p = Path::new(&path);
-        
+
         if p.is_file() {
+            let file_size = fs::metadata(p).map(|m| m.len()).unwrap_or(0);
             if let Err(e) = fs::remove_file(p) { return Err(e.to_string()); }
             current += 1;
-            let _ = window.emit("progress", ProgressPayload { id: id.clone(), total: 0, current, path: path.clone(), bytes_done: 0, bytes_total: 0 });
+            bytes_done += file_size;
+            let _ = window.emit("progress", ProgressPayload { id: id.clone(), total: 0, current, path: path.clone(), bytes_done, bytes_total });
         } else if p.is_dir() {
             for entry in WalkDir::new(p).contents_first(true) {
-                if token.load(Ordering::Relaxed) { break; } 
+                if token.load(Ordering::Relaxed) { break; }
                 let entry = entry.map_err(|e| e.to_string())?;
                 let entry_path = entry.path();
-                
+
                 if entry_path.is_dir() {
                     fs::remove_dir(entry_path).map_err(|e| e.to_string())?;
                 } else {
+                    let file_size = entry.metadata().map(|m| m.len()).unwrap_or(0);
                     fs::remove_file(entry_path).map_err(|e| e.to_string())?;
+                    bytes_done += file_size;
                 }
-                
+
                 current += 1;
                 if current % 10 == 0 {
                     let _ = window.emit("progress", ProgressPayload {
-                        id: id.clone(), total: 0, current, path: entry_path.to_string_lossy().to_string(), bytes_done: 0, bytes_total: 0
+                        id: id.clone(), total: 0, current, path: entry_path.to_string_lossy().to_string(), bytes_done, bytes_total
                     });
                 }
             }

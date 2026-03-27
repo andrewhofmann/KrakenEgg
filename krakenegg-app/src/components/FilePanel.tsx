@@ -17,6 +17,7 @@ import { formatSize } from "../utils/format";
   }, [activeTab?.files, layout, activeTab?.filterQuery, preferences.general.showHiddenFiles]);
 
   const searchBuffer = useRef("");  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [typeAheadDisplay, setTypeAheadDisplay] = useState("");
 
   // Sync CSS variables from Store State on Mount/Update
   useEffect(() => {
@@ -82,8 +83,10 @@ import { formatSize } from "../utils/format";
             }
         }
 
+        setTypeAheadDisplay(searchBuffer.current);
         searchTimeout.current = setTimeout(() => {
             searchBuffer.current = "";
+            setTypeAheadDisplay("");
         }, 400); 
     };
 
@@ -807,6 +810,12 @@ import { formatSize } from "../utils/format";
           </>
         )}
       </div>
+      {/* Type-ahead search indicator */}
+      {typeAheadDisplay && isActive && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/80 border border-white/20 rounded-md px-3 py-1 text-sm text-yellow-300 font-mono shadow-lg z-30 animate-in fade-in duration-100">
+          {typeAheadDisplay}
+        </div>
+      )}
       {/* Status Bar */}
       <div className={clsx("px-3 py-1 text-[10px] font-medium border-t flex items-center justify-between select-none shrink-0", isActive ? "border-white/10 text-gray-400" : "border-white/5 text-gray-500")}>
         {(() => {

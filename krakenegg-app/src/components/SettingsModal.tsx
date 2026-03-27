@@ -72,7 +72,9 @@ export const SettingsModal = () => {
 
   const handleLoadLayout = async (name: string) => {
       try {
-          const loadedState: any = await invoke('load_named_layout', { name });
+          interface SavedPanelConfig { tabs: { id: string; path: string; history: string[]; history_index: number }[]; active_tab_index: number; }
+          interface SavedLayoutState { left: SavedPanelConfig; right: SavedPanelConfig; active_side: string; }
+          const loadedState = await invoke<SavedLayoutState | null>('load_named_layout', { name });
           if (loadedState && loadedState.left && loadedState.right) {
               const createTab = (path: string) => ({
                   id: Math.random().toString(36).substring(7),
