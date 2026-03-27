@@ -6,18 +6,45 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Dark theme (default) */
+  --ke-bg: rgba(30, 30, 32, 1);
+  --ke-bg-panel: rgba(30, 30, 32, 0.4);
+  --ke-bg-secondary: rgba(40, 40, 45, 0.3);
+  --ke-bg-glass: rgba(20, 20, 20, 0.6);
+  --ke-bg-hover: rgba(255, 255, 255, 0.05);
+  --ke-text: #FFFFFF;
+  --ke-text-secondary: rgba(255, 255, 255, 0.55);
+  --ke-border: rgba(255, 255, 255, 0.08);
+  --ke-selection: rgba(0, 122, 255, 0.2);
+  --ke-scrollbar-thumb: rgba(255, 255, 255, 0.2);
+  --ke-scrollbar-hover: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="light"] {
+  --ke-bg: #F5F5F7;
+  --ke-bg-panel: rgba(255, 255, 255, 0.8);
+  --ke-bg-secondary: rgba(240, 240, 245, 0.9);
+  --ke-bg-glass: rgba(255, 255, 255, 0.85);
+  --ke-bg-hover: rgba(0, 0, 0, 0.04);
+  --ke-text: #1D1D1F;
+  --ke-text-secondary: rgba(0, 0, 0, 0.55);
+  --ke-border: rgba(0, 0, 0, 0.1);
+  --ke-selection: rgba(0, 122, 255, 0.15);
+  --ke-scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  --ke-scrollbar-hover: rgba(0, 0, 0, 0.35);
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: transparent; /* Allows window vibrancy to show through if configured */
-  color: white;
-  overflow: hidden; /* Prevent body scroll, we handle it in panels */
-  user-select: none; /* Application-like behavior */
+  background-color: var(--ke-bg);
+  color: var(--ke-text);
+  overflow: hidden;
+  user-select: none;
 }
 
-/* Custom Scrollbar for macOS look */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -28,17 +55,16 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--ke-scrollbar-thumb);
   border-radius: 5px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: var(--ke-scrollbar-hover);
 }
 
-/* Hide scrollbar when not hovering (optional, but cleaner) */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

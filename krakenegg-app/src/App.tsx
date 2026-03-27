@@ -25,6 +25,15 @@ function App() {
   const activeSide = useStore(state => state.activeSide);
   const activePanelState = useStore(state => state[activeSide]);
   const { contextMenu, hideContextMenu, settingsModal } = useStore(state => state);
+  const theme = useStore(state => state.preferences.appearance.theme);
+
+  // Apply theme to document
+  useEffect(() => {
+    const resolvedTheme = theme === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : theme;
+    document.documentElement.setAttribute('data-theme', resolvedTheme);
+  }, [theme]);
 
   useEffect(() => {
     // Load saved state on startup, then set home directory defaults if needed

@@ -61,6 +61,7 @@ export interface Preferences {
         rowHeight: number;
         showGridLines: boolean;
         compactMode: boolean;
+        theme: 'dark' | 'light' | 'system';
     };
     behavior: {
         mouseSelection: 'standard' | 'commander';

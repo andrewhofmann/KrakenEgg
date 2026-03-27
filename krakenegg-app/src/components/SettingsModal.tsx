@@ -227,6 +227,24 @@ export const SettingsModal = () => {
                 {activeTab === 'appearance' && (
                     <div className="space-y-6 max-w-lg">
                         <div className="space-y-4">
+                            <h4 className="text-sm font-medium text-blue-400 border-b border-white/10 pb-2">Theme</h4>
+                            <div className="flex gap-2">
+                                {(['dark', 'light', 'system'] as const).map(t => (
+                                    <button
+                                        key={t}
+                                        onClick={() => setPreference('appearance', 'theme', t)}
+                                        className={`px-4 py-2 rounded text-sm capitalize transition-colors ${
+                                            preferences.appearance.theme === t
+                                                ? 'bg-blue-600 text-white'
+                                                : 'bg-white/5 hover:bg-white/10 text-gray-300'
+                                        }`}
+                                    >
+                                        {t}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="space-y-4">
                             <h4 className="text-sm font-medium text-blue-400 border-b border-white/10 pb-2">List View</h4>
                             
                             <div className="grid grid-cols-2 gap-4">

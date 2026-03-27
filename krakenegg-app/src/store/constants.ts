@@ -2,7 +2,7 @@ import { Preferences, HotkeyState, PaneLayout, TabState, FileInfo, SortColumn } 
 
 export const DEFAULT_PREFERENCES: Preferences = {
     general: { showHiddenFiles: false, confirmDelete: true, saveHistoryOnExit: true },
-    appearance: { fontSize: 13, rowHeight: 22, showGridLines: true, compactMode: false },
+    appearance: { fontSize: 13, rowHeight: 22, showGridLines: true, compactMode: false, theme: 'dark' },
     behavior: { mouseSelection: 'standard' }
 };
 
