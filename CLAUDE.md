@@ -154,6 +154,14 @@ cargo fmt              # Rust formatting
 
 Run `pnpm test` and `pnpm test:rust` to verify all tests pass before committing.
 
+### Runtime Verification Rule
+**CRITICAL**: Unit tests and E2E tests run in jsdom/headless environments that do NOT catch runtime import errors, missing component declarations, or Tauri API mismatches. Before presenting changes to the user:
+1. Run `pnpm tauri dev` and verify the app window opens and renders content
+2. Check the Vite console for `Pre-transform error` messages
+3. Check the Tauri console for `JS Error` messages
+4. If the app shows a blank window, there is a runtime error — fix before committing
+5. Run `tsc --noEmit` to catch TypeScript errors that Vitest transpilation skips
+
 ### Testing and Quality Assurance Protocol
 
 **CRITICAL REQUIREMENT**: Every time you compile a new set of changes for the user, you MUST:
