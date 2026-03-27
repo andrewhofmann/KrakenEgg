@@ -700,12 +700,10 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   }, [processedFiles, activeTab?.selection, activeTab?.cursorIndex, isActive, dragTargetIndex, renamingIndex, layout.columns, handleFileClick, handleDoubleClick, handleContextMenu, handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleDrop, handleRenameSubmit, handleRenameCancel]);
 
   // -- CONDITIONAL RENDER MUST BE AT END --
-  if (!isActive && quickView) {
-      return <QuickInfoPanel side={side} />;
-  }
+  const showQuickView = !isActive && quickView;
 
   return (
-    <div 
+    <div
       ref={containerRef} onClick={() => setActiveSide(side)} onContextMenu={handlePanelContextMenu} onDragOver={(e) => { e.preventDefault(); if (isDraggingFiles) { e.dataTransfer.dropEffect = e.altKey ? "copy" : "move"; setPanelDragOver(true); } }} onDragLeave={() => setPanelDragOver(false)} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setPanelDragOver(false); setIsDraggingFiles(false); }}
       className={clsx("flex-1 flex flex-col h-full overflow-hidden transition-all duration-200 border-r border-macos-border last:border-r-0 relative group", isActive ? "bg-macos-bg" : "bg-macos-bg/30 saturate-50 opacity-70", panelDragOver && "border-macos-active border-2")}
       style={{ gridTemplateColumns: gridTemplate, fontSize: `${preferences.appearance.fontSize}px` } as React.CSSProperties}
@@ -882,6 +880,9 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       </div>
 
       <div className="flex-1 overflow-hidden relative">
+        {showQuickView ? (
+          <QuickInfoPanel side={side} />
+        ) : <>
         {activeTab.loading && (
           <div className="p-2 space-y-0.5 animate-pulse">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -941,6 +942,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
             )}
           </>
         )}
+        </>}
       </div>
       {/* Type-ahead search indicator */}
       {typeAheadDisplay && isActive && (
