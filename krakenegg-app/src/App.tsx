@@ -17,6 +17,8 @@ import { ContextMenu } from "./components/ContextMenu"; // Import ContextMenu
 import { OperationsDrawer } from "./components/OperationsDrawer";
 import { MultiRenameModal } from "./components/MultiRenameModal";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { getProcessedFiles } from "./store";
+import { formatSize } from "./utils/format";
 
 import { listen } from '@tauri-apps/api/event';
 
@@ -118,19 +120,22 @@ function App() {
           {(() => {
              const activeTab = activePanelState.tabs[activePanelState.activeTabIndex];
              if (!activeTab) return "0 items selected";
-             
-             const filteredFiles = activeTab.files.filter(f => !activeTab.filterQuery || f.name.toLowerCase().includes(activeTab.filterQuery.toLowerCase()));
-             const selectedItems = activeTab.selection.map(i => filteredFiles[i]).filter(Boolean);
-             
+
+             const preferences = useStore.getState().preferences;
+             const processedFiles = getProcessedFiles(activeTab.files, activePanelState.layout, activeTab.filterQuery, preferences.general.showHiddenFiles);
+             const selectedItems = activeTab.selection.map(i => processedFiles[i]).filter(Boolean);
+
              if (selectedItems.length === 0) return "0 items selected";
-             
+
              const folderCount = selectedItems.filter(f => f.is_dir).length;
              const fileCount = selectedItems.length - folderCount;
-             
+             const totalSize = selectedItems.reduce((sum, f) => sum + (f.is_dir ? 0 : f.size), 0);
+
              const parts = [];
              if (folderCount > 0) parts.push(`${folderCount} folder${folderCount !== 1 ? 's' : ''}`);
              if (fileCount > 0) parts.push(`${fileCount} file${fileCount !== 1 ? 's' : ''}`);
-             return `${parts.join(', ')} selected`;
+             const sizeStr = totalSize > 0 ? ` (${formatSize(totalSize)})` : '';
+             return `${parts.join(', ')} selected${sizeStr}`;
           })()}
         </div>
       </div>

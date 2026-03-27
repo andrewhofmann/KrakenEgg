@@ -345,12 +345,12 @@ pub async fn copy_items_with_progress(
         // --- Archive Extraction Logic (Virtual Source -> Physical Dest) ---
         if let Some((archive_path, internal_path)) = parse_archive_path(&src) {
             if !internal_path.as_os_str().is_empty() {
-                extract_entry(&archive_path, &internal_path, &target_root, 
+                extract_entry(&archive_path, &internal_path, &target_root,
                     |path| {
                         current += 1;
                         if current % 5 == 0 {
                             let _ = window.emit("progress", ProgressPayload {
-                                id: id.clone(), total: 0, current, path: path.to_string(), bytes_done: 0, bytes_total: 0
+                                id: id.clone(), total: current + 1, current, path: path.to_string(), bytes_done: 0, bytes_total: 0
                             });
                         }
                     },
