@@ -365,6 +365,10 @@ export function useKeyboard() {
             if (!e.shiftKey) setSelection(activeSide, [lastIndex]);
           }
           break;
+        case 'Delete': // Forward-delete key (Fn+Backspace on Mac) — also triggers delete
+          e.preventDefault();
+          deleteSelectedFiles(activeSide);
+          break;
         case ' ': // Space - Preview file OR calculate folder size (like TC)
           e.preventDefault();
           const fileToPreview = activeTab.files[activeTab.cursorIndex];

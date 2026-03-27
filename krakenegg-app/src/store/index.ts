@@ -486,11 +486,21 @@ export const useStore = create<AppState>((set, get) => {
     deleteSelectedFiles: (side: 'left' | 'right') => {
         const state = get();
         const activeTab = state[side].tabs[state[side].activeTabIndex];
+        if (!activeTab) return;
         const showHidden = state.preferences.general.showHiddenFiles;
         const files = getProcessedFiles(activeTab.files, state[side].layout, activeTab.filterQuery, showHidden);
-        const sources = activeTab.selection.length > 0 
-            ? activeTab.selection.map(i => `${activeTab.path === "/" ? "" : activeTab.path}/${files[i].name}`)
-            : [`${activeTab.path === "/" ? "" : activeTab.path}/${files[activeTab.cursorIndex].name}`];
+
+        let sources: string[];
+        if (activeTab.selection.length > 0) {
+            sources = activeTab.selection
+                .map(i => files[i])
+                .filter(f => f && f.name !== '..')
+                .map(f => `${activeTab.path === "/" ? "" : activeTab.path}/${f.name}`);
+        } else {
+            const file = files[activeTab.cursorIndex];
+            if (!file || file.name === '..') return;
+            sources = [`${activeTab.path === "/" ? "" : activeTab.path}/${file.name}`];
+        }
         if (sources.length === 0) return;
         
         const confirm = state.preferences.general.confirmDelete;
