@@ -807,8 +807,9 @@ import { FileInfo } from "../store";
                     </div>
                     
                     {index < layout.columns.length - 1 && (
-                        <div 
-                            className="absolute right-0 top-0 bottom-0 w-2 -mr-1 cursor-col-resize z-20"
+                        <div
+                            className="absolute right-0 top-1 bottom-1 w-2 -mr-1 cursor-col-resize z-20 group/resize"
+                            style={{ borderRight: '1px solid var(--ke-border-subtle)' }}
                             onMouseDown={(e) => startResize(e, col, layout.columns[index + 1])}
                             onDoubleClick={(e) => handleHandleDoubleClick(e, col)}
                             onClick={(e) => e.stopPropagation()}
@@ -833,7 +834,15 @@ import { FileInfo } from "../store";
             ))}
           </div>
         )}
-        {activeTab.error && <div className="p-4 m-2 rounded bg-red-500/10 border border-red-500/20 text-red-200 text-xs"><div className="font-bold mb-1">Access Error</div>{activeTab.error}<button onClick={handleUpDir} className="block mt-2 text-white bg-white/10 px-2 py-1 rounded hover:bg-white/20 transition-colors">Go Up</button></div>}
+        {activeTab.error && (
+          <div className="p-4 m-3 rounded-lg text-sm" style={{ backgroundColor: 'var(--ke-error-bg)', border: '1px solid var(--ke-error)', color: 'var(--ke-error)' }}>
+            <div className="font-semibold mb-1">Cannot access this folder</div>
+            <div className="text-xs opacity-80 mb-3">{activeTab.error}</div>
+            <button onClick={handleUpDir} className="px-3 py-1.5 rounded-md text-xs font-medium" style={{ backgroundColor: 'var(--ke-bg-hover)', color: 'var(--ke-text)' }}>
+              Go to Parent Folder
+            </button>
+          </div>
+        )}
         {!activeTab.loading && !activeTab.error && (
           <>
             {activeTab.path !== "/" && (
@@ -842,7 +851,22 @@ import { FileInfo } from "../store";
                 {layout.columns.slice(1).map(c => <div key={c}></div>)}
               </div>
             )}
-            <AutoSizer>{({ height, width }: { height: number; width: number }) => (<FixedSizeList ref={listRef} height={height - (activeTab.path !== "/" ? 24 : 0)} itemCount={processedFiles.length} itemSize={preferences.appearance.rowHeight} width={width} itemData={processedFiles}>{Row}</FixedSizeList>)}</AutoSizer>
+            {processedFiles.length > 0 ? (
+              <AutoSizer>{({ height, width }: { height: number; width: number }) => (<FixedSizeList ref={listRef} height={height - (activeTab.path !== "/" ? 24 : 0)} itemCount={processedFiles.length} itemSize={preferences.appearance.rowHeight} width={width} itemData={processedFiles}>{Row}</FixedSizeList>)}</AutoSizer>
+            ) : (
+              <div className="flex-1 flex items-center justify-center p-8">
+                <div className="text-center" style={{ color: 'var(--ke-text-tertiary)' }}>
+                  {activeTab.filterQuery ? (
+                    <>
+                      <div className="text-sm mb-1">No files match filter</div>
+                      <div className="text-xs" style={{ color: 'var(--ke-text-disabled)' }}>"{activeTab.filterQuery}"</div>
+                    </>
+                  ) : (
+                    <div className="text-sm">This folder is empty</div>
+                  )}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -853,7 +877,7 @@ import { FileInfo } from "../store";
         </div>
       )}
       {/* Status Bar */}
-      <div className={clsx("px-3 py-1 text-[10px] font-medium border-t flex items-center justify-between select-none shrink-0", isActive ? "border-white/10 text-gray-400" : "border-white/5 text-gray-500")}>
+      <div className={clsx("px-3 py-1 text-[10px] font-medium flex items-center justify-between select-none shrink-0")} style={{ borderTop: '1px solid var(--ke-border-subtle)', color: 'var(--ke-text-secondary)' }}>
         {(() => {
           const dirs = processedFiles.filter(f => f.is_dir).length;
           const files = processedFiles.filter(f => !f.is_dir).length;
