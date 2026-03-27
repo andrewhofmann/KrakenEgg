@@ -860,11 +860,15 @@ import { FileInfo } from "../store";
                 <div className="text-center" style={{ color: 'var(--ke-text-tertiary)' }}>
                   {activeTab.filterQuery ? (
                     <>
+                      <div className="text-3xl mb-3 opacity-15">&#128269;</div>
                       <div className="text-sm mb-1">No files match filter</div>
                       <div className="text-xs" style={{ color: 'var(--ke-text-disabled)' }}>"{activeTab.filterQuery}"</div>
                     </>
                   ) : (
-                    <div className="text-sm">This folder is empty</div>
+                    <>
+                      <div className="text-3xl mb-3 opacity-15">&#128193;</div>
+                      <div className="text-sm">This folder is empty</div>
+                    </>
                   )}
                 </div>
               </div>

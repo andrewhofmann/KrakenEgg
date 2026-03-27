@@ -80,7 +80,7 @@ describe('ViewerModal', () => {
 
     render(<ViewerModal />);
 
-    expect(screen.getByText('Error: Permission denied')).toBeInTheDocument();
+    expect(screen.getByText('Permission denied')).toBeInTheDocument();
   });
 
   it('renders an image when isImage is true', () => {

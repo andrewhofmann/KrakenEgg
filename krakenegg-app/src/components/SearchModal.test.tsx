@@ -189,7 +189,7 @@ describe('SearchModal', () => {
 
     render(<SearchModal />);
 
-    expect(screen.getByText('Error: Search failed')).toBeInTheDocument();
+    expect(screen.getAllByText(/Search failed/).length).toBeGreaterThan(0);
   });
 
   it('shows no results message', () => {
@@ -206,7 +206,7 @@ describe('SearchModal', () => {
 
     render(<SearchModal />);
 
-    expect(screen.getByText('No results found.')).toBeInTheDocument();
+    expect(screen.getByText('No results found')).toBeInTheDocument();
   });
 
   it('displays search results with files and folders', () => {

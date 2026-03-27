@@ -34,8 +34,8 @@ export const EditorModal = () => {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto font-mono text-xs text-[var(--ke-text-secondary)] whitespace-pre-wrap no-scrollbar">
-          {loading && <div className="text-center py-8">Loading...</div>}
-          {error && <div className="text-[var(--ke-error)] py-8">Error: {error}</div>}
+          {loading && <div className="flex items-center justify-center py-12 gap-2" style={{ color: 'var(--ke-text-secondary)' }}><span className="animate-spin">&#9696;</span> Loading...</div>}
+          {error && <div className="py-8 text-center" style={{ color: 'var(--ke-error)' }}>{error}</div>}
           {!loading && !error && (
             <textarea
               className="w-full h-full bg-transparent text-[var(--ke-text)] p-4 focus:outline-none resize-none"

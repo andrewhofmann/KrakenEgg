@@ -113,11 +113,25 @@ export const SearchModal = () => {
 
         {/* Results */}
         <div className="flex-1 overflow-y-auto p-2 no-scrollbar">
-          {loading && <div className="text-center py-8 text-[var(--ke-text-secondary)]">Searching...</div>}
-          {error && <div className="text-[var(--ke-error)] py-8 text-center">Error: {error}</div>}
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-12 gap-3" style={{ color: 'var(--ke-text-secondary)' }}>
+              <Search size={20} className="animate-spin" />
+              <span className="text-sm">Searching...</span>
+            </div>
+          )}
+          {error && (
+            <div className="flex flex-col items-center justify-center py-12 gap-2" style={{ color: 'var(--ke-error)' }}>
+              <span className="text-sm font-medium">Search failed</span>
+              <span className="text-xs opacity-70">{error}</span>
+            </div>
+          )}
 
           {!loading && !error && results.length === 0 && query && (
-            <div className="text-center py-8 text-[var(--ke-text-tertiary)]">No results found.</div>
+            <div className="flex flex-col items-center justify-center py-12 gap-2" style={{ color: 'var(--ke-text-tertiary)' }}>
+              <Search size={24} className="opacity-30" />
+              <span className="text-sm">No results found</span>
+              <span className="text-xs opacity-60">Try a different search term or mode</span>
+            </div>
           )}
 
           {!loading && !error && results.length > 0 && (

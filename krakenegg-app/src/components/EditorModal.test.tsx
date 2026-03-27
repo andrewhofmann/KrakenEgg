@@ -75,7 +75,7 @@ describe('EditorModal', () => {
 
     render(<EditorModal />);
 
-    expect(screen.getByText('Error: File not found')).toBeInTheDocument();
+    expect(screen.getByText('File not found')).toBeInTheDocument();
   });
 
   it('shows unsaved indicator when dirty', () => {
