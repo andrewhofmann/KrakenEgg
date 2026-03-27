@@ -4,32 +4,30 @@
 
 | Category | Unit Tests | E2E Tests | Total |
 |----------|-----------|-----------|-------|
-| Store (existing + actions) | 70 | — | 70 |
-| Utils + Constants | 30 | — | 30 |
-| Hooks (keyboard + panelData) | 15 | — | 15 |
-| Components (FileRow, TabBar, modals, etc.) | 101 | — | 101 |
+| Store (original + actions) | 77 | — | 77 |
+| Utils (format, fileIcons, constants) | 41 | — | 41 |
+| Hooks (keyboard, panelData) | 16 | — | 16 |
+| Components (14 test files) | 123 | — | 123 |
 | Rust: utils | 12 | — | 12 |
 | Rust: app_state | 5 | — | 5 |
-| Rust: mrt | 9 | — | 9 |
+| Rust: mrt | 15 | — | 15 |
 | Rust: archive | 7 | — | 7 |
-| E2E: Dual Pane | — | 3 | 3 |
-| E2E: Keyboard | — | 3 | 3 |
-| E2E: Search | — | 2 | 2 |
-| E2E: Settings | — | 2 | 2 |
-| **Total** | **249** | **10** | **259** |
+| E2E: Playwright | — | 10 | 10 |
+| **Total** | **296** | **10** | **306** |
 
-## Test Files
+## Frontend Test Files (Vitest + jsdom)
 
-### Frontend Unit Tests (Vitest + jsdom)
 | File | Tests | Category |
 |------|-------|----------|
 | `src/store.test.ts` | 17 | Store: search, viewer, editor |
-| `src/store/actions.test.ts` | 53 | Store: navigation, tabs, clipboard, sort, hotkeys, modals |
+| `src/store/actions.test.ts` | 60 | Store: navigation, tabs, clipboard, sort, hotkeys, modals, file creation |
 | `src/store/constants.test.ts` | 16 | Store: createTab, getProcessedFiles, getExtension |
 | `src/utils/format.test.ts` | 14 | Utils: formatSize, formatDate, getExtension |
+| `src/utils/fileIcons.test.ts` | 16 | Utils: getFileIcon, getFileIconColor |
+| `src/utils/constants.test.ts` | 11 | Utils: Z_INDEX, CONFLICT_RESOLUTION, validateFileName |
 | `src/hooks/keyboardUtils.test.ts` | 11 | Hooks: isHotkeyMatched, joinPath |
-| `src/hooks/usePanelData.test.ts` | 4 | Hooks: directory listing, polling, cleanup |
-| `src/components/FileRow.test.tsx` | 14 | Component: file row rendering, interactions |
+| `src/hooks/usePanelData.test.ts` | 5 | Hooks: directory listing, watcher, cleanup |
+| `src/components/FileRow.test.tsx` | 15 | Component: file row rendering, interactions, dir size |
 | `src/components/TabBar.test.tsx` | 8 | Component: tab management UI |
 | `src/components/SearchFilter.test.tsx` | 9 | Component: inline filter widget |
 | `src/components/ContextMenu.test.tsx` | 9 | Component: right-click context menu |
@@ -40,16 +38,19 @@
 | `src/components/GoToPathModal.test.tsx` | 7 | Component: path navigation |
 | `src/components/SettingsModal.test.tsx` | 10 | Component: settings/preferences |
 | `src/components/SearchModal.test.tsx` | 14 | Component: search interface |
+| `src/components/ErrorBoundary.test.tsx` | 5 | Component: crash resilience |
 
-### Rust Unit Tests (cargo test --lib)
+## Rust Test Modules (cargo test --lib)
+
 | Module | Tests | Category |
 |--------|-------|----------|
 | `utils.rs` | 12 | File ops, format, binary detection |
 | `app_state.rs` | 5 | Config path, save/load state |
-| `mrt.rs` | 9 | Multi-rename preview and execution |
-| `archive.rs` | 7 | ZIP parse, list, add, remove, read |
+| `mrt.rs` | 15 | Multi-rename: patterns, regex, case, collisions |
+| `archive.rs` | 7 | ZIP: parse, list, add, remove, read |
 
-### E2E Tests (Playwright)
+## E2E Tests (Playwright)
+
 | File | Tests | Category |
 |------|-------|----------|
 | `e2e/dual-pane.spec.ts` | 3 | App mount, DOM, title |
@@ -60,18 +61,9 @@
 ## How to Run
 
 ```bash
-# Frontend unit tests
-pnpm test
-
-# Frontend unit tests with coverage
-pnpm test:coverage
-
-# Rust unit tests
-pnpm test:rust
-
-# E2E tests (Playwright)
-pnpm test:e2e
-
-# All tests (frontend + Rust)
-pnpm test:all
+pnpm test           # Frontend unit tests (257 tests)
+pnpm test:coverage  # With coverage report
+pnpm test:rust      # Rust unit tests (39 tests)
+pnpm test:e2e       # Playwright E2E (10 tests)
+pnpm test:all       # Frontend + Rust combined
 ```
