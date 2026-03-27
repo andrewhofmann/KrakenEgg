@@ -9,8 +9,9 @@ import { AutoSizer } from "./AutoSizer";
 import { TabBar } from "./TabBar";
 import { SearchFilter } from "./SearchFilter";
 import { QuickInfoPanel } from "./QuickInfoPanel";
+import { formatDate, getExtension } from "../utils/format";
 import clsx from "clsx";
-import { ChevronRight, ChevronDown, ArrowUp, ArrowDown, HardDrive, Package, Clock } from "lucide-react";
+import { ChevronRight, ChevronDown, ArrowUp, ArrowDown, HardDrive, Package, Clock, Star } from "lucide-react";
 
 interface FilePanelProps {
   side: 'left' | 'right';
@@ -38,14 +39,16 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     showContextMenu, hideContextMenu, refreshPanel, addTab,
     requestInput, requestConfirmation, showGoToPathModal,
     copySelectedFiles, cutSelectedFiles, pasteFiles,
-    compressSelection, extractSelection,
     copyToOppositePanel, moveToOppositePanel,
     addToHotlist, removeFromHotlist,
     showOperationStatus, setOperationError,
   } = useStore((s) => s);
 
+  const compressSelection = useStore((s) => s.archive.compressSelection);
+  const extractSelection = useStore((s) => s.archive.extractSelection);
+
   const containerRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<FixedSizeList>(null);
+  const listRef = useRef<any>(null);
   const pathInputRef = useRef<HTMLInputElement>(null);
 
   const [isPathEditing, setIsPathEditing] = useState(false);
@@ -56,6 +59,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   const [panelDragOver, setPanelDragOver] = useState(false);
   const [draggedCol, setDraggedCol] = useState<SortColumn | null>(null);
   const [dragOverCol, setDragOverCol] = useState<SortColumn | null>(null);
+
+  const isArchive = activeTab?.path ? /\.(zip|tar|gz|tgz)(\/|$)/i.test(activeTab.path) : false;
 
   const resizingRef = useRef<{
       leftCol: SortColumn; 
