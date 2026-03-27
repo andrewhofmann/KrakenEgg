@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Async directory listing with spawn_blocking for non-blocking I/O
+- File extension and symlink detection fields in FileInfo (computed in Rust)
+- Native filesystem watcher (notify crate) replacing 2-second polling
+- Dynamic home directory detection on startup (get_home_directory command)
+- File type icons: 60+ extension-to-icon mappings with color coding
+- Clickable breadcrumb path navigation bar
+- Status bar with folder/file count and selection size
+- Symlink indicator on file names
 - Git version control with develop/feature branching strategy
 - Comprehensive test suite: 259 tests (216 frontend unit, 33 Rust unit, 10 E2E)
 - Vitest test infrastructure with jsdom, @testing-library/react, coverage reporting
