@@ -138,8 +138,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         if (matchIndex !== -1) {
             setCursor(side, matchIndex);
             setSelection(side, [matchIndex]);
-            if (listRef.current && typeof listRef.current.scrollToRow === 'function') {
-                listRef.current.scrollToRow({ index: matchIndex, align: 'center' });
+            if (listRef.current && typeof listRef.current.scrollToRow === 'function' && matchIndex >= 0 && matchIndex < processedFiles.length) {
+                try { listRef.current.scrollToRow({ index: matchIndex, align: 'center' }); } catch { /* ignore */ }
             }
         }
 
@@ -159,13 +159,16 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
   useEffect(() => {
     if (isActive && activeTab && listRef.current) {
-      if (typeof listRef.current.scrollToRow === 'function') {
-          listRef.current.scrollToRow({ index: activeTab.cursorIndex, align: 'smart' });
-      } else if (typeof listRef.current.scrollToItem === 'function') {
-          listRef.current.scrollToItem(activeTab.cursorIndex, 'smart');
+      const idx = activeTab.cursorIndex;
+      if (idx >= 0 && idx < processedFiles.length) {
+        try {
+          if (typeof listRef.current.scrollToRow === 'function') {
+            listRef.current.scrollToRow({ index: idx, align: 'smart' });
+          }
+        } catch { /* ignore out-of-range during transitions */ }
       }
     }
-  }, [activeTab?.cursorIndex, isActive]);
+  }, [activeTab?.cursorIndex, isActive, processedFiles.length]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
