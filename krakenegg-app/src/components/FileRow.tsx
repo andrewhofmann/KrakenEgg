@@ -69,7 +69,7 @@ export const FileRow = memo(({
           case 'size':
               return (
                   <div className={clsx("text-right tabular-nums h-full flex items-center justify-end overflow-hidden", textColorClass)}>
-                      <SmartTooltip text={file.is_dir ? "--" : formatSize(file.size)} className="pt-0.5" />
+                      <SmartTooltip text={file.is_dir ? (file.size > 0 ? formatSize(file.size) : "<DIR>") : formatSize(file.size)} className="pt-0.5" />
                   </div>
               );
           case 'date':

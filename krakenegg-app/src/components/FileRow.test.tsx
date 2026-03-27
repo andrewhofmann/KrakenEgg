@@ -58,9 +58,14 @@ describe('FileRow', () => {
     expect(screen.getByText('png')).toBeInTheDocument();
   });
 
-  it('renders "--" for directory size', () => {
-    renderRow({ file: makeFile({ is_dir: true, name: 'Documents' }) });
-    expect(screen.getByText('--')).toBeInTheDocument();
+  it('renders "<DIR>" for directory without calculated size', () => {
+    renderRow({ file: makeFile({ is_dir: true, name: 'Documents', size: 0 }) });
+    expect(screen.getByText('<DIR>')).toBeInTheDocument();
+  });
+
+  it('renders calculated size for directory with size > 0', () => {
+    renderRow({ file: makeFile({ is_dir: true, name: 'Documents', size: 1048576 }) });
+    expect(screen.getByText('1.0 MB')).toBeInTheDocument();
   });
 
   it('renders empty extension for directories', () => {

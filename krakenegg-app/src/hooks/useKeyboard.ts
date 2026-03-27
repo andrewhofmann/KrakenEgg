@@ -272,15 +272,31 @@ export function useKeyboard() {
              }
           }
           break;
-        case ' ': // Space
+        case ' ': // Space - Preview file OR calculate folder size (like TC)
           e.preventDefault();
           const fileToPreview = activeTab.files[activeTab.cursorIndex];
           if (fileToPreview && fileToPreview.name !== "..") {
             const filePath = joinPath(activeTab.path, fileToPreview.name);
-            try {
-              await invoke('preview_file', { path: filePath });
-            } catch (err) {
-              state.setOperationError(`QuickLook failed: ${err}`);
+            if (fileToPreview.is_dir) {
+              // Calculate folder size on Space (Total Commander behavior)
+              try {
+                const size = await invoke<number>('calculate_folder_size', { path: filePath });
+                // Update the file's size in the store
+                const updatedFiles = [...activeTab.files];
+                updatedFiles[activeTab.cursorIndex] = { ...fileToPreview, size };
+                state.setFiles(activeSide, updatedFiles);
+              } catch (err) {
+                state.setOperationError(`Size calculation failed: ${err}`);
+              }
+              state.toggleSelection(activeSide);
+              state.moveCursor(activeSide, 1);
+            } else {
+              // Preview file with Quick Look
+              try {
+                await invoke('preview_file', { path: filePath });
+              } catch (err) {
+                state.setOperationError(`QuickLook failed: ${err}`);
+              }
             }
           } else {
              state.toggleSelection(activeSide);

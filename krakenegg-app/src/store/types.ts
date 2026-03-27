@@ -44,7 +44,7 @@ export interface ContextMenuItem { label: string; action: () => void; disabled?:
 export interface ContextMenuState { show: boolean; x: number; y: number; items: ContextMenuItem[]; }
 export interface ClipboardState { type: 'files' | 'text' | null; items: string[] | string | null; operation: 'copy' | 'cut' | null; sourcePanel: 'left' | 'right' | null; }
 export interface InputModalState { show: boolean; title: string; message: string; initialValue: string; onConfirm: (value: string) => void; }
-export interface ProgressInfo { id: string; current: number; total: number; path: string; }
+export interface ProgressInfo { id: string; current: number; total: number; path: string; bytes_done: number; bytes_total: number; }
 export interface ConflictInfo { id: string; source: string; dest: string; is_dir: boolean; }
 export interface OperationStatusState { show: boolean; message: string; isError: boolean; progress: ProgressInfo | null; conflict: ConflictInfo | null; }
 export interface GoToPathModalState { show: boolean; initialPath: string; }

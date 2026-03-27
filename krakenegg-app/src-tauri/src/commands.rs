@@ -22,6 +22,8 @@ struct ProgressPayload {
     total: usize,
     current: usize,
     path: String,
+    bytes_done: u64,
+    bytes_total: u64,
 }
 
 #[derive(Clone, serde::Serialize)]
@@ -71,46 +73,72 @@ fn file_contains_content(path: &Path, query_lower: &str) -> bool {
 
 #[tauri::command]
 pub async fn get_recursive_info(path: String) -> Result<RecursiveInfo, String> {
-    let root = Path::new(&path);
-    if !root.exists() {
-        return Err("Path does not exist".to_string());
-    }
+    tauri::async_runtime::spawn_blocking(move || {
+        let root = Path::new(&path);
+        if !root.exists() {
+            return Err("Path does not exist".to_string());
+        }
 
-    if root.is_file() {
-        let metadata = fs::metadata(root).map_err(|e| e.to_string())?;
-        return Ok(RecursiveInfo {
-            files: 1,
-            folders: 0,
-            size: metadata.len(),
-            skipped: 0,
-        });
-    }
+        if root.is_file() {
+            let metadata = fs::metadata(root).map_err(|e| e.to_string())?;
+            return Ok(RecursiveInfo {
+                files: 1,
+                folders: 0,
+                size: metadata.len(),
+                skipped: 0,
+            });
+        }
 
-    let mut files = 0;
-    let mut folders = 0;
-    let mut size = 0;
-    let mut skipped = 0;
+        let mut files = 0;
+        let mut folders = 0;
+        let mut size: u64 = 0;
+        let mut skipped = 0;
 
-    for entry in WalkDir::new(root) {
-        match entry {
-            Ok(entry) => {
-                let p = entry.path();
-                if p == root { continue; }
+        for entry in WalkDir::new(root) {
+            match entry {
+                Ok(entry) => {
+                    let p = entry.path();
+                    if p == root { continue; }
 
-                if p.is_file() {
-                    files += 1;
-                    size += entry.metadata().map(|m| m.len()).unwrap_or(0);
-                } else if p.is_dir() {
-                    folders += 1;
+                    if p.is_file() {
+                        files += 1;
+                        size += entry.metadata().map(|m| m.len()).unwrap_or(0);
+                    } else if p.is_dir() {
+                        folders += 1;
+                    }
+                }
+                Err(_) => {
+                    skipped += 1;
                 }
             }
-            Err(_) => {
-                skipped += 1;
+        }
+
+        Ok(RecursiveInfo { files, folders, size, skipped })
+    }).await.map_err(|e| format!("Task failed: {}", e))?
+}
+
+/// Calculate folder size on demand (e.g., Space key on a folder like Total Commander)
+#[tauri::command]
+pub async fn calculate_folder_size(path: String) -> Result<u64, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let root = Path::new(&path);
+        if !root.exists() {
+            return Err("Path does not exist".to_string());
+        }
+        if !root.is_dir() {
+            return fs::metadata(root).map(|m| m.len()).map_err(|e| e.to_string());
+        }
+
+        let mut size: u64 = 0;
+        for entry in WalkDir::new(root) {
+            if let Ok(entry) = entry {
+                if entry.path().is_file() {
+                    size += entry.metadata().map(|m| m.len()).unwrap_or(0);
+                }
             }
         }
-    }
-
-    Ok(RecursiveInfo { files, folders, size, skipped })
+        Ok(size)
+    }).await.map_err(|e| format!("Task failed: {}", e))?
 }
 
 #[tauri::command]
@@ -306,7 +334,7 @@ pub async fn copy_items_with_progress(
                         current += 1;
                         if current % 5 == 0 {
                             let _ = window.emit("progress", ProgressPayload {
-                                id: id.clone(), total: 0, current, path: path.to_string()
+                                id: id.clone(), total: 0, current, path: path.to_string(), bytes_done: 0, bytes_total: 0
                             });
                         }
                     },
@@ -374,7 +402,7 @@ pub async fn copy_items_with_progress(
             }
             current += 1;
             let _ = window.emit("progress", ProgressPayload {
-                id: id.clone(), total: 0, current, path: src.clone()
+                id: id.clone(), total: 0, current, path: src.clone(), bytes_done: 0, bytes_total: 0
             });
         } else if src_path.is_dir() {
             if let Err(e) = fs::create_dir_all(&target_root) {
@@ -422,7 +450,7 @@ pub async fn copy_items_with_progress(
                 current += 1;
                 if current % 10 == 0 || current == _total {
                      let _ = window.emit("progress", ProgressPayload {
-                        id: id.clone(), total: 0, current, path: path.to_string_lossy().to_string()
+                        id: id.clone(), total: 0, current, path: path.to_string_lossy().to_string(), bytes_done: 0, bytes_total: 0
                     });
                 }
             }
@@ -556,7 +584,7 @@ pub async fn delete_items_with_progress(
         if p.is_file() {
             if let Err(e) = fs::remove_file(p) { return Err(e.to_string()); }
             current += 1;
-            let _ = window.emit("progress", ProgressPayload { id: id.clone(), total: 0, current, path: path.clone() });
+            let _ = window.emit("progress", ProgressPayload { id: id.clone(), total: 0, current, path: path.clone(), bytes_done: 0, bytes_total: 0 });
         } else if p.is_dir() {
             for entry in WalkDir::new(p).contents_first(true) {
                 if token.load(Ordering::Relaxed) { break; } 
@@ -571,8 +599,8 @@ pub async fn delete_items_with_progress(
                 
                 current += 1;
                 if current % 10 == 0 {
-                    let _ = window.emit("progress", ProgressPayload { 
-                        id: id.clone(), total: 0, current, path: entry_path.to_string_lossy().to_string() 
+                    let _ = window.emit("progress", ProgressPayload {
+                        id: id.clone(), total: 0, current, path: entry_path.to_string_lossy().to_string(), bytes_done: 0, bytes_total: 0
                     });
                 }
             }

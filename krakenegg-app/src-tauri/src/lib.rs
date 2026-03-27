@@ -130,6 +130,7 @@ pub fn run() {
             mrt::preview_mrt,
             mrt::execute_mrt,
             commands::get_home_directory,
+            commands::calculate_folder_size,
             commands::watch_directory,
             commands::unwatch_directory
         ])
