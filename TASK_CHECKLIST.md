@@ -1,0 +1,107 @@
+# KrakenEgg Task Checklist
+
+## Phase 1: Critical Fixes (Rust Backend Safety & Stability)
+- [x] **Fix 1:** Replace `unwrap()` on Mutex Locks in `commands.rs` with proper error handling.
+- [x] **Fix 2:** Replace `unwrap()` on Path Parent in `mrt.rs` and `commands.rs`.
+- [x] **Fix 3:** Safe handling of `strip_prefix` in `commands.rs` and `mrt.rs`.
+- [x] **Fix 4:** Implement `compress_files` (currently returns "Not implemented").
+- [x] **Fix 5:** Implement `extract_archive` (currently returns "Not implemented").
+- [x] **Fix 6:** Fix `copy_items` using `std::fs` instead of shell `cp`.
+- [x] **Fix 7:** Fix `move_items` using `std::fs` instead of shell `mv`.
+- [x] **Fix 8:** Fix `delete_items` using `std::fs` instead of shell `rm`.
+- [x] **Fix 9:** Fix `open_with_default` to return actual error details.
+- [x] **Fix 10:** Optimize `parse_archive_path` (avoid repetitive parsing).
+- [x] **Fix 11:** Fix `get_recursive_info` error swallowing.
+- [x] **Fix 12:** Fix `search_files` synchronous blocking IO.
+- [x] **Fix 13:** Fix `search_files` memory usage (streaming).
+- [x] **Fix 14:** Ensure Temp Dir cleanup in `copy_items_with_progress`.
+- [x] **Fix 15:** Remove unused imports in `commands.rs`.
+- [x] **Fix 16:** Review and fix race conditions in `mrt.rs`.
+- [x] **Fix 17:** Fix hardcoded `qlmanage` (macOS only) with feature flags.
+- [x] **Fix 18:** Fix hardcoded `open` (macOS only) with feature flags.
+
+## Phase 2: Frontend Fixes (TypeScript & Logic)
+- [x] **Fix 19:** Fix `any` types in `store.ts`.
+- [x] **Fix 20:** Fix `any` types in Sorting logic.
+- [x] **Fix 21:** Fix `any` types in Settings/Layout.
+- [x] **Fix 22:** Fix `any` types in `VirtualList`.
+- [x] **Fix 23:** Fix `any` types in `FilePanel` refs.
+- [x] **Fix 24:** Memoize `getProcessedFiles` to fix performance.
+- [x] **Fix 25:** Safer Drag Data serialization (avoid JSON.stringify).
+- [x] **Fix 26:** Add error notification for Drag & Drop failures.
+- [ ] **Fix 27:** Split `store.ts` into multiple slices.
+- [ ] **Fix 28:** Reduce Prop Drilling in `FilePanel`.
+- [ ] **Fix 29:** Remove hardcoded paths ("Users/andrew").
+- [ ] **Fix 30:** Use system locale for Date Formatting.
+- [ ] **Fix 31:** Externalize `IMAGE_EXTENSIONS` configuration.
+- [ ] **Fix 32:** Add `aria-label` to icon buttons.
+- [ ] **Fix 33:** Add `role="button"` and `tabIndex` to clickable divs.
+- [ ] **Fix 34:** Replace `console.error` with UI error notifications.
+- [ ] **Fix 35:** Make Search Timeout configurable.
+- [ ] **Fix 36:** Persist Clipboard state.
+- [ ] **Fix 37:** Move inline grid styles to CSS variables/classes.
+- [ ] **Fix 38:** Implement Z-Index constants system.
+- [ ] **Fix 39:** Fix Focus Management on modal close.
+- [ ] **Fix 40:** Sanitize inputs in `requestInput`.
+- [ ] **Fix 41:** Refactor `getSelectedPaths` to shared utility.
+- [ ] **Fix 42:** Fix UI flicker in `open_with_default`.
+- [ ] **Fix 43:** Debounce `AutoSizer` resize events.
+- [ ] **Fix 44:** Improve "Close Last Tab" behavior.
+- [ ] **Fix 45:** Implement circular buffer for History.
+- [ ] **Fix 46:** Use Enums for Conflict Resolution.
+- [ ] **Fix 47:** Fix potential memory leak in `compressSelection` listener.
+- [ ] **Fix 48:** Audit Hotkey conflicts.
+- [ ] **Fix 49:** Fix `useEffect` dependency arrays.
+- [ ] **Fix 50:** Add fallback for corrupt config loading.
+
+## Phase 3: Feature Improvements
+- [ ] **Imp 1:** Add FTP Support.
+- [ ] **Imp 2:** Add SFTP Support.
+- [ ] **Imp 3:** Add SMB Support.
+- [ ] **Imp 4:** Add Cloud Storage Integration.
+- [ ] **Imp 5:** Add Plugin System.
+- [ ] **Imp 6:** Add Hex Viewer.
+- [ ] **Imp 7:** Add Syntax Highlighting to Editor.
+- [ ] **Imp 8:** Add "Open Terminal Here".
+- [ ] **Imp 9:** Add Embedded Terminal.
+- [ ] **Imp 10:** Add Regex Batch Rename.
+- [ ] **Imp 11:** Add File Checksums.
+- [ ] **Imp 12:** Add Directory Synchronization.
+- [ ] **Imp 13:** Add Disk Usage Analyzer (TreeMap).
+- [ ] **Imp 14:** Add Duplicate Finder.
+- [ ] **Imp 15:** Implement Archive Creation (.7z, .tar.gz).
+- [ ] **Imp 16:** Add Password Protected Archive support.
+- [ ] **Imp 17:** Add File Permission Editor (Chmod).
+- [ ] **Imp 18:** Add Symlink Creation.
+- [ ] **Imp 19:** Add "Open With..." Context Menu.
+- [ ] **Imp 20:** Add Trash/Recycle Bin support.
+- [ ] **Imp 21:** Add File Split/Combine.
+- [ ] **Imp 22:** Implement Full CSS Theme System.
+- [ ] **Imp 23:** Use Native System File Icons.
+- [ ] **Imp 24:** Add "Auto-fit Columns".
+- [ ] **Imp 25:** Clickable Breadcrumbs.
+- [ ] **Imp 26:** Drag-and-Drop Tabs.
+- [ ] **Imp 27:** Add Status Bar.
+- [ ] **Imp 28:** Minimizable Progress Dialog.
+- [ ] **Imp 29:** Highlight Search Matches.
+- [ ] **Imp 30:** Embed Quick Look.
+- [ ] **Imp 31:** Image Viewer Zoom/Pan.
+- [ ] **Imp 32:** "Type to Select" Popup.
+- [ ] **Imp 33:** Tabbed Settings UI.
+- [ ] **Imp 34:** Visual Hotkey Editor.
+- [ ] **Imp 35:** File Coloring by Type/Age.
+- [ ] **Imp 36:** Grid Lines Toggle.
+- [ ] **Imp 37:** Font Size Zoom Shortcuts.
+- [ ] **Imp 38:** Rich Tooltips.
+- [ ] **Imp 39:** Setup CI/CD Pipelines.
+- [ ] **Imp 40:** Add comprehensive Rust Unit Tests.
+- [ ] **Imp 41:** Add E2E Tests (Playwright).
+- [ ] **Imp 42:** Integrate Crash Reporting (Sentry).
+- [ ] **Imp 43:** Implement Structured Logging.
+- [ ] **Imp 44:** Lazy Load File Lists.
+- [ ] **Imp 45:** Dependency Injection for Store.
+- [ ] **Imp 46:** Generate Documentation.
+- [ ] **Imp 47:** Optimize Bundle Size.
+- [ ] **Imp 48:** Implement Security Capabilities.
+- [ ] **Imp 49:** Configure Auto-Updater.
+- [ ] **Imp 50:** Internationalization (i18n).

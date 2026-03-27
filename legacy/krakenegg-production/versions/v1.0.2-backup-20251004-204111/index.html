@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KrakenEgg - macOS 26 Design</title>
+    <style>
+      /* Ultra-smooth scrollbars - macOS 26 style */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+        background: transparent;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.2s ease;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.25);
+        transform: scale(1.05);
+      }
+
+      .dark ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(0, 0, 0, 0.3);
+      }
+
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      /* Ultra-refined selection */
+      ::selection {
+        background: rgba(0, 122, 255, 0.25);
+        color: inherit;
+      }
+
+      /* Disable default behaviors for file manager */
+      * {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* Allow selection for text inputs */
+      input, textarea, [contenteditable] {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+      }
+
+      /* Ultra-smooth animations */
+      * {
+        transition-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+      }
+
+      /* Body styling */
+      body {
+        margin: 0;
+        padding: 0;
+        background: #ffffff;
+        overflow: hidden;
+      }
+
+      body.dark {
+        background: #0a0a0a;
+      }
+
+      /* Glass morphism effects */
+      .glass-effect {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+
+      /* Ultra-subtle animations */
+      @keyframes ultra-fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(2px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .ultra-fade-in {
+        animation: ultra-fade-in 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
+      }
+    </style>
+  </head>
+  <body class="font-system">
+
+    <div id="root"></div>
+
+
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

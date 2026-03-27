@@ -1,0 +1,20 @@
+# ARCHIVED VERSION - v1.0.2
+
+**This version has been archived on 2025-01-06**
+
+**Status**: ARCHIVED - NO LONGER ACTIVE FOR DEVELOPMENT
+
+**Reason**: Moved to v1.0.3 for continued development with keyboard performance improvements
+
+**Active Version**: Please use v1.0.3 instead
+
+**Do not modify files in this directory unless creating specific patches**
+
+For current development work, use:
+```
+cd ../v1.0.3/
+```
+
+---
+*Archived: 2025-01-06*
+*Superseded by: v1.0.3*

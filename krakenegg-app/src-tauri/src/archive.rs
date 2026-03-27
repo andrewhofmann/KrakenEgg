@@ -1,0 +1,283 @@
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::io::{self, Read, Write};
+use flate2::read::GzDecoder;
+use crate::models::FileInfo;
+use walkdir::WalkDir;
+
+pub fn parse_archive_path(full_path: &str) -> Option<(PathBuf, PathBuf)> {
+    // Check longer extensions first to match .tar.gz before .tar
+    let archive_exts = [".tar.gz", ".tgz", ".tar", ".zip"];
+    for ext in archive_exts.iter() {
+        if let Some(pos) = full_path.find(ext) {
+            let archive_file_end = pos + ext.len();
+            let after = &full_path[archive_file_end..];
+            if after.is_empty() || after.starts_with('/') {
+                let archive_file_candidate = PathBuf::from(&full_path[..archive_file_end]);
+                if archive_file_candidate.exists() && archive_file_candidate.is_file() {
+                    let internal_path = PathBuf::from(after.trim_start_matches('/'));
+                    return Some((archive_file_candidate, internal_path));
+                }
+            }
+        }
+    }
+    None
+}
+
+pub fn read_archive_file(archive_file_path: &Path, internal_path: &Path) -> Result<String, String> {
+    let archive_file_name = archive_file_path.file_name().and_then(|s| s.to_str()).unwrap_or("");
+    let internal_path_str = internal_path.to_string_lossy().replace('\\', "/");
+
+    if archive_file_name.ends_with(".zip") {
+        let file = fs::File::open(archive_file_path).map_err(|e| e.to_string())?;
+        let mut zip = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
+        let mut entry = zip.by_name(&internal_path_str).map_err(|e| format!("Entry not found: {}", e))?;
+        let mut buffer = Vec::new();
+        entry.read_to_end(&mut buffer).map_err(|e| e.to_string())?;
+        String::from_utf8(buffer).map_err(|e| format!("Encoding error: {}", e))
+    } else if archive_file_name.ends_with(".tar") || archive_file_name.ends_with(".tar.gz") || archive_file_name.ends_with(".tgz") {
+        let file = fs::File::open(archive_file_path).map_err(|e| e.to_string())?;
+        let decoder: Box<dyn io::Read> = if archive_file_name.ends_with(".gz") || archive_file_name.ends_with(".tgz") {
+            Box::new(GzDecoder::new(file))
+        } else {
+            Box::new(file)
+        };
+        let mut ar = tar::Archive::new(decoder);
+        for entry_res in ar.entries().map_err(|e| e.to_string())? {
+            let mut entry = entry_res.map_err(|e| e.to_string())?;
+            let entry_path = entry.path().map_err(|e| e.to_string())?;
+            if entry_path.to_str().unwrap_or("").replace('\\', "/") == internal_path_str {
+                let mut buffer = Vec::new();
+                entry.read_to_end(&mut buffer).map_err(|e| e.to_string())?;
+                return String::from_utf8(buffer).map_err(|e| format!("Encoding error: {}", e));
+            }
+        }
+        Err("Entry not found".to_string())
+    } else {
+        Err(format!("Unsupported format: {}", archive_file_name))
+    }
+}
+
+pub fn list_archive_contents(archive_file_path: &Path, internal_path: &Path) -> Result<Vec<FileInfo>, String> {
+    let mut files: Vec<FileInfo> = Vec::new();
+    let archive_file_name = archive_file_path.file_name().and_then(|s| s.to_str()).unwrap_or("");
+
+    if archive_file_name.ends_with(".zip") {
+        let file = fs::File::open(archive_file_path).map_err(|e| e.to_string())?;
+        let mut zip = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
+
+        let prefix_str = internal_path.to_string_lossy().replace('\\', "/");
+        let prefix = if prefix_str.is_empty() { "".to_string() } else { format!("{}/", prefix_str.trim_end_matches('/')) };
+
+        for i in 0..zip.len() {
+            let file = zip.by_index(i).map_err(|e| e.to_string())?;
+            let name = file.name().replace('\\', "/");
+            if name.starts_with(&prefix) && name != prefix {
+                let relative = &name[prefix.len()..];
+                let child = relative.split('/').next().unwrap_or("");
+                if !child.is_empty() && !files.iter().any(|f| f.name == child) {
+                    let is_dir = file.is_dir() || relative.trim_end_matches('/').contains('/');
+                    files.push(FileInfo { name: child.to_string(), is_dir, size: file.size(), modified_at: None, created_at: None, permissions: None });
+                }
+            }
+        }
+    } else if archive_file_name.ends_with(".tar") || archive_file_name.ends_with(".tar.gz") || archive_file_name.ends_with(".tgz") {
+        let file = fs::File::open(archive_file_path).map_err(|e| e.to_string())?;
+        let decoder: Box<dyn io::Read> = if archive_file_name.ends_with(".gz") || archive_file_name.ends_with(".tgz") { Box::new(GzDecoder::new(file)) } else { Box::new(file) };
+        let mut ar = tar::Archive::new(decoder);
+        
+        let prefix_str = internal_path.to_string_lossy().replace('\\', "/");
+        let prefix = if prefix_str.is_empty() { "".to_string() } else { format!("{}/", prefix_str.trim_end_matches('/')) };
+
+        for entry in ar.entries().map_err(|e| e.to_string())? {
+            let entry = entry.map_err(|e| e.to_string())?;
+            let path = entry.path().map_err(|e| e.to_string())?;
+            let name = path.to_str().unwrap_or("").replace('\\', "/");
+            if name.starts_with(&prefix) && name != prefix {
+                let relative = &name[prefix.len()..];
+                let child = relative.split('/').next().unwrap_or("");
+                if !child.is_empty() && !files.iter().any(|f| f.name == child) {
+                    let is_dir = entry.header().entry_type().is_dir() || relative.trim_end_matches('/').contains('/');
+                    files.push(FileInfo { name: child.to_string(), is_dir, size: entry.size(), modified_at: None, created_at: None, permissions: None });
+                }
+            }
+        }
+    }
+    
+    files.sort_by(|a, b| if a.is_dir == b.is_dir { a.name.to_lowercase().cmp(&b.name.to_lowercase()) } else { b.is_dir.cmp(&a.is_dir) });
+    Ok(files)
+}
+
+// Updated with conflict callback
+pub fn extract_entry<F, C>(
+    archive_path: &Path, 
+    internal_path: &Path, 
+    dest_path: &Path, 
+    mut progress_cb: F,
+    mut conflict_cb: C
+) -> Result<(), String> 
+where 
+    F: FnMut(&str),
+    C: FnMut(&Path) -> Result<bool, String> // Returns true to overwrite, false to skip/abort
+{
+    let archive_name = archive_path.file_name().and_then(|s| s.to_str()).unwrap_or("");
+    let target_prefix = internal_path.to_string_lossy().replace('\\', "/");
+    
+    if archive_name.ends_with(".zip") {
+        let file = fs::File::open(archive_path).map_err(|e| e.to_string())?;
+        let mut zip = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
+        
+        for i in 0..zip.len() {
+            let mut file = zip.by_index(i).map_err(|e| e.to_string())?;
+            let name = file.name().replace('\\', "/");
+            
+            if name == target_prefix || (target_prefix.len() > 0 && name.starts_with(&format!("{}/", target_prefix))) {
+                let rel_clean = name.trim_start_matches(&target_prefix).trim_start_matches('/');
+                let out_path = if rel_clean.is_empty() {
+                    dest_path.to_path_buf()
+                } else {
+                    dest_path.join(rel_clean)
+                };
+
+                if file.is_dir() {
+                    fs::create_dir_all(&out_path).map_err(|e| e.to_string())?;
+                } else {
+                    if out_path.exists() {
+                        if !conflict_cb(&out_path)? {
+                            continue; // Skip
+                        }
+                    }
+
+                    if let Some(parent) = out_path.parent() {
+                        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+                    }
+                    let mut outfile = fs::File::create(&out_path).map_err(|e| e.to_string())?;
+                    io::copy(&mut file, &mut outfile).map_err(|e| e.to_string())?;
+                    progress_cb(&name);
+                }
+            }
+        }
+    } else if archive_name.ends_with(".tar") || archive_name.ends_with(".tar.gz") || archive_name.ends_with(".tgz") {
+        let file = fs::File::open(archive_path).map_err(|e| e.to_string())?;
+        let decoder: Box<dyn io::Read> = if archive_name.ends_with(".gz") || archive_name.ends_with(".tgz") { Box::new(GzDecoder::new(file)) } else { Box::new(file) };
+        let mut ar = tar::Archive::new(decoder);
+        
+        for entry in ar.entries().map_err(|e| e.to_string())? {
+            let mut entry = entry.map_err(|e| e.to_string())?;
+            let path = entry.path().map_err(|e| e.to_string())?;
+            let name = path.to_str().unwrap_or("").replace('\\', "/");
+            
+            if name == target_prefix || (target_prefix.len() > 0 && name.starts_with(&format!("{}/", target_prefix))) {
+                let rel_clean = name.trim_start_matches(&target_prefix).trim_start_matches('/');
+                let out_path = if rel_clean.is_empty() {
+                    dest_path.to_path_buf()
+                } else {
+                    dest_path.join(rel_clean)
+                };
+
+                if entry.header().entry_type().is_dir() {
+                    fs::create_dir_all(&out_path).map_err(|e| e.to_string())?;
+                } else {
+                    if out_path.exists() {
+                        if !conflict_cb(&out_path)? {
+                            continue;
+                        }
+                    }
+
+                    if let Some(parent) = out_path.parent() {
+                        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+                    }
+                    entry.unpack(&out_path).map_err(|e| e.to_string())?;
+                    progress_cb(&name);
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+pub fn add_files_to_zip(archive_path: &Path, sources: &[String], dest_dir_internal: &str) -> Result<(), String> {
+    if !archive_path.to_string_lossy().ends_with(".zip") {
+        return Err("Adding files only supported for ZIP archives currently".to_string());
+    }
+
+    let tmp_path = archive_path.with_extension("tmp");
+    let file = fs::File::open(archive_path).map_err(|e| e.to_string())?;
+    let mut zip = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
+    
+    let tmp_file = fs::File::create(&tmp_path).map_err(|e| e.to_string())?;
+    let mut zip_w = zip::ZipWriter::new(tmp_file);
+    let options = zip::write::FileOptions::default().large_file(true);
+
+    for i in 0..zip.len() {
+        let entry = zip.by_index(i).map_err(|e| e.to_string())?;
+        zip_w.raw_copy_file(entry).map_err(|e| e.to_string())?;
+    }
+
+    for src in sources {
+        let src_path = Path::new(src);
+        let src_name = src_path.file_name().unwrap_or_default().to_string_lossy();
+        
+        if src_path.is_dir() {
+            for entry in WalkDir::new(src_path) {
+                let entry = entry.map_err(|e| e.to_string())?;
+                let path = entry.path();
+                if path.is_file() {
+                    let rel = path.strip_prefix(src_path.parent().unwrap_or(src_path)).unwrap_or(path);
+                    let internal_path = if dest_dir_internal.is_empty() {
+                        rel.to_string_lossy().replace('\\', "/")
+                    } else {
+                        format!("{}/", dest_dir_internal.trim_end_matches('/')) + &rel.to_string_lossy().replace('\\', "/")
+                    };
+                    
+                    zip_w.start_file(internal_path, options).map_err(|e| e.to_string())?;
+                    let mut f = fs::File::open(path).map_err(|e| e.to_string())?;
+                    io::copy(&mut f, &mut zip_w).map_err(|e| e.to_string())?;
+                }
+            }
+        } else {
+            let internal_path = if dest_dir_internal.is_empty() {
+                src_name.to_string()
+            } else {
+                format!("{}/", dest_dir_internal.trim_end_matches('/')) + &src_name
+            };
+            zip_w.start_file(internal_path, options).map_err(|e| e.to_string())?;
+            let mut f = fs::File::open(src_path).map_err(|e| e.to_string())?;
+            io::copy(&mut f, &mut zip_w).map_err(|e| e.to_string())?;
+        }
+    }
+
+    zip_w.finish().map_err(|e| e.to_string())?;
+    fs::rename(tmp_path, archive_path).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+pub fn remove_files_from_zip(archive_path: &Path, internal_paths: &[String]) -> Result<(), String> {
+    if !archive_path.to_string_lossy().ends_with(".zip") {
+        return Err("Deleting files only supported for ZIP archives currently".to_string());
+    }
+
+    let tmp_path = archive_path.with_extension("tmp");
+    let file = fs::File::open(archive_path).map_err(|e| e.to_string())?;
+    let mut zip = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
+    
+    let tmp_file = fs::File::create(&tmp_path).map_err(|e| e.to_string())?;
+    let mut zip_w = zip::ZipWriter::new(tmp_file);
+
+    for i in 0..zip.len() {
+        let entry = zip.by_index(i).map_err(|e| e.to_string())?;
+        let name = entry.name().to_string();
+        
+        let should_delete = internal_paths.iter().any(|target| {
+            name == *target || name.starts_with(&format!("{}/", target))
+        });
+
+        if !should_delete {
+            zip_w.raw_copy_file(entry).map_err(|e| e.to_string())?;
+        }
+    }
+
+    zip_w.finish().map_err(|e| e.to_string())?;
+    fs::rename(tmp_path, archive_path).map_err(|e| e.to_string())?;
+    Ok(())
+}

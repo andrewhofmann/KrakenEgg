@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tauri + React + Typescript</title>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script>
+      window.onerror = function(message, source, lineno, colno, error) {
+        console.error(message, error);
+        const errDiv = document.createElement('div');
+        errDiv.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); color:red; padding:20px; z-index:9999; white-space:pre-wrap; font-family:monospace;';
+        errDiv.textContent = 'JS Error: ' + message + '\nAt: ' + source + ':' + lineno + ':' + colno;
+        document.body.appendChild(errDiv);
+      };
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

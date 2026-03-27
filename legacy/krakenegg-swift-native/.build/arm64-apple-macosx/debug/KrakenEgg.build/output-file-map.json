@@ -1,0 +1,47 @@
+{
+  "": {
+    "swift-dependencies": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/master.swiftdeps"
+  },
+  "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/Sources/KrakenEgg/MinimalApp.swift": {
+    "dependencies": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/MinimalApp.d",
+    "object": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/MinimalApp.swift.o",
+    "swiftmodule": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/MinimalApp~partial.swiftmodule",
+    "swift-dependencies": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/MinimalApp.swiftdeps",
+    "diagnostics": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/MinimalApp.dia"
+  },
+  "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/Sources/KrakenEgg/Models/FileItem.swift": {
+    "dependencies": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FileItem.d",
+    "object": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FileItem.swift.o",
+    "swiftmodule": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FileItem~partial.swiftmodule",
+    "swift-dependencies": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FileItem.swiftdeps",
+    "diagnostics": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FileItem.dia"
+  },
+  "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/Sources/KrakenEgg/Services/FileSystemService.swift": {
+    "dependencies": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FileSystemService.d",
+    "object": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FileSystemService.swift.o",
+    "swiftmodule": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FileSystemService~partial.swiftmodule",
+    "swift-dependencies": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FileSystemService.swiftdeps",
+    "diagnostics": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FileSystemService.dia"
+  },
+  "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/Sources/KrakenEgg/Views/FunctionKeyBar.swift": {
+    "dependencies": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FunctionKeyBar.d",
+    "object": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FunctionKeyBar.swift.o",
+    "swiftmodule": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FunctionKeyBar~partial.swiftmodule",
+    "swift-dependencies": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FunctionKeyBar.swiftdeps",
+    "diagnostics": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/FunctionKeyBar.dia"
+  },
+  "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/Sources/KrakenEgg/Views/StatusBar.swift": {
+    "dependencies": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/StatusBar.d",
+    "object": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/StatusBar.swift.o",
+    "swiftmodule": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/StatusBar~partial.swiftmodule",
+    "swift-dependencies": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/StatusBar.swiftdeps",
+    "diagnostics": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/StatusBar.dia"
+  },
+  "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/Sources/KrakenEgg/Views/Toolbar.swift": {
+    "dependencies": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/Toolbar.d",
+    "object": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/Toolbar.swift.o",
+    "swiftmodule": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/Toolbar~partial.swiftmodule",
+    "swift-dependencies": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/Toolbar.swiftdeps",
+    "diagnostics": "/Users/andrew/Documents/Personal/Dev AI Coding/KrakenEgg/krakenegg-swift-native/.build/arm64-apple-macosx/debug/KrakenEgg.build/Toolbar.dia"
+  }
+}
