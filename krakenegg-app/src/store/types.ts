@@ -67,11 +67,12 @@ export interface Preferences {
     };
 }
 
-export type HotkeyAction = 
-  'toggle_side' | 'go_up_dir' | 'go_back' | 'go_forward' | 'open_search' | 
+export type HotkeyAction =
+  'toggle_side' | 'go_up_dir' | 'go_back' | 'go_forward' | 'open_search' |
   'new_file' | 'new_folder' | 'copy' | 'cut' | 'paste' | 'delete' | 'rename' |
   'view_file' | 'edit_file' | 'compress_selection' | 'extract_selection' |
-  'select_all' | 'goto_path_modal' | 'open_settings' | 'copy_to_opposite' | 'move_to_opposite' | 'refresh_panel' | 'swap_panes' |
+  'select_all' | 'invert_selection' | 'select_by_pattern' | 'deselect_all' |
+  'goto_path_modal' | 'open_settings' | 'copy_to_opposite' | 'move_to_opposite' | 'refresh_panel' | 'swap_panes' |
   'toggle_quick_view' | 'multi_rename'; 
 
 export interface HotkeyState { [key: string]: string; }

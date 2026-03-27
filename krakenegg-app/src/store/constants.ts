@@ -13,7 +13,8 @@ export const DEFAULT_HOTKEYS: HotkeyState = {
   'rename': 'Shift+F6', 'view_file': 'F3', 'edit_file': 'F4',
   'copy_to_opposite': 'F5', 'move_to_opposite': 'F6',
   'compress_selection': 'Alt+F5', 'extract_selection': 'Alt+F9',
-  'select_all': 'CmdOrCtrl+a', 'goto_path_modal': 'CmdOrCtrl+Shift+g', 'open_settings': 'CmdOrCtrl+,', 
+  'select_all': 'CmdOrCtrl+a', 'invert_selection': 'CmdOrCtrl+Shift+a', 'select_by_pattern': 'CmdOrCtrl+Shift+p', 'deselect_all': 'CmdOrCtrl+d',
+  'goto_path_modal': 'CmdOrCtrl+Shift+g', 'open_settings': 'CmdOrCtrl+,',
   'refresh_panel': 'F2', 'toggle_quick_view': 'Ctrl+q', 'multi_rename': 'CmdOrCtrl+m',
 };
 

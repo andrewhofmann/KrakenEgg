@@ -207,10 +207,51 @@ export function useKeyboard() {
                 setOperationError("Please select an archive file to extract.");
             }
             break;
-          case 'select_all':
-            const allIndices = activeTab.files.map((_, i) => i);
+          case 'select_all': {
+            const allIndices = activeTab.files.map((_: unknown, i: number) => i);
             setSelection(activeSide, allIndices);
             break;
+          }
+          case 'invert_selection': {
+            const allFileIndices = activeTab.files.map((_: unknown, i: number) => i);
+            const currentSelection = new Set(activeTab.selection);
+            const inverted = allFileIndices.filter((i: number) => !currentSelection.has(i));
+            setSelection(activeSide, inverted);
+            break;
+          }
+          case 'deselect_all':
+            setSelection(activeSide, []);
+            break;
+          case 'select_by_pattern': {
+            state.requestInput(
+              'Select by Pattern',
+              'Enter pattern (e.g., *.txt, photo*, *.{js,ts}):',
+              '*.*',
+              (pattern: string) => {
+                if (!pattern) return;
+                // Convert glob pattern to regex
+                const regexStr = pattern
+                  .replace(/\./g, '\\.')
+                  .replace(/\*/g, '.*')
+                  .replace(/\?/g, '.')
+                  .replace(/\{([^}]+)\}/g, '($1)')
+                  .replace(/,/g, '|');
+                try {
+                  const regex = new RegExp(`^${regexStr}$`, 'i');
+                  const matches = activeTab.files
+                    .map((f: { name: string }, i: number) => ({ f, i }))
+                    .filter(({ f }: { f: { name: string } }) => regex.test(f.name))
+                    .map(({ i }: { i: number }) => i);
+                  // Add to existing selection
+                  const merged = [...new Set([...activeTab.selection, ...matches])];
+                  setSelection(activeSide, merged);
+                } catch {
+                  state.setOperationError('Invalid pattern');
+                }
+              }
+            );
+            break;
+          }
           case 'goto_path_modal':
             showGoToPathModal(activeTab.path);
             break;

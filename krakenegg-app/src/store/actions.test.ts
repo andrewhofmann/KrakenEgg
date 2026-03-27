@@ -379,6 +379,18 @@ describe('Hotkey Actions', () => {
     useStore.getState().resetHotkeys();
     expect(useStore.getState().hotkeys.toggle_side).toBe(DEFAULT_HOTKEYS.toggle_side);
   });
+
+  it('default hotkeys include invert_selection', () => {
+    expect(DEFAULT_HOTKEYS.invert_selection).toBe('CmdOrCtrl+Shift+a');
+  });
+
+  it('default hotkeys include select_by_pattern', () => {
+    expect(DEFAULT_HOTKEYS.select_by_pattern).toBe('CmdOrCtrl+Shift+p');
+  });
+
+  it('default hotkeys include deselect_all', () => {
+    expect(DEFAULT_HOTKEYS.deselect_all).toBe('CmdOrCtrl+d');
+  });
 });
 
 describe('History Actions', () => {
