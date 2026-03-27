@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useStore, HotkeyAction } from '../store';
+import { useStore, HotkeyAction, getProcessedFiles } from '../store';
 import { invoke } from '@tauri-apps/api/core';
 import { joinPath, isHotkeyMatched } from './keyboardUtils';
 
@@ -331,7 +331,13 @@ export function useKeyboard() {
         }
         case 'ArrowDown': {
           e.preventDefault();
-          const downIndex = Math.min(activeTab.files.length - 1, activeTab.cursorIndex + 1);
+          // Use processedFiles length for proper bounds (respects filters/hidden files)
+          const showHidden = state.preferences.general.showHiddenFiles;
+          const panel = state[activeSide];
+          const processed = getProcessedFiles(activeTab.files, panel.layout, activeTab.filterQuery, showHidden);
+          const maxIdx = processed.length - 1;
+          const downIndex = Math.min(maxIdx, activeTab.cursorIndex + 1);
+          if (downIndex < 0) break; // empty list
           if (e.shiftKey) {
              const newSelection = [...activeTab.selection];
              if (!newSelection.includes(downIndex)) newSelection.push(downIndex);
