@@ -145,7 +145,7 @@
     - generic [ref=e277]:
       - generic [ref=e278]: F5 Copy
       - generic [ref=e279]: F6 Move
-      - generic [ref=e280]: F8 Delete
+      - generic [ref=e280]: ⌘⌫ Delete
       - generic [ref=e281]: F7 New Folder
       - generic [ref=e282]: Ctrl+Q Quick View
     - generic [ref=e283]: 0 items selected
