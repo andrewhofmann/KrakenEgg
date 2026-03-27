@@ -17,17 +17,27 @@ export const AutoSizer = ({ children, className, style }: AutoSizerProps) => {
     const rect = ref.current.getBoundingClientRect();
     setSize({ width: rect.width, height: rect.height });
 
+    let rafId: number | null = null;
     const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        // Use contentRect for precise content box size
-        const { width, height } = entry.contentRect;
-        // Or getBoundingClientRect if needed, but contentRect is standard for observers
-        setSize({ width, height });
-      }
+      // Debounce via requestAnimationFrame to avoid excessive re-renders
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        for (const entry of entries) {
+          const { width, height } = entry.contentRect;
+          setSize(prev => {
+            // Only update if dimensions actually changed (avoids unnecessary renders)
+            if (prev.width === width && prev.height === height) return prev;
+            return { width, height };
+          });
+        }
+      });
     });
 
     observer.observe(ref.current);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   return (
