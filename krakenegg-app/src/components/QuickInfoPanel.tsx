@@ -67,7 +67,6 @@ export const QuickInfoPanel = ({ side: _side }: { side: 'left' | 'right' }) => {
                 setLoading(false);
             })
             .catch(err => {
-                console.error(err);
                 setError(String(err));
                 setLoading(false);
             });

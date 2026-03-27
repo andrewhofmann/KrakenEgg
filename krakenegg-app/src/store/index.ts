@@ -358,41 +358,52 @@ export const useStore = create<AppState>((set, get) => {
                 hotlist: currentAppState.hotlist,
             };
             await invoke('save_app_state', { state: config });
-        } catch (err) { console.error(err); }
+        } catch {
+            // State save failures are non-critical — don't interrupt the user
+        }
     },
     loadState: async () => {
         try {
-            const loaded = await invoke<any>('load_app_state');
-            if (loaded) {
+            interface SavedTabConfig { id: string; path: string; history: string[]; history_index: number; }
+            interface SavedPanelConfig { tabs: SavedTabConfig[]; active_tab_index: number; }
+            interface SavedState {
+                left: SavedPanelConfig; right: SavedPanelConfig; active_side: string;
+                hotkeys?: HotkeyState; preferences?: Preferences;
+                global_history?: string[]; hotlist?: string[];
+            }
+            const loaded = await invoke<SavedState | null>('load_app_state');
+            if (loaded && loaded.left?.tabs && loaded.right?.tabs) {
                 set((state) => ({
                     left: {
                         ...state.left,
-                        tabs: loaded.left.tabs.map((t: any) => ({
+                        tabs: loaded.left.tabs.map((t: SavedTabConfig) => ({
                             ...createTab(t.path),
                             id: t.id,
-                            history: t.history,
-                            historyIndex: t.history_index
+                            history: t.history || [t.path],
+                            historyIndex: t.history_index || 0
                         })),
-                        activeTabIndex: loaded.left.active_tab_index
+                        activeTabIndex: loaded.left.active_tab_index || 0
                     },
                     right: {
                         ...state.right,
-                        tabs: loaded.right.tabs.map((t: any) => ({
+                        tabs: loaded.right.tabs.map((t: SavedTabConfig) => ({
                             ...createTab(t.path),
                             id: t.id,
-                            history: t.history,
-                            historyIndex: t.history_index
+                            history: t.history || [t.path],
+                            historyIndex: t.history_index || 0
                         })),
-                        activeTabIndex: loaded.right.active_tab_index
+                        activeTabIndex: loaded.right.active_tab_index || 0
                     },
-                    activeSide: loaded.active_side,
+                    activeSide: (loaded.active_side === 'left' || loaded.active_side === 'right') ? loaded.active_side : 'left',
                     hotkeys: loaded.hotkeys || state.hotkeys,
                     preferences: loaded.preferences || state.preferences,
                     globalHistory: loaded.global_history || [],
                     hotlist: loaded.hotlist || []
                 }));
             }
-        } catch (err) { console.error(err); }
+        } catch {
+            // Config corrupted or missing — silently use defaults
+        }
     }
   };
 

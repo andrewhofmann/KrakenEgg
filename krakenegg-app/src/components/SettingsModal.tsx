@@ -23,7 +23,7 @@ export const SettingsModal = () => {
     if (show && activeTab === 'layouts') {
       invoke<string[]>('list_layouts')
         .then(setLayouts)
-        .catch(err => console.error("Failed to list layouts", err));
+        .catch(() => { /* layouts unavailable — non-critical */ });
     }
   }, [show, activeTab, refreshTrigger]);
 

@@ -288,7 +288,6 @@ import { formatSize } from "../utils/format";
       try {
         await invoke('open_with_default', { path });
       } catch (err) {
-        console.error("Failed to open file:", err);
         useStore.getState().setOperationError(`Failed to open file: ${err}`);
       }
     }
@@ -427,7 +426,6 @@ import { formatSize } from "../utils/format";
             try {
                 await invoke('preview_file', { path });
             } catch (err) {
-                console.error("Quick Look failed:", err);
                 useStore.getState().setOperationError(`Quick Look failed: ${err}`);
             }
         } 

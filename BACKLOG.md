@@ -22,36 +22,70 @@ Bugs discovered during testing are tracked here. Each entry includes severity, r
 - **Severity**: `low`
 - **Found in**: 0.1.0
 - **Description**: SettingsModal triggers React `act()` warnings when switching to Layouts tab
-- **Steps to Reproduce**: In tests, render SettingsModal and click the Layouts tab. The `useEffect` that fetches layouts via `invoke('list_layouts')` triggers a state update outside of `act()`.
-- **Expected vs Actual**: No warnings expected. Actual: React `act()` warning in test output.
-- **Notes**: Does not affect runtime behavior. Only appears in test environment. Could be fixed by wrapping the layouts tab switch in `act()` or by adjusting the component's effect lifecycle.
+- **Notes**: Does not affect runtime behavior. Test environment only.
 
 ### BUG-0002
 - **Status**: `open`
 - **Severity**: `low`
 - **Found in**: 0.1.0
 - **Description**: Commander mouse selection mode is incomplete (WIP)
-- **Steps to Reproduce**: Open Settings > Behavior > Mouse Selection Mode. "Commander [WIP]" option is visible but not fully implemented.
-- **Expected vs Actual**: Right-click selection behavior should match Total Commander. Actual: Labeled as WIP, behavior not fully implemented.
 
-### BUG-0003
+### BUG-0005
 - **Status**: `open`
 - **Severity**: `medium`
 - **Found in**: 0.1.0
-- **Description**: File panel uses 2-second polling instead of filesystem watcher
-- **Steps to Reproduce**: Make changes to files outside the app. Changes are not reflected until the next 2-second poll cycle.
-- **Expected vs Actual**: Changes should be detected near-instantly via OS filesystem events. Actual: 2-second delay with higher CPU usage than necessary.
+- **Description**: Progress tracking shows 0/0 totals — bytes_done/bytes_total always zero
+- **Notes**: ProgressPayload fields exist but are not populated during copy/move operations.
 
-### BUG-0004
+### BUG-0006
 - **Status**: `open`
 - **Severity**: `low`
 - **Found in**: 0.1.0
-- **Description**: Rust `commands.rs` has unnecessary braces warnings
-- **Steps to Reproduce**: Run `cargo clippy` or `cargo test`. Two `unnecessary braces around block return value` warnings appear at lines 258 and 562.
-- **Expected vs Actual**: Clean compilation. Actual: Two warnings.
+- **Description**: `any` type used in Rust invoke for `load_app_state`
+- **Fixed in**: Phase A — replaced with proper SavedState interface
 
 ---
 
 ## Fixed Bugs
 
-_(none yet)_
+### BUG-0003
+- **Status**: `fixed`
+- **Severity**: `medium`
+- **Found in**: 0.1.0
+- **Fixed in**: Phase 1 (filesystem watcher)
+- **Description**: File panel uses 2-second polling instead of filesystem watcher
+
+### BUG-0004
+- **Status**: `fixed`
+- **Severity**: `low`
+- **Found in**: 0.1.0
+- **Fixed in**: Phase A
+- **Description**: Rust `commands.rs` has unnecessary braces warnings
+
+### BUG-0006
+- **Status**: `fixed`
+- **Severity**: `low`
+- **Found in**: 0.1.0
+- **Fixed in**: Phase A
+- **Description**: `any` type used in store loadState — replaced with typed SavedState interface
+
+### BUG-0007
+- **Status**: `fixed`
+- **Severity**: `medium`
+- **Found in**: 0.1.0
+- **Fixed in**: Phase A
+- **Description**: Rust unwrap() panic risk on path.parent() in compress command
+
+### BUG-0008
+- **Status**: `fixed`
+- **Severity**: `low`
+- **Found in**: 0.1.0
+- **Fixed in**: Phase A
+- **Description**: console.error() used instead of user-visible error notifications in 4 locations
+
+### BUG-0009
+- **Status**: `fixed`
+- **Severity**: `medium`
+- **Found in**: 0.1.0
+- **Fixed in**: Phase A
+- **Description**: No fallback for corrupted config — loadState now silently uses defaults on failure

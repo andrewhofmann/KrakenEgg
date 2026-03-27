@@ -304,7 +304,7 @@ pub async fn copy_items_with_progress(
 
         let result = add_files_to_zip(&archive_path, &physical_sources, &internal_path.to_string_lossy());
         
-        { if let Ok(mut map) = state.0.lock() { map.remove(&id); } }
+        if let Ok(mut map) = state.0.lock() { map.remove(&id); }
         return result;
     }
 
@@ -608,8 +608,8 @@ pub async fn delete_items_with_progress(
         }
     }
 
-    { if let Ok(mut map) = state.0.lock() { map.remove(&id); } }
-    
+    if let Ok(mut map) = state.0.lock() { map.remove(&id); }
+
     if token.load(Ordering::Relaxed) {
         Err("Operation cancelled".to_string())
     } else {
@@ -704,8 +704,8 @@ fn compress_rust_zip(sources: &[String], dest_path: &str, deflate: bool) -> Resu
                     if d == &p { continue; }
                 }
 
-                let relative_to_root = if src_path.parent().is_some() {
-                    path.strip_prefix(src_path.parent().unwrap()).unwrap_or(path)
+                let relative_to_root = if let Some(parent) = src_path.parent() {
+                    path.strip_prefix(parent).unwrap_or(path)
                 } else {
                     path
                 };
