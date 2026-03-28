@@ -30,7 +30,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
   }, [autoFocus]);
 
   useEffect(() => {
-    if (focusSignal) {
+    if (focusSignal != null && focusSignal > 0) {
         inputRef.current?.focus();
         inputRef.current?.select();
     }

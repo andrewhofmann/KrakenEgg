@@ -552,12 +552,12 @@ export const useStore = create<AppState>((set, get) => {
                 .filter(f => f && f.name !== '..')
                 .map(f => `${activeTab.path === "/" ? "" : activeTab.path}/${f.name}`);
         } else {
-            const file = files[activeTab.cursorIndex];
+            const file = activeTab.cursorIndex >= 0 ? files[activeTab.cursorIndex] : null;
             if (!file || file.name === '..') return;
             sources = [`${activeTab.path === "/" ? "" : activeTab.path}/${file.name}`];
         }
         if (sources.length === 0) return;
-        
+
         const confirm = state.preferences.general.confirmDelete;
         const doDelete = async () => {
              try {
@@ -589,7 +589,7 @@ export const useStore = create<AppState>((set, get) => {
           if (activeTab.selection.length > 0) {
               targetFiles = activeTab.selection.filter(i => i >= 0 && files[i] && files[i].name !== '..').map(i => `${activeTab.path === "/" ? "" : activeTab.path}/${files[i].name}`);
           } else {
-              const file = files[activeTab.cursorIndex];
+              const file = activeTab.cursorIndex >= 0 ? files[activeTab.cursorIndex] : null;
               if (file && file.name !== "..") {
                   targetFiles = [`${activeTab.path === "/" ? "" : activeTab.path}/${file.name}`];
               }

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useStore } from '../store';
+import { useEffect, useState, useMemo } from 'react';
+import { useStore, getProcessedFiles } from '../store';
 import { invoke } from '@tauri-apps/api/core';
 import { formatSize } from '../utils/format';
 
@@ -11,10 +11,14 @@ interface RecursiveInfo {
 
 export const QuickInfoPanel = ({ side: _side }: { side: 'left' | 'right' }) => {
     const activeSide = useStore(s => s.activeSide);
-    // If this panel is active, we don't show info (FilePanel logic handles this, but safety check)
+    const layout = useStore(s => s[activeSide].layout);
+    const preferences = useStore(s => s.preferences);
     // We want to show info ABOUT the active side.
     const targetTab = useStore(s => s[activeSide].tabs[s[activeSide].activeTabIndex]);
-    const files = targetTab?.files || [];
+    const files = useMemo(() => {
+        if (!targetTab || !layout) return [];
+        return getProcessedFiles(targetTab.files, layout, targetTab.filterQuery, preferences.general.showHiddenFiles);
+    }, [targetTab?.files, layout, targetTab?.filterQuery, preferences.general.showHiddenFiles]);
     const selection = targetTab?.selection || [];
     const cursorIndex = targetTab?.cursorIndex ?? -1;
 

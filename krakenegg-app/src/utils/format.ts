@@ -1,7 +1,7 @@
 export const formatSize = (size: number) => {
-  if (size === 0) return "--";
+  if (size <= 0) return "--";
   const units = ["B", "KB", "MB", "GB", "TB", "PB"];
-  const i = Math.floor(Math.log(size) / Math.log(1024));
+  const i = Math.min(Math.floor(Math.log(size) / Math.log(1024)), units.length - 1);
   return `${(size / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
 };
 

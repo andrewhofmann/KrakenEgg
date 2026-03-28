@@ -68,8 +68,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }
             className={clsx(
                 "block w-full text-left px-3 py-1.5 rounded-md leading-tight truncate",
                 item.disabled
-                ? "cursor-default"
-                : "cursor-default"
+                ? "cursor-default opacity-50"
+                : "cursor-pointer"
             )}
             style={{
               color: item.disabled ? 'var(--ke-text-disabled)' : 'var(--ke-text)',
