@@ -1,0 +1,38 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: krakenegg-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: krakenegg-app/src-tauri
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: krakenegg-app/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm tauri build
+        name: Build Tauri app
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: KrakenEgg-macOS
+          path: |
+            krakenegg-app/src-tauri/target/release/bundle/dmg/*.dmg
+            krakenegg-app/src-tauri/target/release/bundle/macos/*.app
