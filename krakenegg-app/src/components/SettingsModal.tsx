@@ -175,11 +175,13 @@ export const SettingsModal = () => {
       interface SavedPanel { tabs: SavedTab[]; active_tab_index: number; }
       interface SavedLayout { left: SavedPanel; right: SavedPanel; active_side: string; hotkeys?: any; preferences?: any; }
       const loaded = await invoke<SavedLayout | null>('load_named_layout', { name });
-      if (loaded?.left?.tabs?.length > 0 && loaded?.right?.tabs?.length > 0) {
+      if (loaded && loaded.left?.tabs?.length && loaded.left.tabs.length > 0 && loaded.right?.tabs?.length && loaded.right.tabs.length > 0) {
         const defLayout: PaneLayout = { sortColumn: 'name', sortDirection: 'asc', columns: ['name', 'ext', 'size', 'date'], columnWidths: { name: 0, ext: 45, size: 80, date: 140 } };
+        const lt = loaded.left.tabs;
+        const rt = loaded.right.tabs;
         useStore.setState({
-          left: { tabs: loaded.left.tabs.map(t => ({ ...createTab(t.path), id: t.id, history: t.history || [t.path], historyIndex: t.history_index ?? 0 })), activeTabIndex: Math.min(loaded.left.active_tab_index, loaded.left.tabs.length - 1), layout: defLayout },
-          right: { tabs: loaded.right.tabs.map(t => ({ ...createTab(t.path), id: t.id, history: t.history || [t.path], historyIndex: t.history_index ?? 0 })), activeTabIndex: Math.min(loaded.right.active_tab_index, loaded.right.tabs.length - 1), layout: defLayout },
+          left: { tabs: lt.map(t => ({ ...createTab(t.path), id: t.id, history: t.history || [t.path], historyIndex: t.history_index ?? 0 })), activeTabIndex: Math.min(loaded.left.active_tab_index, lt.length - 1), layout: defLayout },
+          right: { tabs: rt.map(t => ({ ...createTab(t.path), id: t.id, history: t.history || [t.path], historyIndex: t.history_index ?? 0 })), activeTabIndex: Math.min(loaded.right.active_tab_index, rt.length - 1), layout: defLayout },
           activeSide: loaded.active_side as 'left' | 'right',
         });
         showOperationStatus(`Layout '${name}' loaded.`);
