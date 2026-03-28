@@ -1,4 +1,4 @@
-import { Preferences, HotkeyState, PaneLayout, TabState, FileInfo, SortColumn } from "./types";
+import { Preferences, HotkeyState, PaneLayout, TabState, FileInfo } from "./types";
 
 export const DEFAULT_PREFERENCES: Preferences = {
     general: { showHiddenFiles: false, confirmDelete: true, saveHistoryOnExit: true },

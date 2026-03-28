@@ -1,5 +1,5 @@
 import {
-  File, Folder, FolderOpen, Image, FileText, FileCode, FileArchive,
+  File, Folder, Image, FileText, FileCode, FileArchive,
   FileAudio, FileVideo, FileSpreadsheet, FileType, Database,
   Terminal, Settings, Lock, Link, FileJson,
 } from 'lucide-react';

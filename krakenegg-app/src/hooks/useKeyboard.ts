@@ -36,8 +36,8 @@ export function useKeyboard() {
         showSettingsModal,
         goBack,
         goForward,
-        compressSelection,
-        extractSelection,
+        
+        
         copySelectedFiles,
         cutSelectedFiles,
         pasteFiles,
@@ -237,7 +237,7 @@ export function useKeyboard() {
             }
             break;
           case 'compress_selection':
-            compressSelection(activeSide);
+            state.archive.compressSelection(activeSide);
             break;
           case 'extract_selection':
             const fileToExtract = cursorFile;
@@ -245,7 +245,7 @@ export function useKeyboard() {
                 requestConfirmation(
                 "Extract Archive",
                 `Extract ${fileToExtract.name} here?`,
-                () => extractSelection(activeSide)
+                () => state.archive.extractSelection(activeSide)
                 );
             } else {
                 setOperationError("Please select an archive file to extract.");

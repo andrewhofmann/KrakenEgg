@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { useStore } from './index';
-import { DEFAULT_LAYOUT, DEFAULT_PREFERENCES, createTab } from './constants';
+import { DEFAULT_LAYOUT, DEFAULT_PREFERENCES } from './constants';
 import { FileInfo, TabState } from './types';
 
 const makeTab = (path: string, overrides: Partial<TabState> = {}): TabState => ({

@@ -15,7 +15,7 @@ vi.mock('@tauri-apps/api/event', () => ({
 
 import { useStore } from './index';
 import { TabState } from './types';
-import { DEFAULT_HOTKEYS, DEFAULT_LAYOUT, DEFAULT_PREFERENCES, createTab } from './constants';
+import { DEFAULT_HOTKEYS, DEFAULT_LAYOUT, DEFAULT_PREFERENCES } from './constants';
 
 const makeTab = (path: string, overrides: Partial<TabState> = {}): TabState => ({
   id: Math.random().toString(36).substring(7),
@@ -170,7 +170,7 @@ describe('Tab Management Edge Cases', () => {
     useStore.getState().addTab('left', '/tab2');
     // 3 tabs: [/], [/tab1], [/tab2]
 
-    const pathAtIndex0 = useStore.getState().left.tabs[0].path;
+    // const pathAtIndex0 = useStore.getState().left.tabs[0].path;
     expect(() => useStore.getState().moveTab('left', 0, 'left', 2)).not.toThrow();
     // Tab that was at index 0 should now be elsewhere
     const tabs = useStore.getState().left.tabs;

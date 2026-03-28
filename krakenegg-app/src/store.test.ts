@@ -71,9 +71,9 @@ describe('KrakenEgg Phase 8 & 9: Features', () => {
       activeSide: 'left',
       viewer: { show: false, title: '', content: '', loading: false, error: null, isImage: false },
       editor: { show: false, title: '', path: '', content: '', loading: false, error: null, dirty: false },
-      search: { show: false, query: '', searchContent: false, results: [], loading: false, error: null },
-      compressSelection: vi.fn(),
-      extractSelection: vi.fn(),
+      search: { show: false, query: '', searchContent: false, searchMode: 'substring' as const, results: [], loading: false, error: null },
+      
+      
       clipboard: { type: null, items: null, operation: null, sourcePanel: null },
       setClipboard: vi.fn(),
       clearClipboard: vi.fn(),

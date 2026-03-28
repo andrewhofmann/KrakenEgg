@@ -2,15 +2,15 @@ import { create } from 'zustand';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { 
-    FileInfo, PaneLayout, TabState, ViewerState, EditorState, SearchState, 
+    FileInfo, TabState, ViewerState, EditorState, SearchState, 
     ConfirmationState, MultiRenameState, ContextMenuItem, ContextMenuState, 
     ClipboardState, InputModalState, ProgressInfo, ConflictInfo, 
     OperationStatusState, GoToPathModalState, SettingsModalState, 
-    Preferences, HotkeyAction, HotkeyState, PanelState, FileOperation, AppState, SortColumn, SortDirection 
+    Preferences, HotkeyAction, HotkeyState, FileOperation, AppState, SortColumn, SortDirection 
 } from './types';
 import { 
     DEFAULT_PREFERENCES, DEFAULT_HOTKEYS, DEFAULT_LAYOUT, IMAGE_EXTENSIONS, 
-    createTab, getExtension, getProcessedFiles 
+    createTab, getProcessedFiles 
 } from './constants';
 
 // Re-export everything for compatibility with existing imports

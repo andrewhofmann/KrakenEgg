@@ -18,7 +18,6 @@ interface FilePanelProps {
   usePanelDataHook: (side: 'left' | 'right') => void;
 }
 
-const joinPath = (dir: string, file: string) => dir === "/" ? `/${file}` : `${dir}/${file}`;
 
 export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   usePanelDataHook(side);
@@ -37,11 +36,9 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   const { setActiveSide, setPath, setSort, setColumnOrder, setColumnWidth,
     setCursor, setSelection, setFiles, setFilterQuery, setLoading,
     showContextMenu, hideContextMenu, refreshPanel, addTab,
-    requestInput, requestConfirmation, showGoToPathModal,
     copySelectedFiles, cutSelectedFiles, pasteFiles,
     copyToOppositePanel, moveToOppositePanel,
     addToHotlist, removeFromHotlist,
-    showOperationStatus, setOperationError,
   } = useStore((s) => s);
 
   const compressSelection = useStore((s) => s.archive.compressSelection);
@@ -276,16 +273,13 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         setColumnWidth(side, col, finalWidth);
   };
 
-  const joinPath = (dir: string, file: string) => dir === "/" ? `/${file}` : `${dir}/${file}`;
 
   const getSelectedPaths = (files: FileInfo[]) => {
     if (!activeTab) return [];
     if (activeTab.selection.length > 0) {
-      return activeTab.selection.map(i => joinPath(activeTab.path, files[i].name));
     } else {
       const file = files[activeTab.cursorIndex];
       if (file && file.name !== "..") {
-        return [joinPath(activeTab.path, file.name)];
       }
     }
     return [];
@@ -370,7 +364,6 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       const newPath = activeTab.path === "/" ? `/${file.name}` : `${activeTab.path}/${file.name}`;
       setPath(side, newPath);
     } else if (file && activeTab) {
-      const path = joinPath(activeTab.path, file.name);
       try {
         await invoke('open_with_default', { path });
       } catch (err) {
@@ -402,8 +395,6 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     const isDraggedItemSelected = activeTab.selection.length > 0 && activeTab.selection.some(i => processedFiles[i] && processedFiles[i].name === file.name);
     
     const paths = isDraggedItemSelected
-        ? activeTab.selection.map(i => joinPath(activeTab.path, processedFiles[i].name))
-        : [joinPath(activeTab.path, file.name)];
 
     // Use standard URI list for compatibility and a custom type for internal state
     e.dataTransfer.setData("text/uri-list", paths.join('\r\n'));
@@ -449,7 +440,6 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         
         let dest = activeTab.path;
         if (file && file.is_dir && file.name !== "..") {
-            dest = joinPath(activeTab.path, file.name);
         }
 
         if (!dest || sources.length === 0) return;
@@ -462,7 +452,6 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         isCopy ? "Copy Files" : "Move Files",
         `${isCopy ? "Copy" : "Move"} ${sources.length} items to ${dest}?`,
         async () => {
-            const { showOperationStatus, setOperationError } = useStore.getState();
             try {
               showOperationStatus(`${isCopy ? "Copying" : "Moving"} ${sources.length} items...`);
               if (isCopy) {
@@ -507,16 +496,13 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     if (file) {
       if (file.is_dir) {
         items.push({ label: "Open", action: () => handleDoubleClick(e, file) });
-        items.push({ label: "Open in New Tab", action: () => addTab(side, joinPath(activeTab.path, file.name)) });
       } else {
         items.push({ label: "Open", action: () => handleDoubleClick(e, file) }); 
       }
-      items.push({ label: "View (F3)", action: () => useStore.getState().showViewer(file.name, joinPath(activeTab.path, file.name)) });
       items.push({ label: useStore.getState().quickView ? "Hide Quick Info (Ctrl+Q)" : "Quick Info (Ctrl+Q)", action: () => useStore.getState().toggleQuickView() });
       items.push({ 
         label: "Quick Look (Space)", 
         action: async () => {
-            const path = joinPath(activeTab.path, file.name);
             try {
                 await invoke('preview_file', { path });
             } catch (err) {
@@ -525,7 +511,6 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         } 
       });
       if (!file.is_dir) {
-        items.push({ label: "Edit (F4)", action: () => useStore.getState().showEditor(file.name, joinPath(activeTab.path, file.name)) });
       }
     }
 
@@ -545,8 +530,6 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         action: () => {
             requestInput("New Folder", "Enter folder name:", "New Folder", async (name) => {
                 if (name) {
-                    const path = joinPath(activeTab.path, name);
-                    const { showOperationStatus, setOperationError } = useStore.getState();
                     try {
                       showOperationStatus(`Creating directory '${name}'...`);
                       await invoke('create_directory', { path });
@@ -686,8 +669,6 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   const handleRenameSubmit = useCallback(async (oldName: string, newName: string) => {
     if (!activeTab) return;
     setRenamingIndex(null);
-    const oldPath = joinPath(activeTab.path, oldName);
-    const newPath = joinPath(activeTab.path, newName);
     try {
       useStore.getState().showOperationStatus(`Renaming '${oldName}' to '${newName}'...`);
       await invoke('move_items', { sources: [oldPath], dest: newPath });

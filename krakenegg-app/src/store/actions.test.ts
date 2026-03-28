@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useStore } from './index';
 import { TabState } from './types';
-import { DEFAULT_HOTKEYS, DEFAULT_LAYOUT, DEFAULT_PREFERENCES, createTab } from './constants';
+import { DEFAULT_HOTKEYS, DEFAULT_LAYOUT, DEFAULT_PREFERENCES } from './constants';
 
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(() => Promise.resolve()),
@@ -41,7 +41,7 @@ const resetStore = () => {
     hotlist: [],
     viewer: { show: false, title: '', content: '', loading: false, error: null, isImage: false },
     editor: { show: false, title: '', path: '', content: '', loading: false, error: null, dirty: false },
-    search: { show: false, query: '', searchContent: false, results: [], loading: false, error: null },
+    search: { show: false, query: '', searchContent: false, searchMode: 'substring' as const, results: [], loading: false, error: null },
     confirmation: { show: false, title: '', message: '', showConflictOptions: false, onConfirm: () => {} },
     contextMenu: { show: false, x: 0, y: 0, items: [] },
     clipboard: { type: null, items: null, operation: null, sourcePanel: null },
@@ -124,7 +124,7 @@ describe('Tab Actions', () => {
 
   it('moveTab moves tab between panels', () => {
     useStore.getState().addTab('left', '/moveme');
-    const tabToMove = useStore.getState().left.tabs[1];
+    // const tabToMove = useStore.getState().left.tabs[1];
     useStore.getState().moveTab('left', 1, 'right');
     expect(useStore.getState().right.tabs).toHaveLength(2);
     expect(useStore.getState().right.tabs[1].path).toBe('/moveme');

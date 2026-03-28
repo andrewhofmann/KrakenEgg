@@ -1,4 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
+import { beforeAll } from "vitest";
+import { describe, it, expect } from 'vitest';
 import { joinPath, isHotkeyMatched } from './keyboardUtils';
 
 // Helper to create a mock KeyboardEvent
