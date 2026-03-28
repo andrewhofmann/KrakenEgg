@@ -114,7 +114,7 @@ export const useStore = create<AppState>((set, get) => {
             const toTabs = [...state[toSide].tabs];
             const insertIndex = toIndex !== undefined ? toIndex : toTabs.length;
             toTabs.splice(insertIndex, 0, tabToMove);
-            return { [fromSide]: { ...state[fromSide], tabs: fromTabs, activeTabIndex: newFromActive }, [toSide]: { ...state[toSide], tabs: toTabs, activeTabIndex: state[toSide].activeTabIndex } };
+            return { [fromSide]: { ...state[fromSide], tabs: fromTabs, activeTabIndex: newFromActive }, [toSide]: { ...state[toSide], tabs: toTabs, activeTabIndex: insertIndex } };
         }); get().saveState();
     },
     setTabs: (side: 'left' | 'right', tabs: TabState[]) => { set((state) => ({ [side]: { ...state[side], tabs } })); get().saveState(); },

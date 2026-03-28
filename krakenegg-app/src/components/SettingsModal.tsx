@@ -134,14 +134,16 @@ export const SettingsModal = () => {
         return; // Wait for non-modifier key
       }
       const newBinding = parts.join('+');
-      // Check for conflicts — warn if another action uses this key
-      const conflict = Object.entries(hotkeys).find(
+      // Check for conflicts — use fresh hotkeys state to avoid stale closure
+      const currentHotkeys = useStore.getState().hotkeys;
+      const conflict = Object.entries(currentHotkeys).find(
         ([action, binding]) => action !== editingHotkey && binding === newBinding
       );
       if (conflict) {
         const conflictLabel = HOTKEY_LABELS[conflict[0] as HotkeyAction] || conflict[0];
-        // Clear the conflicting binding (last one wins)
+        // Clear the conflicting binding (last one wins) and notify user
         setHotkey(conflict[0] as HotkeyAction, '');
+        useStore.getState().showOperationStatus(`Shortcut conflict: removed binding from "${conflictLabel}"`);
       }
       setHotkey(editingHotkey, newBinding);
       setEditingHotkey(null);

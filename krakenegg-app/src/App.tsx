@@ -163,7 +163,7 @@ function App() {
         }
     });
 
-    return () => { unlistenPromise.then(unlisten => unlisten()); };
+    return () => { unlistenPromise.then(unlisten => unlisten()).catch(() => {}); };
   }, []);
 
   return (
