@@ -219,7 +219,7 @@ export const useStore = create<AppState>((set, get) => {
         return { [side]: { ...state[side], layout: { ...layout, sortColumn: column, sortDirection: direction } } };
     }),
     setColumnOrder: (side: 'left' | 'right', order: SortColumn[]) => set((state) => ({ [side]: { ...state[side], layout: { ...state[side].layout, columns: order } } })),
-    setColumnWidth: (side: 'left' | 'right', column: SortColumn, width: number) => set((state) => ({ [side]: { ...state[side], layout: { ...state[side].layout, columnWidths: { ...state[side].layout.columnWidths, [column]: width } } } })),
+    setColumnWidth: (side: 'left' | 'right', column: SortColumn, width: number) => set((state) => ({ [side]: { ...state[side], layout: { ...state[side].layout, columnWidths: { ...state[side].layout.columnWidths, [column]: Math.max(30, width) } } } })),
   };
 
   const cursorActions = {
@@ -234,8 +234,9 @@ export const useStore = create<AppState>((set, get) => {
     })),
     toggleSelection: (side: 'left' | 'right') => set((state) => updateActiveTab(state, side, (tab) => {
       const currentIndex = tab.cursorIndex;
+      if (currentIndex < 0) return {};
       const isSelected = tab.selection.includes(currentIndex);
-      let newSelection = isSelected ? tab.selection.filter(i => i !== currentIndex) : [...tab.selection, currentIndex];
+      const newSelection = isSelected ? tab.selection.filter(i => i !== currentIndex) : [...tab.selection, currentIndex];
       return { selection: newSelection };
     })),
   };

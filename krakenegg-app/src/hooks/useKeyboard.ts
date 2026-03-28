@@ -92,11 +92,12 @@ export function useKeyboard() {
         return;
       }
 
-      // Ctrl+H: Toggle hidden files
+      // Ctrl+H: Toggle hidden files — reset cursor since file list changes
       if (e.ctrlKey && e.key === 'h') {
         e.preventDefault();
         const current = state.preferences.general.showHiddenFiles;
         state.setPreference('general', 'showHiddenFiles', !current);
+        setCursorAndSelection(activeSide, 0, []);
         return;
       }
 
@@ -329,8 +330,8 @@ export function useKeyboard() {
           const upIndex = Math.max(minIdx, activeTab.cursorIndex - 1);
           if (e.shiftKey) {
              const newSel = [...activeTab.selection];
-             if (!newSel.includes(upIndex)) newSel.push(upIndex);
-             setCursorAndSelection(activeSide, upIndex, newSel);
+             if (upIndex >= 0 && !newSel.includes(upIndex)) newSel.push(upIndex);
+             setCursorAndSelection(activeSide, upIndex, newSel.filter(i => i >= 0));
           } else if (e.ctrlKey || e.metaKey) {
              setCursor(activeSide, upIndex);
           } else {
@@ -358,16 +359,30 @@ export function useKeyboard() {
           e.preventDefault();
           {
             const firstIndex = activeTab.path === "/" ? 0 : -1;
-            setCursor(activeSide, firstIndex);
-            if (!e.shiftKey) setSelection(activeSide, [firstIndex]);
+            if (e.shiftKey) {
+              // Range select from cursor to top
+              const range: number[] = [];
+              for (let i = Math.max(0, firstIndex); i <= activeTab.cursorIndex; i++) range.push(i);
+              const merged = [...new Set([...activeTab.selection, ...range])];
+              setCursorAndSelection(activeSide, firstIndex, merged.filter(i => i >= 0));
+            } else {
+              setCursorAndSelection(activeSide, firstIndex, firstIndex >= 0 ? [firstIndex] : []);
+            }
           }
           break;
         case 'End':
           e.preventDefault();
           {
             const lastIndex = visibleFiles.length - 1;
-            setCursor(activeSide, lastIndex);
-            if (!e.shiftKey) setSelection(activeSide, [lastIndex]);
+            if (e.shiftKey) {
+              // Range select from cursor to bottom
+              const range: number[] = [];
+              for (let i = Math.max(0, activeTab.cursorIndex); i <= lastIndex; i++) range.push(i);
+              const merged = [...new Set([...activeTab.selection, ...range])];
+              setCursorAndSelection(activeSide, lastIndex, merged);
+            } else {
+              setCursorAndSelection(activeSide, lastIndex, [lastIndex]);
+            }
           }
           break;
         case 'Delete': // Forward-delete key (Fn+Backspace on Mac) — also triggers delete

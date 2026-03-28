@@ -226,15 +226,14 @@ describe('Sort Edge Cases', () => {
 describe('Column Width Edge Cases', () => {
   beforeEach(resetStore);
 
-  it('setColumnWidth with 0 is valid (flex)', () => {
+  it('setColumnWidth with 0 is clamped to minimum', () => {
     useStore.getState().setColumnWidth('left', 'name', 0);
-    expect(useStore.getState().left.layout.columnWidths.name).toBe(0);
+    expect(useStore.getState().left.layout.columnWidths.name).toBe(30);
   });
 
-  it('setColumnWidth with negative is set as-is (store does not clamp)', () => {
+  it('setColumnWidth with negative is clamped to minimum', () => {
     useStore.getState().setColumnWidth('left', 'name', -10);
-    // Store sets value directly — clamping is UI responsibility
-    expect(useStore.getState().left.layout.columnWidths.name).toBe(-10);
+    expect(useStore.getState().left.layout.columnWidths.name).toBe(30);
   });
 });
 

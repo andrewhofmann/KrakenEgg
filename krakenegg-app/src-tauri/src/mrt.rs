@@ -153,15 +153,25 @@ pub fn execute_mrt(
         }
     }
 
-    // Execute
+    // Execute with rollback on failure
+    let mut completed: Vec<(std::path::PathBuf, std::path::PathBuf)> = Vec::new();
     for (i, p) in previews.iter().enumerate() {
         if p.status == "unchanged" { continue; }
-        
+
         let old_path = Path::new(&files[i]);
         let parent = old_path.parent().ok_or_else(|| format!("Cannot rename root directory: {}", files[i]))?;
         let new_path = parent.join(&p.new);
-        
-        fs::rename(old_path, new_path).map_err(|e| format!("Failed to rename '{}': {}", p.original, e))?;
+
+        match fs::rename(old_path, &new_path) {
+            Ok(()) => { completed.push((new_path, old_path.to_path_buf())); }
+            Err(e) => {
+                // Rollback all completed renames
+                for (renamed, original) in completed.iter().rev() {
+                    let _ = fs::rename(renamed, original);
+                }
+                return Err(format!("Failed to rename '{}': {} (all changes rolled back)", p.original, e));
+            }
+        }
     }
 
     Ok(())
