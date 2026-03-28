@@ -46,6 +46,97 @@ export function createSandbox() {
 }
 
 /**
+ * Creates a sandbox with hundreds of files for stress testing.
+ */
+export function createLargeSandbox() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'krakenegg-large-'));
+
+  // 20 folders
+  for (let i = 0; i < 20; i++) {
+    fs.mkdirSync(path.join(root, `folder_${String(i).padStart(2, '0')}`));
+  }
+
+  // 500 files with various extensions
+  const exts = ['txt', 'md', 'js', 'ts', 'py', 'rs', 'json', 'yaml', 'css', 'html',
+                'png', 'jpg', 'pdf', 'zip', 'tar', 'log', 'csv', 'xml', 'toml', 'sh'];
+  for (let i = 0; i < 500; i++) {
+    const ext = exts[i % exts.length];
+    const size = Math.floor(Math.random() * 10000);
+    fs.writeFileSync(path.join(root, `file_${String(i).padStart(4, '0')}.${ext}`), Buffer.alloc(size));
+  }
+
+  return {
+    root,
+    cleanup: () => { fs.rmSync(root, { recursive: true, force: true }); },
+  };
+}
+
+/**
+ * Creates a sandbox with deep nested directories.
+ */
+export function createDeepSandbox() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'krakenegg-deep-'));
+
+  let current = root;
+  for (let depth = 0; depth < 10; depth++) {
+    const name = `level_${depth}`;
+    current = path.join(current, name);
+    fs.mkdirSync(current);
+    fs.writeFileSync(path.join(current, `file_at_depth_${depth}.txt`), `Depth ${depth}`);
+  }
+
+  // Also add some files at root
+  fs.writeFileSync(path.join(root, 'root_file.txt'), 'root');
+  fs.mkdirSync(path.join(root, 'sibling_folder'));
+
+  return {
+    root,
+    cleanup: () => { fs.rmSync(root, { recursive: true, force: true }); },
+  };
+}
+
+/**
+ * Creates a sandbox with special character filenames.
+ */
+export function createSpecialNamesSandbox() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'krakenegg-special-'));
+
+  const safeNames = [
+    'normal.txt',
+    'file with spaces.txt',
+    'file-with-dashes.txt',
+    'file_with_underscores.txt',
+    'UPPERCASE.TXT',
+    'MiXeD.CaSe.TxT',
+    'file.multiple.dots.txt',
+    '.hidden_file',
+    '.hidden_folder',
+    'no_extension',
+    '日本語.txt',
+    'émojis_🎉.txt',
+    'very_long_filename_that_exceeds_normal_display_width_and_should_be_truncated_properly_in_the_ui.txt',
+    'file (1).txt',
+    'file (2).txt',
+    "file'quote.txt",
+  ];
+
+  for (const name of safeNames) {
+    try {
+      if (name.startsWith('.') && !name.includes('.', 1)) {
+        fs.mkdirSync(path.join(root, name));
+      } else {
+        fs.writeFileSync(path.join(root, name), `Content of ${name}`);
+      }
+    } catch { /* skip if OS doesn't support the name */ }
+  }
+
+  return {
+    root,
+    cleanup: () => { fs.rmSync(root, { recursive: true, force: true }); },
+  };
+}
+
+/**
  * Injects Tauri mocks that serve REAL file data from the sandbox directory.
  * This makes the app behave as if it's reading real files.
  */

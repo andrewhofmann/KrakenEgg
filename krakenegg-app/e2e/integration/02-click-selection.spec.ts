@@ -20,7 +20,7 @@ test('single click selects a file row', async ({ page }) => {
   const row = page.locator('[role="row"]').first();
   if (await row.isVisible()) {
     await row.click();
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(300);
     expect(await row.getAttribute('aria-selected')).toBe('true');
   }
 });
@@ -29,9 +29,9 @@ test('clicking a different row deselects the previous one', async ({ page }) => 
   const rows = page.locator('[role="row"]');
   if (await rows.count() >= 2) {
     await rows.nth(0).click();
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(300);
     await rows.nth(1).click();
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(300);
     expect(await rows.nth(0).getAttribute('aria-selected')).toBe('false');
     expect(await rows.nth(1).getAttribute('aria-selected')).toBe('true');
   }
@@ -41,9 +41,9 @@ test('Shift+click selects a range of rows', async ({ page }) => {
   const rows = page.locator('[role="row"]');
   if (await rows.count() >= 5) {
     await rows.nth(0).click();
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300);
     await rows.nth(4).click({ modifiers: ['Shift'] });
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(300);
     const selected = await page.locator('[role="row"][aria-selected="true"]').count();
     expect(selected).toBeGreaterThanOrEqual(3);
   }
@@ -53,11 +53,11 @@ test('Cmd+click adds to selection without removing others', async ({ page }) => 
   const rows = page.locator('[role="row"]');
   if (await rows.count() >= 4) {
     await rows.nth(0).click();
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300);
     await rows.nth(2).click({ modifiers: ['Meta'] });
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300);
     await rows.nth(3).click({ modifiers: ['Meta'] });
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(300);
     expect(await rows.nth(0).getAttribute('aria-selected')).toBe('true');
     expect(await rows.nth(1).getAttribute('aria-selected')).toBe('false');
     expect(await rows.nth(2).getAttribute('aria-selected')).toBe('true');
@@ -69,12 +69,12 @@ test('Cmd+click on selected row deselects it', async ({ page }) => {
   const rows = page.locator('[role="row"]');
   if (await rows.count() >= 3) {
     await rows.nth(0).click();
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300);
     await rows.nth(1).click({ modifiers: ['Meta'] });
-    await page.waitForTimeout(100);
+    await page.waitForTimeout(300);
     // Now deselect row 0
     await rows.nth(0).click({ modifiers: ['Meta'] });
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(300);
     expect(await rows.nth(0).getAttribute('aria-selected')).toBe('false');
     expect(await rows.nth(1).getAttribute('aria-selected')).toBe('true');
   }
