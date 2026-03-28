@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { invoke } from '@tauri-apps/api/core';
+import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { 
     FileInfo, TabState, ViewerState, EditorState, SearchState, 
@@ -244,7 +244,7 @@ export const useStore = create<AppState>((set, get) => {
       set((state) => ({ viewer: { ...state.viewer, show: true, title, loading: true, error: null, isImage: false } }));
       const extension = path.substring(path.lastIndexOf('.')).toLowerCase();
       const isImageFile = IMAGE_EXTENSIONS.includes(extension);
-      if (isImageFile) set((state) => ({ viewer: { ...state.viewer, content: path, loading: false, isImage: true } }));
+      if (isImageFile) set((state) => ({ viewer: { ...state.viewer, content: convertFileSrc(path), loading: false, isImage: true } }));
       else {
         try {
           const content = await invoke<string>('read_file_content', { path });

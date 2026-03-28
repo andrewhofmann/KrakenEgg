@@ -847,7 +847,8 @@ pub async fn read_file_content(path: String) -> Result<String, String> {
     use std::io::Read;
     let file = fs::File::open(&path).map_err(|e| e.to_string())?;
     let mut buffer = Vec::new();
-    file.take(10 * 1024).read_to_end(&mut buffer).map_err(|e| e.to_string())?;
+    // Read up to 5MB for viewing — large enough for most text files
+    file.take(5 * 1024 * 1024).read_to_end(&mut buffer).map_err(|e| e.to_string())?;
     String::from_utf8(buffer).map_err(|e| e.to_string())
 }
 
