@@ -14,7 +14,8 @@
     "test:ui": "vitest --ui",
     "test:rust": "cd src-tauri && cargo test --lib",
     "test:e2e": "playwright test",
-    "test:all": "vitest run && cd src-tauri && cargo test --lib"
+    "test:all": "vitest run && cd src-tauri && cargo test --lib",
+    "test:native": "npx tsx e2e/tauri-native/run-native-tests.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -47,6 +48,7 @@
     "jsdom": "^27.2.0",
     "postcss": "^8.5.8",
     "tailwindcss": "4.2.2",
+    "tsx": "^4.21.0",
     "typescript": "~6.0.2",
     "vite": "^7.0.4",
     "vitest": "^4.0.15"
