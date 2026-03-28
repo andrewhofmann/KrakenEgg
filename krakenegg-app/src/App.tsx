@@ -82,14 +82,73 @@ function App() {
                 store.requestInput("New File", "Name:", "untitled.txt", (name) => { if (name) store.createNewFile(side, name); });
                 break;
             case 'new_folder':
-                store.requestInput("New Folder", "Name:", "New Folder", async (name) => { 
-                    if (name) { 
+                store.requestInput("New Folder", "Name:", "New Folder", async (name) => {
+                    if (name) {
                         const p = currentPath === "/" ? `/${name}` : `${currentPath}/${name}`;
-                        await invoke('create_directory', { path: p }); 
-                        store.refreshPanel(side); 
-                    } 
+                        await invoke('create_directory', { path: p });
+                        store.refreshPanel(side);
+                    }
                 });
                 break;
+            // Edit menu
+            case 'copy_files': store.copySelectedFiles(side); break;
+            case 'cut_files': store.cutSelectedFiles(side); break;
+            case 'paste_files': store.pasteFiles(side); break;
+            case 'delete_files': store.deleteSelectedFiles(side); break;
+            case 'select_all': {
+                const panel = store[side];
+                const tab = panel.tabs[panel.activeTabIndex];
+                if (tab) store.setSelection(side, tab.files.map((_: unknown, i: number) => i));
+                break;
+            }
+            case 'deselect_all': store.setSelection(side, []); break;
+            case 'invert_selection': {
+                const panel = store[side];
+                const tab = panel.tabs[panel.activeTabIndex];
+                if (tab) {
+                    const all = new Set(tab.files.map((_: unknown, i: number) => i));
+                    const inverted = [...all].filter(i => !tab.selection.includes(i));
+                    store.setSelection(side, inverted);
+                }
+                break;
+            }
+            case 'rename': {
+                const panel = store[side];
+                const tab = panel.tabs[panel.activeTabIndex];
+                const file = tab?.files[tab.cursorIndex];
+                if (file && file.name !== '..') {
+                    store.requestInput("Rename", `New name for "${file.name}":`, file.name, async (newName) => {
+                        if (newName && newName !== file.name) {
+                            const oldPath = currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`;
+                            const newPath = currentPath === '/' ? `/${newName}` : `${currentPath}/${newName}`;
+                            await invoke('move_items', { sources: [oldPath], dest: newPath });
+                            store.refreshPanel(side);
+                        }
+                    });
+                }
+                break;
+            }
+            case 'compress': store.archive.compressSelection(side); break;
+            case 'extract': store.archive.extractSelection(side); break;
+            case 'copy_to_opposite': store.copyToOppositePanel(side); break;
+            case 'move_to_opposite': store.moveToOppositePanel(side); break;
+            // View menu
+            case 'view_file': {
+                const panel = store[side];
+                const tab = panel.tabs[panel.activeTabIndex];
+                const file = tab?.files[tab.cursorIndex];
+                if (file && !file.is_dir) store.showViewer(file.name, currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`);
+                break;
+            }
+            case 'edit_file': {
+                const panel = store[side];
+                const tab = panel.tabs[panel.activeTabIndex];
+                const file = tab?.files[tab.cursorIndex];
+                if (file && !file.is_dir) store.showEditor(file.name, currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`);
+                break;
+            }
+            case 'toggle_hidden': store.setPreference('general', 'showHiddenFiles', !store.preferences.general.showHiddenFiles); break;
+            case 'search': store.showSearch(); break;
         }
     });
 

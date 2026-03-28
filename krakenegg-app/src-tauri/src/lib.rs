@@ -59,25 +59,41 @@ pub fn run() {
             file_menu.append(&PredefinedMenuItem::separator(handle)?)?;
             file_menu.append(&MenuItem::with_id(handle, "new_file", "New File", true, Some("Shift+F4"))?)?;
             file_menu.append(&MenuItem::with_id(handle, "new_folder", "New Folder", true, Some("F7"))?)?;
+            file_menu.append(&PredefinedMenuItem::separator(handle)?)?;
+            file_menu.append(&MenuItem::with_id(handle, "copy_to_opposite", "Copy to Other Pane", true, Some("F5"))?)?;
+            file_menu.append(&MenuItem::with_id(handle, "move_to_opposite", "Move to Other Pane", true, Some("F6"))?)?;
 
             // 3. Edit
             let edit_menu = Submenu::new(handle, "Edit", true)?;
             edit_menu.append(&PredefinedMenuItem::undo(handle, None)?)?;
             edit_menu.append(&PredefinedMenuItem::redo(handle, None)?)?;
             edit_menu.append(&PredefinedMenuItem::separator(handle)?)?;
-            edit_menu.append(&PredefinedMenuItem::cut(handle, None)?)?;
-            edit_menu.append(&PredefinedMenuItem::copy(handle, None)?)?;
-            edit_menu.append(&PredefinedMenuItem::paste(handle, None)?)?;
-            edit_menu.append(&PredefinedMenuItem::select_all(handle, None)?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "copy_files", "Copy", true, Some("Cmd+C"))?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "cut_files", "Cut", true, Some("Cmd+X"))?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "paste_files", "Paste", true, Some("Cmd+V"))?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "delete_files", "Delete", true, Some("Cmd+Backspace"))?)?;
             edit_menu.append(&PredefinedMenuItem::separator(handle)?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "select_all", "Select All", true, Some("Cmd+A"))?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "deselect_all", "Deselect All", true, Some("Cmd+D"))?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "invert_selection", "Invert Selection", true, Some("Cmd+Shift+A"))?)?;
+            edit_menu.append(&PredefinedMenuItem::separator(handle)?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "rename", "Rename", true, Some("Shift+F6"))?)?;
             edit_menu.append(&MenuItem::with_id(handle, "multi_rename", "Multi-Rename Tool", true, Some("Cmd+M"))?)?;
+            edit_menu.append(&PredefinedMenuItem::separator(handle)?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "compress", "Compress", true, Some("Alt+F5"))?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "extract", "Extract", true, Some("Alt+F9"))?)?;
 
             // 4. View
             let view_menu = Submenu::new(handle, "View", true)?;
+            view_menu.append(&MenuItem::with_id(handle, "view_file", "View File", true, Some("F3"))?)?;
+            view_menu.append(&MenuItem::with_id(handle, "edit_file", "Edit File", true, Some("F4"))?)?;
+            view_menu.append(&PredefinedMenuItem::separator(handle)?)?;
             view_menu.append(&MenuItem::with_id(handle, "refresh", "Refresh", true, Some("F2"))?)?;
             view_menu.append(&MenuItem::with_id(handle, "quick_view", "Toggle Quick View", true, Some("Ctrl+Q"))?)?;
+            view_menu.append(&MenuItem::with_id(handle, "toggle_hidden", "Toggle Hidden Files", true, Some("Ctrl+H"))?)?;
             view_menu.append(&PredefinedMenuItem::separator(handle)?)?;
             view_menu.append(&MenuItem::with_id(handle, "swap_panes", "Swap Panes", true, Some("Cmd+U"))?)?;
+            view_menu.append(&MenuItem::with_id(handle, "search", "Search Files...", true, Some("Alt+F7"))?)?;
 
             // 5. Go
             let go_menu = Submenu::new(handle, "Go", true)?;
