@@ -723,7 +723,7 @@ fn compress_rust_zip(sources: &[String], dest_path: &str, deflate: bool) -> Resu
     
     let mut zip = zip::ZipWriter::new(file);
     let method = if deflate { zip::CompressionMethod::Deflated } else { zip::CompressionMethod::Stored };
-    let options = zip::write::FileOptions::default()
+    let options = zip::write::SimpleFileOptions::default()
         .compression_method(method)
         .large_file(true);
 

@@ -207,7 +207,7 @@ pub fn add_files_to_zip(archive_path: &Path, sources: &[String], dest_dir_intern
     
     let tmp_file = fs::File::create(&tmp_path).map_err(|e| e.to_string())?;
     let mut zip_w = zip::ZipWriter::new(tmp_file);
-    let options = zip::write::FileOptions::default().large_file(true);
+    let options = zip::write::SimpleFileOptions::default();
 
     for i in 0..zip.len() {
         let entry = zip.by_index(i).map_err(|e| e.to_string())?;
@@ -293,7 +293,7 @@ mod tests {
         let zip_path = dir.join(name);
         let file = fs::File::create(&zip_path).unwrap();
         let mut zip = zip::ZipWriter::new(file);
-        let options = zip::write::FileOptions::default();
+        let options = zip::write::SimpleFileOptions::default();
         for (entry_name, content) in entries {
             zip.start_file(*entry_name, options).unwrap();
             zip.write_all(content).unwrap();
