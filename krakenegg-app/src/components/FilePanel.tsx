@@ -152,6 +152,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => {
         window.removeEventListener('keydown', handleKeyDown);
+        if (searchTimeout.current) { clearTimeout(searchTimeout.current); searchTimeout.current = null; }
     };
   }, [isActive, processedFiles, side, setCursor, setSelection, isPathEditing, showHistory]);
 
@@ -314,6 +315,11 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   const { setCursorAndSelection } = useStore((s) => s);
   const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingClickRef = useRef<{ index: number; e: React.MouseEvent } | null>(null);
+
+  // Cleanup click timer on unmount to prevent state updates after unmount
+  useEffect(() => {
+    return () => { if (clickTimerRef.current) clearTimeout(clickTimerRef.current); };
+  }, []);
 
   const handleFileClick = useCallback((e: React.MouseEvent, index: number) => {
     setActiveSide(side);

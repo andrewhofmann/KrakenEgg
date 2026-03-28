@@ -282,7 +282,8 @@ export function useKeyboard() {
                   .replace(/,/g, '|');
                 try {
                   const regex = new RegExp(`^${regexStr}$`, 'i');
-                  const matches = activeTab.files
+                  // Use visibleFiles (processedFiles) — selection indices must match the sorted/filtered view
+                  const matches = visibleFiles
                     .map((f: { name: string }, i: number) => ({ f, i }))
                     .filter(({ f }: { f: { name: string } }) => regex.test(f.name))
                     .map(({ i }: { i: number }) => i);
@@ -363,7 +364,7 @@ export function useKeyboard() {
         case 'End':
           e.preventDefault();
           {
-            const lastIndex = activeTab.files.length - 1;
+            const lastIndex = visibleFiles.length - 1;
             setCursor(activeSide, lastIndex);
             if (!e.shiftKey) setSelection(activeSide, [lastIndex]);
           }

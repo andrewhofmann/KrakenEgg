@@ -309,8 +309,10 @@ export const useStore = create<AppState>((set, get) => {
     compressSelection: (side: 'left' | 'right') => {
       const currentAppState = get();
       const activeTab = currentAppState[side].tabs[currentAppState[side].activeTabIndex];
+      if (!activeTab) return;
       const destSide = side === 'left' ? 'right' : 'left';
       const destTab = currentAppState[destSide].tabs[currentAppState[destSide].activeTabIndex];
+      if (!destTab) return;
       const showHidden = currentAppState.preferences.general.showHiddenFiles;
       const files = getProcessedFiles(activeTab.files, currentAppState[side].layout, activeTab.filterQuery, showHidden);
       let sources: string[];
@@ -356,6 +358,7 @@ export const useStore = create<AppState>((set, get) => {
     extractSelection: async (side: 'left' | 'right') => {
       const currentAppState = get();
       const activeTab = currentAppState[side].tabs[currentAppState[side].activeTabIndex];
+      if (!activeTab) return;
       const showHidden = currentAppState.preferences.general.showHiddenFiles;
       const files = getProcessedFiles(activeTab.files, currentAppState[side].layout, activeTab.filterQuery, showHidden);
       const file = files[activeTab.cursorIndex];
@@ -503,7 +506,7 @@ export const useStore = create<AppState>((set, get) => {
       const currentAppState = get();
       const clipboard = currentAppState.clipboard;
       const destTab = currentAppState[destSide].tabs[currentAppState[destSide].activeTabIndex];
-      if (!clipboard.type || clipboard.type !== 'files' || !clipboard.items || !destTab.path) {
+      if (!destTab || !clipboard.type || clipboard.type !== 'files' || !clipboard.items || !destTab.path) {
         currentAppState.setOperationError("No files to paste or clipboard is empty.");
         return;
       }
@@ -579,6 +582,7 @@ export const useStore = create<AppState>((set, get) => {
       openMultiRename: (side: 'left' | 'right') => {
           const state = get();
           const activeTab = state[side].tabs[state[side].activeTabIndex];
+          if (!activeTab) return;
           const showHidden = state.preferences.general.showHiddenFiles;
           const files = getProcessedFiles(activeTab.files, state[side].layout, activeTab.filterQuery, showHidden);
           let targetFiles: string[] = [];
@@ -641,6 +645,7 @@ export const useStore = create<AppState>((set, get) => {
         if (!sourceTab) return;
         const destSide = sourceSide === 'left' ? 'right' : 'left';
         const destTab = state[destSide].tabs[state[destSide].activeTabIndex];
+        if (!destTab) return;
         const showHidden = state.preferences.general.showHiddenFiles;
         const files = getProcessedFiles(sourceTab.files, state[sourceSide].layout, sourceTab.filterQuery, showHidden);
         const buildPath = (name: string) => `${sourceTab.path === "/" ? "" : sourceTab.path}/${name}`;
@@ -669,6 +674,7 @@ export const useStore = create<AppState>((set, get) => {
         if (!sourceTab) return;
         const destSide = sourceSide === 'left' ? 'right' : 'left';
         const destTab = state[destSide].tabs[state[destSide].activeTabIndex];
+        if (!destTab) return;
         const showHidden = state.preferences.general.showHiddenFiles;
         const files = getProcessedFiles(sourceTab.files, state[sourceSide].layout, sourceTab.filterQuery, showHidden);
         const buildPath = (name: string) => `${sourceTab.path === "/" ? "" : sourceTab.path}/${name}`;
