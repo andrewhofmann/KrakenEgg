@@ -736,10 +736,10 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   return (
     <div
       ref={containerRef} onClick={() => setActiveSide(side)} onContextMenu={handlePanelContextMenu} onDragOver={(e) => { e.preventDefault(); if (isDraggingFiles) { e.dataTransfer.dropEffect = e.altKey ? "copy" : "move"; setPanelDragOver(true); } }} onDragLeave={() => setPanelDragOver(false)} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setPanelDragOver(false); setIsDraggingFiles(false); }}
-      className={clsx("flex-1 flex flex-col h-full overflow-hidden transition-all duration-200 border-r border-macos-border last:border-r-0 relative group", isActive ? "bg-macos-bg" : "bg-macos-bg/30 saturate-50 opacity-70", panelDragOver && "border-macos-active border-2")}
+      className={clsx("flex-1 flex flex-col h-full overflow-hidden transition-all duration-200 border-r border-[var(--ke-border)] last:border-r-0 relative group", isActive ? "bg-[var(--ke-bg)]" : "bg-[var(--ke-bg)]/30 saturate-50 opacity-70", panelDragOver && "border-[var(--ke-accent)] border-2")}
       style={{ gridTemplateColumns: gridTemplate, fontSize: `${preferences.appearance.fontSize}px` } as React.CSSProperties}
     >
-      <div className="flex flex-col shrink-0 bg-macos-sidebar border-b border-macos-border backdrop-blur-md pt-1 pb-1">
+      <div className="flex flex-col shrink-0 bg-[var(--ke-bg-secondary)] border-b border-[var(--ke-border)] backdrop-blur-md pt-1 pb-1">
         <TabBar side={side} />
         <div className="h-7 flex items-center px-3 space-x-2 relative">
            <div 
@@ -787,7 +787,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
                         {(() => {
                             const parts = activeTab.path.split('/').filter(Boolean);
                             if (parts.length === 0) {
-                                return <span className={clsx("text-[11px] font-medium opacity-90 cursor-pointer", !isArchive && "text-macos-text")} style={isArchive ? { color: 'var(--ke-accent)' } : undefined} onClick={handlePathClick}>/</span>;
+                                return <span className={clsx("text-[11px] font-medium opacity-90 cursor-pointer", !isArchive && "text-[var(--ke-text)]")} style={isArchive ? { color: 'var(--ke-accent)' } : undefined} onClick={handlePathClick}>/</span>;
                             }
                             return parts.map((segment, i) => {
                                 const targetPath = '/' + parts.slice(0, i + 1).join('/');
@@ -799,7 +799,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
                                             className={clsx(
                                                 "text-[11px] font-medium cursor-pointer rounded px-0.5 transition-colors",
                                                 isLast ? "opacity-100" : "opacity-70 hover:opacity-100",
-                                                isArchive ? "hover:bg-[var(--ke-selection-light)]" : "text-macos-text hover:bg-[var(--ke-bg-hover)]"
+                                                isArchive ? "hover:bg-[var(--ke-selection-light)]" : "text-[var(--ke-text)] hover:bg-[var(--ke-bg-hover)]"
                                             )}
                                             style={isArchive ? { color: 'var(--ke-accent)' } : undefined}
                                             onClick={(e) => { e.stopPropagation(); if (!isLast) setPath(side, targetPath); }}
