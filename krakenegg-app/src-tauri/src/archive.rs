@@ -377,4 +377,345 @@ mod tests {
         let result = read_archive_file(&zip_path, &PathBuf::from("hello.txt")).unwrap();
         assert_eq!(result, "hello world");
     }
+
+    // --- Helper to create a tar.gz file ---
+    fn create_test_tar_gz(dir: &Path, name: &str, entries: &[(&str, &[u8])]) -> PathBuf {
+        use flate2::write::GzEncoder;
+        use flate2::Compression;
+        let tar_gz_path = dir.join(name);
+        let file = fs::File::create(&tar_gz_path).unwrap();
+        let enc = GzEncoder::new(file, Compression::default());
+        let mut ar = tar::Builder::new(enc);
+        for (entry_name, content) in entries {
+            let mut header = tar::Header::new_gnu();
+            header.set_size(content.len() as u64);
+            header.set_mode(0o644);
+            header.set_cksum();
+            ar.append_data(&mut header, *entry_name, &content[..]).unwrap();
+        }
+        ar.finish().unwrap();
+        tar_gz_path
+    }
+
+    fn create_test_tar(dir: &Path, name: &str, entries: &[(&str, &[u8])]) -> PathBuf {
+        let tar_path = dir.join(name);
+        let file = fs::File::create(&tar_path).unwrap();
+        let mut ar = tar::Builder::new(file);
+        for (entry_name, content) in entries {
+            let mut header = tar::Header::new_gnu();
+            header.set_size(content.len() as u64);
+            header.set_mode(0o644);
+            header.set_cksum();
+            ar.append_data(&mut header, *entry_name, &content[..]).unwrap();
+        }
+        ar.finish().unwrap();
+        tar_path
+    }
+
+    #[test]
+    fn test_parse_archive_path_tar_gz() {
+        let dir = TempDir::new().unwrap();
+        let tar_gz_path = create_test_tar_gz(dir.path(), "archive.tar.gz", &[("file.txt", b"data")]);
+        let full = format!("{}/file.txt", tar_gz_path.to_string_lossy());
+        let result = parse_archive_path(&full);
+        assert!(result.is_some());
+        let (archive, internal) = result.unwrap();
+        assert_eq!(archive, tar_gz_path);
+        assert_eq!(internal, PathBuf::from("file.txt"));
+    }
+
+    #[test]
+    fn test_parse_archive_path_tgz() {
+        let dir = TempDir::new().unwrap();
+        let tgz_path = create_test_tar_gz(dir.path(), "archive.tgz", &[("readme.md", b"# Hi")]);
+        let full = format!("{}/readme.md", tgz_path.to_string_lossy());
+        let result = parse_archive_path(&full);
+        assert!(result.is_some());
+        let (archive, internal) = result.unwrap();
+        assert_eq!(archive, tgz_path);
+        assert_eq!(internal, PathBuf::from("readme.md"));
+    }
+
+    #[test]
+    fn test_parse_archive_path_plain_tar() {
+        let dir = TempDir::new().unwrap();
+        let tar_path = create_test_tar(dir.path(), "archive.tar", &[("data.bin", b"\x00\x01")]);
+        let full = format!("{}/data.bin", tar_path.to_string_lossy());
+        let result = parse_archive_path(&full);
+        assert!(result.is_some());
+        let (archive, internal) = result.unwrap();
+        assert_eq!(archive, tar_path);
+        assert_eq!(internal, PathBuf::from("data.bin"));
+    }
+
+    #[test]
+    fn test_parse_archive_path_nested_path() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[("subdir/deep/file.txt", b"nested")]);
+        let full = format!("{}/subdir/deep/file.txt", zip_path.to_string_lossy());
+        let result = parse_archive_path(&full);
+        assert!(result.is_some());
+        let (archive, internal) = result.unwrap();
+        assert_eq!(archive, zip_path);
+        assert_eq!(internal, PathBuf::from("subdir/deep/file.txt"));
+    }
+
+    #[test]
+    fn test_parse_archive_path_no_internal_path() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[("a.txt", b"x")]);
+        let full = zip_path.to_string_lossy().to_string();
+        let result = parse_archive_path(&full);
+        assert!(result.is_some());
+        let (archive, internal) = result.unwrap();
+        assert_eq!(archive, zip_path);
+        assert_eq!(internal, PathBuf::from(""));
+    }
+
+    #[test]
+    fn test_list_archive_empty_zip() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "empty.zip", &[]);
+        let result = list_archive_contents(&zip_path, &PathBuf::new()).unwrap();
+        assert_eq!(result.len(), 0);
+    }
+
+    #[test]
+    fn test_list_archive_nested_folders_zip() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "nested.zip", &[
+            ("a/b/c.txt", b"deep"),
+            ("a/b/d.txt", b"deep2"),
+            ("a/top.txt", b"top"),
+        ]);
+        // List root: should see "a" dir
+        let root = list_archive_contents(&zip_path, &PathBuf::new()).unwrap();
+        assert_eq!(root.len(), 1);
+        assert_eq!(root[0].name, "a");
+        assert!(root[0].is_dir);
+
+        // List "a": should see "b" dir and "top.txt"
+        let a_contents = list_archive_contents(&zip_path, &PathBuf::from("a")).unwrap();
+        assert_eq!(a_contents.len(), 2);
+        let names: Vec<&str> = a_contents.iter().map(|f| f.name.as_str()).collect();
+        assert!(names.contains(&"b"));
+        assert!(names.contains(&"top.txt"));
+    }
+
+    #[test]
+    fn test_read_archive_nonexistent_entry() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[("a.txt", b"data")]);
+        let result = read_archive_file(&zip_path, &PathBuf::from("nonexistent.txt"));
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("Entry not found"));
+    }
+
+    #[test]
+    fn test_add_files_to_zip_directory() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[("existing.txt", b"old")]);
+
+        // Create a directory with files
+        let sub = dir.path().join("mydir");
+        fs::create_dir_all(sub.join("inner")).unwrap();
+        fs::write(sub.join("one.txt"), "one").unwrap();
+        fs::write(sub.join("inner").join("two.txt"), "two").unwrap();
+
+        add_files_to_zip(&zip_path, &[sub.to_string_lossy().to_string()], "").unwrap();
+
+        let contents = list_archive_contents(&zip_path, &PathBuf::new()).unwrap();
+        let names: Vec<&str> = contents.iter().map(|f| f.name.as_str()).collect();
+        assert!(names.contains(&"existing.txt"));
+        assert!(names.contains(&"mydir"));
+    }
+
+    #[test]
+    fn test_add_files_to_zip_multiple_files() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[]);
+
+        let f1 = dir.path().join("alpha.txt");
+        let f2 = dir.path().join("beta.txt");
+        let f3 = dir.path().join("gamma.txt");
+        fs::write(&f1, "a").unwrap();
+        fs::write(&f2, "b").unwrap();
+        fs::write(&f3, "c").unwrap();
+
+        add_files_to_zip(&zip_path, &[
+            f1.to_string_lossy().to_string(),
+            f2.to_string_lossy().to_string(),
+            f3.to_string_lossy().to_string(),
+        ], "").unwrap();
+
+        let contents = list_archive_contents(&zip_path, &PathBuf::new()).unwrap();
+        assert_eq!(contents.len(), 3);
+    }
+
+    #[test]
+    fn test_remove_files_preserves_other_entries() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[
+            ("a.txt", b"a"),
+            ("b.txt", b"b"),
+            ("c.txt", b"c"),
+        ]);
+        remove_files_from_zip(&zip_path, &["b.txt".to_string()]).unwrap();
+        let contents = list_archive_contents(&zip_path, &PathBuf::new()).unwrap();
+        assert_eq!(contents.len(), 2);
+        let names: Vec<&str> = contents.iter().map(|f| f.name.as_str()).collect();
+        assert!(names.contains(&"a.txt"));
+        assert!(names.contains(&"c.txt"));
+        assert!(!names.contains(&"b.txt"));
+    }
+
+    #[test]
+    fn test_remove_nonexistent_file_from_zip() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[
+            ("a.txt", b"a"),
+            ("b.txt", b"b"),
+        ]);
+        // Removing a nonexistent entry should succeed (no-op)
+        remove_files_from_zip(&zip_path, &["no_such_file.txt".to_string()]).unwrap();
+        let contents = list_archive_contents(&zip_path, &PathBuf::new()).unwrap();
+        assert_eq!(contents.len(), 2);
+    }
+
+    #[test]
+    fn test_add_files_non_zip_error() {
+        let dir = TempDir::new().unwrap();
+        let tar_path = create_test_tar(dir.path(), "archive.tar", &[("x.txt", b"x")]);
+        let dummy = dir.path().join("new.txt");
+        fs::write(&dummy, "data").unwrap();
+        let result = add_files_to_zip(&tar_path, &[dummy.to_string_lossy().to_string()], "");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("ZIP"));
+    }
+
+    #[test]
+    fn test_remove_files_non_zip_error() {
+        let dir = TempDir::new().unwrap();
+        let tar_path = create_test_tar(dir.path(), "archive.tar", &[("x.txt", b"x")]);
+        let result = remove_files_from_zip(&tar_path, &["x.txt".to_string()]);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("ZIP"));
+    }
+
+    #[test]
+    fn test_list_archive_with_subdirectory_filter() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[
+            ("docs/readme.md", b"readme"),
+            ("docs/guide.md", b"guide"),
+            ("src/main.rs", b"fn main(){}"),
+        ]);
+        let result = list_archive_contents(&zip_path, &PathBuf::from("docs")).unwrap();
+        assert_eq!(result.len(), 2);
+        let names: Vec<&str> = result.iter().map(|f| f.name.as_str()).collect();
+        assert!(names.contains(&"readme.md"));
+        assert!(names.contains(&"guide.md"));
+    }
+
+    #[test]
+    fn test_extract_entry_basic() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[("hello.txt", b"hello world")]);
+        let dest = dir.path().join("out");
+        fs::create_dir_all(&dest).unwrap();
+
+        extract_entry(
+            &zip_path,
+            &PathBuf::from("hello.txt"),
+            &dest.join("hello.txt"),
+            |_| {},
+            |_| Ok(true),
+        ).unwrap();
+
+        assert!(dest.join("hello.txt").exists());
+        assert_eq!(fs::read_to_string(dest.join("hello.txt")).unwrap(), "hello world");
+    }
+
+    #[test]
+    fn test_extract_entry_with_conflict_overwrite() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[("file.txt", b"new content")]);
+        let dest = dir.path().join("out");
+        fs::create_dir_all(&dest).unwrap();
+        // Pre-create the file with old content
+        fs::write(dest.join("file.txt"), "old content").unwrap();
+
+        extract_entry(
+            &zip_path,
+            &PathBuf::from("file.txt"),
+            &dest.join("file.txt"),
+            |_| {},
+            |_| Ok(true), // Overwrite
+        ).unwrap();
+
+        assert_eq!(fs::read_to_string(dest.join("file.txt")).unwrap(), "new content");
+    }
+
+    #[test]
+    fn test_extract_entry_with_conflict_skip() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[("file.txt", b"new content")]);
+        let dest = dir.path().join("out");
+        fs::create_dir_all(&dest).unwrap();
+        // Pre-create the file with old content
+        fs::write(dest.join("file.txt"), "old content").unwrap();
+
+        extract_entry(
+            &zip_path,
+            &PathBuf::from("file.txt"),
+            &dest.join("file.txt"),
+            |_| {},
+            |_| Ok(false), // Skip
+        ).unwrap();
+
+        // Should still have old content since we skipped
+        assert_eq!(fs::read_to_string(dest.join("file.txt")).unwrap(), "old content");
+    }
+
+    #[test]
+    fn test_parse_archive_path_case_sensitivity() {
+        // .ZIP (uppercase) should NOT match since the code checks lowercase extensions
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "test.zip", &[("a.txt", b"x")]);
+        // Verify lowercase .zip works
+        let full = format!("{}/a.txt", zip_path.to_string_lossy());
+        assert!(parse_archive_path(&full).is_some());
+
+        // Non-archive extension should return None
+        let result = parse_archive_path("/some/path/file.ZIP/inner.txt");
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_add_then_list_roundtrip() {
+        let dir = TempDir::new().unwrap();
+        let zip_path = create_test_zip(dir.path(), "roundtrip.zip", &[]);
+
+        // Add files
+        let f1 = dir.path().join("doc.txt");
+        let f2 = dir.path().join("image.png");
+        fs::write(&f1, "document content").unwrap();
+        fs::write(&f2, "fake png data").unwrap();
+
+        add_files_to_zip(&zip_path, &[
+            f1.to_string_lossy().to_string(),
+            f2.to_string_lossy().to_string(),
+        ], "").unwrap();
+
+        // List and verify
+        let contents = list_archive_contents(&zip_path, &PathBuf::new()).unwrap();
+        assert_eq!(contents.len(), 2);
+
+        // Read back content
+        let doc = read_archive_file(&zip_path, &PathBuf::from("doc.txt")).unwrap();
+        assert_eq!(doc, "document content");
+
+        let img = read_archive_file(&zip_path, &PathBuf::from("image.png")).unwrap();
+        assert_eq!(img, "fake png data");
+    }
 }

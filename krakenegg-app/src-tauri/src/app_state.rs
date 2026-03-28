@@ -187,4 +187,161 @@ mod tests {
         let parsed: serde_json::Value = serde_json::from_str(&content).unwrap();
         assert_eq!(parsed["active_side"], "left");
     }
+
+    #[test]
+    fn test_save_state_creates_file() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("new_state.json");
+        assert!(!path.exists());
+        let state = make_test_state();
+        save_state_to_file(&state, &path).unwrap();
+        assert!(path.exists());
+        assert!(fs::metadata(&path).unwrap().len() > 0);
+    }
+
+    #[test]
+    fn test_load_state_with_hotkeys() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("hotkeys_state.json");
+        let mut state = make_test_state();
+        state.hotkeys.insert("F5".to_string(), "copy".to_string());
+        state.hotkeys.insert("F6".to_string(), "move".to_string());
+        state.hotkeys.insert("F7".to_string(), "mkdir".to_string());
+        save_state_to_file(&state, &path).unwrap();
+
+        let loaded = load_state_from_file(&path).unwrap().unwrap();
+        assert_eq!(loaded.hotkeys.len(), 3);
+        assert_eq!(loaded.hotkeys.get("F5").unwrap(), "copy");
+        assert_eq!(loaded.hotkeys.get("F6").unwrap(), "move");
+        assert_eq!(loaded.hotkeys.get("F7").unwrap(), "mkdir");
+    }
+
+    #[test]
+    fn test_load_state_with_preferences() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("prefs_state.json");
+        let mut state = make_test_state();
+        state.preferences = serde_json::json!({
+            "theme": "dark",
+            "font_size": 14,
+            "show_hidden": true
+        });
+        save_state_to_file(&state, &path).unwrap();
+
+        let loaded = load_state_from_file(&path).unwrap().unwrap();
+        assert_eq!(loaded.preferences["theme"], "dark");
+        assert_eq!(loaded.preferences["font_size"], 14);
+        assert_eq!(loaded.preferences["show_hidden"], true);
+    }
+
+    #[test]
+    fn test_save_load_with_global_history() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("history_state.json");
+        let mut state = make_test_state();
+        state.global_history = vec![
+            "/home/user".to_string(),
+            "/tmp".to_string(),
+            "/var/log".to_string(),
+        ];
+        save_state_to_file(&state, &path).unwrap();
+
+        let loaded = load_state_from_file(&path).unwrap().unwrap();
+        assert_eq!(loaded.global_history.len(), 3);
+        assert_eq!(loaded.global_history[0], "/home/user");
+        assert_eq!(loaded.global_history[2], "/var/log");
+    }
+
+    #[test]
+    fn test_save_load_with_hotlist() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("hotlist_state.json");
+        let mut state = make_test_state();
+        state.hotlist = vec![
+            "/home/user/Documents".to_string(),
+            "/home/user/Downloads".to_string(),
+        ];
+        save_state_to_file(&state, &path).unwrap();
+
+        let loaded = load_state_from_file(&path).unwrap().unwrap();
+        assert_eq!(loaded.hotlist.len(), 2);
+        assert_eq!(loaded.hotlist[0], "/home/user/Documents");
+        assert_eq!(loaded.hotlist[1], "/home/user/Downloads");
+    }
+
+    #[test]
+    fn test_get_layouts_dir_creates_nested() {
+        let dir = TempDir::new().unwrap();
+        let layouts_dir = get_layouts_dir(Some(dir.path())).unwrap();
+        assert!(layouts_dir.exists());
+        assert!(layouts_dir.is_dir());
+        // Should be <base>/KrakenEgg/layouts
+        assert!(layouts_dir.ends_with("KrakenEgg/layouts"));
+    }
+
+    #[test]
+    fn test_save_load_layout_roundtrip() {
+        let dir = TempDir::new().unwrap();
+        let layouts_dir = get_layouts_dir(Some(dir.path())).unwrap();
+
+        let state = make_test_state();
+        let layout_path = layouts_dir.join("my_layout.json");
+        let json_string = serde_json::to_string_pretty(&state).unwrap();
+        fs::write(&layout_path, &json_string).unwrap();
+
+        // Load it back
+        let loaded_json = fs::read_to_string(&layout_path).unwrap();
+        let loaded: AppStateConfig = serde_json::from_str(&loaded_json).unwrap();
+        assert_eq!(loaded.active_side, "left");
+        assert_eq!(loaded.left.tabs[0].path, "/home");
+        assert_eq!(loaded.right.tabs[0].path, "/tmp");
+    }
+
+    #[test]
+    fn test_list_layouts_with_multiple() {
+        let dir = TempDir::new().unwrap();
+        let layouts_dir = get_layouts_dir(Some(dir.path())).unwrap();
+
+        let state = make_test_state();
+        for name in &["work", "personal", "dev"] {
+            let path = layouts_dir.join(format!("{}.json", name));
+            let json = serde_json::to_string_pretty(&state).unwrap();
+            fs::write(path, json).unwrap();
+        }
+
+        let entries = fs::read_dir(&layouts_dir).unwrap();
+        let mut names: Vec<String> = entries
+            .filter_map(|e| e.ok())
+            .filter_map(|e| {
+                let p = e.path();
+                if p.extension().and_then(|s| s.to_str()) == Some("json") {
+                    p.file_stem().and_then(|s| s.to_str()).map(|s| s.to_string())
+                } else {
+                    None
+                }
+            })
+            .collect();
+        names.sort();
+        assert_eq!(names, vec!["dev", "personal", "work"]);
+    }
+
+    #[test]
+    fn test_list_layouts_empty_dir() {
+        let dir = TempDir::new().unwrap();
+        let layouts_dir = get_layouts_dir(Some(dir.path())).unwrap();
+        let entries = fs::read_dir(&layouts_dir).unwrap();
+        let count = entries.count();
+        assert_eq!(count, 0);
+    }
+
+    #[test]
+    fn test_load_nonexistent_layout_returns_none() {
+        let dir = TempDir::new().unwrap();
+        let layouts_dir = get_layouts_dir(Some(dir.path())).unwrap();
+        let path = layouts_dir.join("nonexistent.json");
+        assert!(!path.exists());
+        // Loading from a nonexistent path should yield None
+        let result = load_state_from_file(&path).unwrap();
+        assert!(result.is_none());
+    }
 }

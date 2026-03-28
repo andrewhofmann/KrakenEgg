@@ -379,4 +379,243 @@ mod tests {
         ).unwrap();
         assert_eq!(result[0].new, "photo_20240101.jpg");
     }
+
+    #[test]
+    fn test_preview_mrt_empty_file_list() {
+        let result = preview_mrt(
+            vec![], "[N]".to_string(), "[E]".to_string(), 1, 1, 1, None, None, None,
+        ).unwrap();
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_preview_mrt_no_extension_file() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("Makefile");
+        fs::write(&f, "").unwrap();
+        let result = preview_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "renamed_[N]".to_string(), "[E]".to_string(), 1, 1, 1, None, None, None,
+        ).unwrap();
+        // No extension, so [E] is empty, new name should just be the stem
+        assert_eq!(result[0].new, "renamed_Makefile");
+    }
+
+    #[test]
+    fn test_preview_mrt_counter_step_2() {
+        let dir = TempDir::new().unwrap();
+        let f1 = dir.path().join("a.txt");
+        let f2 = dir.path().join("b.txt");
+        let f3 = dir.path().join("c.txt");
+        fs::write(&f1, "").unwrap();
+        fs::write(&f2, "").unwrap();
+        fs::write(&f3, "").unwrap();
+        let result = preview_mrt(
+            vec![
+                f1.to_string_lossy().to_string(),
+                f2.to_string_lossy().to_string(),
+                f3.to_string_lossy().to_string(),
+            ],
+            "item_[C]".to_string(), "[E]".to_string(), 1, 2, 2, None, None, None,
+        ).unwrap();
+        assert_eq!(result[0].new, "item_01.txt");
+        assert_eq!(result[1].new, "item_03.txt");
+        assert_eq!(result[2].new, "item_05.txt");
+    }
+
+    #[test]
+    fn test_preview_mrt_counter_start_10() {
+        let dir = TempDir::new().unwrap();
+        let f1 = dir.path().join("x.txt");
+        let f2 = dir.path().join("y.txt");
+        fs::write(&f1, "").unwrap();
+        fs::write(&f2, "").unwrap();
+        let result = preview_mrt(
+            vec![
+                f1.to_string_lossy().to_string(),
+                f2.to_string_lossy().to_string(),
+            ],
+            "file_[C]".to_string(), "[E]".to_string(), 10, 1, 3, None, None, None,
+        ).unwrap();
+        assert_eq!(result[0].new, "file_010.txt");
+        assert_eq!(result[1].new, "file_011.txt");
+    }
+
+    #[test]
+    fn test_preview_mrt_name_and_counter_combined() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("photo.jpg");
+        fs::write(&f, "").unwrap();
+        let result = preview_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "[N]_[C]".to_string(), "[E]".to_string(), 1, 1, 3, None, None, None,
+        ).unwrap();
+        assert_eq!(result[0].new, "photo_001.jpg");
+    }
+
+    #[test]
+    fn test_preview_mrt_ymd_pattern() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("report.pdf");
+        fs::write(&f, "some content").unwrap();
+        let result = preview_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "[YMD]_[N]".to_string(), "[E]".to_string(), 1, 1, 1, None, None, None,
+        ).unwrap();
+        // The [YMD] should be replaced with a date string like 20260326
+        assert_eq!(result[0].new.len(), "20260326_report.pdf".len());
+        assert!(result[0].new.ends_with("_report.pdf"));
+        // Verify the date part is all digits
+        let date_part = &result[0].new[..8];
+        assert!(date_part.chars().all(|c| c.is_ascii_digit()));
+    }
+
+    #[test]
+    fn test_preview_mrt_regex_remove_prefix() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("IMG_20240101.jpg");
+        fs::write(&f, "").unwrap();
+        let result = preview_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "[N]".to_string(), "[E]".to_string(), 1, 1, 1,
+            Some("^IMG_".to_string()), Some("".to_string()), None,
+        ).unwrap();
+        assert_eq!(result[0].new, "20240101.jpg");
+    }
+
+    #[test]
+    fn test_preview_mrt_regex_capture_groups() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("2024-01-15_report.txt");
+        fs::write(&f, "").unwrap();
+        let result = preview_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "[N]".to_string(), "[E]".to_string(), 1, 1, 1,
+            Some(r"(\d{4})-(\d{2})-(\d{2})_(.+)".to_string()),
+            Some("${4}_${1}${2}${3}".to_string()),
+            None,
+        ).unwrap();
+        assert_eq!(result[0].new, "report_20240115.txt");
+    }
+
+    #[test]
+    fn test_preview_mrt_case_upper_with_spaces() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("hello world test.txt");
+        fs::write(&f, "").unwrap();
+        let result = preview_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "[N]".to_string(), "[E]".to_string(), 1, 1, 1,
+            None, None, Some("upper".to_string()),
+        ).unwrap();
+        assert_eq!(result[0].new, "HELLO WORLD TEST.txt");
+    }
+
+    #[test]
+    fn test_preview_mrt_case_title_single_word() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("hello.txt");
+        fs::write(&f, "").unwrap();
+        let result = preview_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "[N]".to_string(), "[E]".to_string(), 1, 1, 1,
+            None, None, Some("title".to_string()),
+        ).unwrap();
+        assert_eq!(result[0].new, "Hello.txt");
+    }
+
+    #[test]
+    fn test_preview_mrt_regex_and_counter_combined() {
+        let dir = TempDir::new().unwrap();
+        let f1 = dir.path().join("IMG_001.jpg");
+        let f2 = dir.path().join("IMG_002.jpg");
+        fs::write(&f1, "").unwrap();
+        fs::write(&f2, "").unwrap();
+        let result = preview_mrt(
+            vec![
+                f1.to_string_lossy().to_string(),
+                f2.to_string_lossy().to_string(),
+            ],
+            "[N]_[C]".to_string(), "[E]".to_string(), 100, 1, 3,
+            Some("IMG_\\d+".to_string()), Some("photo".to_string()), None,
+        ).unwrap();
+        assert_eq!(result[0].new, "photo_100.jpg");
+        assert_eq!(result[1].new, "photo_101.jpg");
+    }
+
+    #[test]
+    fn test_preview_mrt_many_files() {
+        let dir = TempDir::new().unwrap();
+        let mut files = Vec::new();
+        for i in 0..20 {
+            let f = dir.path().join(format!("file_{}.txt", i));
+            fs::write(&f, "").unwrap();
+            files.push(f.to_string_lossy().to_string());
+        }
+        let result = preview_mrt(
+            files, "item_[C]".to_string(), "[E]".to_string(), 1, 1, 3, None, None, None,
+        ).unwrap();
+        assert_eq!(result.len(), 20);
+        // All should have unique names
+        let names: std::collections::HashSet<&str> = result.iter().map(|r| r.new.as_str()).collect();
+        assert_eq!(names.len(), 20);
+        // No errors
+        assert!(result.iter().all(|r| r.status == "ok"));
+    }
+
+    #[test]
+    fn test_execute_mrt_multiple_files() {
+        let dir = TempDir::new().unwrap();
+        let f1 = dir.path().join("old1.txt");
+        let f2 = dir.path().join("old2.txt");
+        let f3 = dir.path().join("old3.txt");
+        fs::write(&f1, "content1").unwrap();
+        fs::write(&f2, "content2").unwrap();
+        fs::write(&f3, "content3").unwrap();
+        execute_mrt(
+            vec![
+                f1.to_string_lossy().to_string(),
+                f2.to_string_lossy().to_string(),
+                f3.to_string_lossy().to_string(),
+            ],
+            "new_[C]".to_string(), "[E]".to_string(), 1, 1, 2, None, None, None,
+        ).unwrap();
+        assert!(!f1.exists());
+        assert!(!f2.exists());
+        assert!(!f3.exists());
+        assert!(dir.path().join("new_01.txt").exists());
+        assert!(dir.path().join("new_02.txt").exists());
+        assert!(dir.path().join("new_03.txt").exists());
+    }
+
+    #[test]
+    fn test_execute_mrt_with_regex() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("prefix_name.txt");
+        fs::write(&f, "data").unwrap();
+        execute_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "[N]".to_string(), "[E]".to_string(), 1, 1, 1,
+            Some("^prefix_".to_string()), Some("".to_string()), None,
+        ).unwrap();
+        assert!(!f.exists());
+        assert!(dir.path().join("name.txt").exists());
+        assert_eq!(fs::read_to_string(dir.path().join("name.txt")).unwrap(), "data");
+    }
+
+    #[test]
+    fn test_execute_mrt_with_case_conversion() {
+        let dir = TempDir::new().unwrap();
+        let f = dir.path().join("oldname.txt");
+        fs::write(&f, "data").unwrap();
+        // Use a pattern that changes both case and name to avoid case-insensitive FS conflicts
+        execute_mrt(
+            vec![f.to_string_lossy().to_string()],
+            "renamed_[N]".to_string(), "[E]".to_string(), 1, 1, 1,
+            None, None, Some("upper".to_string()),
+        ).unwrap();
+        assert!(!f.exists());
+        assert!(dir.path().join("RENAMED_OLDNAME.txt").exists());
+        assert_eq!(fs::read_to_string(dir.path().join("RENAMED_OLDNAME.txt")).unwrap(), "data");
+    }
 }
