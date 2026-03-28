@@ -147,12 +147,37 @@ cargo fmt              # Rust formatting
 ### Mandatory Testing Rule
 **CRITICAL**: Every feature added or changed MUST have an associated unit test that passes. No untested code should be committed or presented to the user. This applies to:
 - New features (write tests before or alongside implementation)
-- Bug fixes (write regression test proving the fix)
+- Bug fixes (write a regression test that FAILS without the fix, then PASSES with it)
 - Refactors (ensure existing tests still pass, add new ones if behavior changes)
 - Frontend components, hooks, utilities, and store actions
 - Rust backend functions and commands
 
-Run `pnpm test` and `pnpm test:rust` to verify all tests pass before committing.
+### Full Test Suite Execution (1,044 tests)
+**CRITICAL**: The FULL test suite MUST be run before committing ANY change. No exceptions.
+
+```bash
+# Run ALL tests — every single one must pass
+pnpm test                  # 474 TypeScript unit tests
+pnpm test:rust             # 109 Rust unit tests (cd src-tauri && cargo test --lib)
+pnpm test:e2e              # 461 Playwright E2E/integration tests
+
+# If ANY test fails, DO NOT commit. Fix the issue first.
+```
+
+The test suite covers:
+- **Unit tests**: Store actions, utility functions, hooks, component rendering, edge cases
+- **Rust tests**: File I/O, archive operations, multi-rename patterns, app state persistence
+- **E2E integration**: Real user interactions with sandbox filesystem — clicks, keyboard shortcuts,
+  double-click navigation, drag-drop, modal dialogs, search, settings, theme switching
+- **Stress tests**: 500-file directories, 10-level deep trees, rapid key presses, special filenames
+- **Accessibility**: ARIA roles, labels, keyboard reachability, focus management
+- **Error recovery**: Crash boundaries, empty states, invalid operations
+
+When adding new features:
+1. Write tests FIRST or alongside the feature (not after)
+2. Run the FULL suite, not just the file you changed
+3. If existing tests break, either fix the tests (if behavior intentionally changed) or fix the code
+4. Add regression tests for any bugs found during manual testing
 
 ### Runtime Verification Rule
 **CRITICAL**: Unit tests and E2E tests run in jsdom/headless environments that do NOT catch runtime import errors, missing component declarations, or Tauri API mismatches. Before presenting changes to the user:
@@ -161,6 +186,16 @@ Run `pnpm test` and `pnpm test:rust` to verify all tests pass before committing.
 3. Check the Tauri console for `JS Error` messages
 4. If the app shows a blank window, there is a runtime error — fix before committing
 5. Run `tsc --noEmit` to catch TypeScript errors that Vitest transpilation skips
+
+### Known Testing Limitations
+These are gaps in what automated tests can catch — be aware during development:
+- **jsdom tests don't catch runtime import errors** (e.g., wrong react-window v2 export name)
+- **E2E tests use mocked Tauri API** — real Tauri-specific behaviors not tested
+- **Click timing**: FilePanel uses a 200ms delayed click to avoid double-click conflicts.
+  Tests must wait 300ms after clicks to verify selection state.
+- **processedFiles vs raw files**: Cursor indices refer to the sorted/filtered `processedFiles`
+  list, NOT `activeTab.files`. Any new code using `activeTab.files[cursorIndex]` is a bug.
+  Always use `getProcessedFiles()` or the pre-computed `visibleFiles`/`cursorFile`.
 
 ### Testing and Quality Assurance Protocol
 
