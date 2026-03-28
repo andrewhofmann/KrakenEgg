@@ -1,6 +1,22 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-macos-bg: rgba(30, 30, 32, 0.4);
+  --color-macos-sidebar: rgba(40, 40, 45, 0.3);
+  --color-macos-active: #007AFF;
+  --color-macos-activeHover: #0062C4;
+  --color-macos-text: #FFFFFF;
+  --color-macos-textSecondary: rgba(255, 255, 255, 0.55);
+  --color-macos-border: rgba(255, 255, 255, 0.08);
+  --color-macos-hover: rgba(255, 255, 255, 0.05);
+  --color-macos-selected: rgba(0, 122, 255, 0.2);
+  --color-macos-glass: rgba(20, 20, 20, 0.6);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", Menlo, Monaco, "Courier New", monospace;
+
+  --backdrop-blur-xs: 2px;
+}
 
 :root {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
