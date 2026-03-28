@@ -124,10 +124,11 @@ export const TabBar = ({ side }: { side: "left" | "right" }) => {
       </Reorder.Group>
       
       {/* New Tab Button */}
-      <button 
-        onClick={(e) => { 
-          e.stopPropagation(); 
-          addTab(side, activePath || "/"); 
+      <button
+        aria-label="New tab"
+        onClick={(e) => {
+          e.stopPropagation();
+          addTab(side, activePath || "/");
         }}
         className="p-1 rounded mb-0.5 hover:bg-[var(--ke-bg-hover)]"
         style={{ color: 'var(--ke-text-secondary)' }}

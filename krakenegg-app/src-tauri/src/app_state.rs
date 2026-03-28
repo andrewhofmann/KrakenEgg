@@ -77,16 +77,23 @@ pub fn get_layouts_dir(base_dir: Option<&Path>) -> Result<PathBuf, String> {
 }
 
 pub fn save_named_layout(name: &str, state: &AppStateConfig) -> Result<(), String> {
+    // Sanitize layout name to prevent path traversal
+    let safe_name = name.replace(['/', '\\', '\0'], "_").replace("..", "_");
+    if safe_name.is_empty() || safe_name == "." || safe_name == ".." { return Err("Invalid layout name".to_string()); }
     let mut path = get_layouts_dir(None)?;
-    path.push(format!("{}.json", name));
+    path.push(format!("{}.json", safe_name));
+    // Verify path stays within layouts dir
+    let layouts_dir = get_layouts_dir(None)?;
+    if !path.starts_with(&layouts_dir) { return Err("Invalid layout name".to_string()); }
     let json_string = serde_json::to_string_pretty(state).map_err(|e| e.to_string())?;
     fs::write(path, json_string).map_err(|e| e.to_string())?;
     Ok(())
 }
 
 pub fn load_named_layout(name: &str) -> Result<Option<AppStateConfig>, String> {
+    let safe_name = name.replace(['/', '\\', '\0'], "_");
     let mut path = get_layouts_dir(None)?;
-    path.push(format!("{}.json", name));
+    path.push(format!("{}.json", safe_name));
     if !path.exists() {
         return Ok(None);
     }

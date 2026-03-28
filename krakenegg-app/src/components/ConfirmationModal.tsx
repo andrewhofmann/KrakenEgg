@@ -19,9 +19,13 @@ export const ConfirmationModal = () => {
     }
   }, [show]);
 
+  const [confirming, setConfirming] = useState(false);
   const handleConfirm = () => {
+    if (confirming) return; // Prevent double-click
+    setConfirming(true);
     onConfirm(showConflictOptions ? strategy : undefined);
     closeConfirmation();
+    setConfirming(false);
   };
 
   return (

@@ -41,10 +41,19 @@ export const FileRow = memo(({
     if (isRenaming && renameInputRef.current) {
       setRenameValue(file.name);
       renameInputRef.current.focus();
-      // Select the name without extension
-      const dotIndex = file.name.lastIndexOf('.');
-      if (dotIndex > 0 && !file.is_dir) {
-        renameInputRef.current.setSelectionRange(0, dotIndex);
+      // Select the name without extension — handle compound extensions like .tar.gz
+      if (!file.is_dir) {
+        let dotIndex = file.name.lastIndexOf('.');
+        // Detect compound extensions: .tar.gz, .tar.bz2, .tar.xz
+        if (dotIndex > 0) {
+          const beforeDot = file.name.substring(0, dotIndex);
+          if (beforeDot.endsWith('.tar')) dotIndex = beforeDot.lastIndexOf('.');
+        }
+        if (dotIndex > 0) {
+          renameInputRef.current.setSelectionRange(0, dotIndex);
+        } else {
+          renameInputRef.current.select();
+        }
       } else {
         renameInputRef.current.select();
       }
