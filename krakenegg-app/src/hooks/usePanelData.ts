@@ -69,25 +69,28 @@ export function usePanelData(side: "left" | "right") {
     // Set up filesystem watcher for live updates
     let unwatchFn: (() => void) | null = null;
     let unlistenFn: (() => void) | null = null;
+    let cleanedUp = false;
 
     const setupWatcher = async () => {
       try {
-        // Start watching this directory
+        if (cleanedUp) return; // Already unmounted, don't register listeners
         await invoke("watch_directory", { path });
 
-        // Listen for change events
+        if (cleanedUp) return; // Check again after await
         const unlisten = await listen<string>("directory-changed", (event) => {
           if (event.payload === path && mounted) {
-            load(false); // Reload without showing loading indicator
+            load(false);
           }
         });
+
+        if (cleanedUp) { unlisten(); return; } // Cleanup if unmounted during await
         unlistenFn = unlisten;
 
         unwatchFn = () => {
           invoke("unwatch_directory", { path }).catch(() => {});
         };
       } catch {
-        // Fallback to polling if watcher fails (e.g., running outside Tauri)
+        if (cleanedUp) return;
         const interval = setInterval(() => load(false), 3000);
         unwatchFn = () => clearInterval(interval);
       }
@@ -97,6 +100,7 @@ export function usePanelData(side: "left" | "right") {
 
     return () => {
         mounted = false;
+        cleanedUp = true;
         if (unlistenFn) unlistenFn();
         if (unwatchFn) unwatchFn();
     };

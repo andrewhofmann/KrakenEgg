@@ -42,7 +42,7 @@ export const SearchModal = () => {
       const targetPath = searchRoot === '/' ? `/${parentDir}` : `${searchRoot}/${parentDir}`;
       setPath(activeSide, targetPath);
     }
-    // Close search after navigating
+    // For root-level results, we're already in the right directory — just close
     hideSearch();
   };
 

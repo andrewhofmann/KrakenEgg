@@ -336,7 +336,8 @@ export const useStore = create<AppState>((set, get) => {
         await invoke('extract_archive', { archivePath, destDir });
         get().refreshPaths([activeTab.path]);
         currentAppState.showOperationStatus(`Extracted '${file.name}' successfully.`);
-      } catch (err) { currentAppState.setOperationError(`Extraction failed: ${err}`); set((state) => updateActiveTab(state, side, () => ({ loading: false }))); }
+      } catch (err) { currentAppState.setOperationError(`Extraction failed: ${err}`); }
+      finally { set((state) => updateActiveTab(state, side, () => ({ loading: false }))); }
     },
   };
 

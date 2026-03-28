@@ -191,7 +191,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
                     }
                 } else {
                     const startW = allWidths[rightCol];
-                    const newW = startW - delta;
+                    const newW = Math.max(MIN_WIDTH, startW - delta);
                     containerRef.current.style.setProperty(`--col-${rightCol}`, `${newW}px`);
                 }
             } else {
