@@ -1,8 +1,8 @@
 use std::fs;
 use std::process::Command;
 use std::path::{Path, PathBuf};
-use std::io::{self, Read, Write};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::io::{self, Read};
+use std::time::UNIX_EPOCH;
 use std::os::unix::fs::PermissionsExt;
 use walkdir::WalkDir;
 use tauri::{State, Emitter, Window};
@@ -12,7 +12,7 @@ use std::sync::mpsc;
 use std::collections::HashMap;
 
 use crate::models::{FileInfo, OperationMap, OperationContext, ConflictResolution};
-use crate::utils::{is_binary, is_text_file_by_extension};
+use crate::utils::is_text_file_by_extension;
 use crate::archive::{parse_archive_path, list_archive_contents, extract_entry, add_files_to_zip, remove_files_from_zip};
 use crate::app_state::{AppStateConfig, get_config_path, save_state_to_file, load_state_from_file};
 
@@ -668,7 +668,7 @@ pub async fn compress_files(sources: Vec<String>, dest_path: String) -> Result<(
 pub async fn compress_files_with_progress(
     window: Window,
     _state: State<'_, OperationMap>,
-    id: String,
+    _id: String,
     sources: Vec<String>,
     dest_path: String
 ) -> Result<(), String> {

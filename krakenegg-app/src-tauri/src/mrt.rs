@@ -1,9 +1,8 @@
 use std::path::Path;
 use std::fs;
-use serde::{Serialize, Deserialize};
+use serde::Serialize;
 use regex::Regex;
 use chrono::{DateTime, Local};
-use std::time::SystemTime;
 
 #[derive(Serialize, Clone, Debug)]
 pub struct RenamePreview {

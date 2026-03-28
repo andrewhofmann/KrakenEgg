@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::io::{self, Read, Write};
+use std::io::{self, Read};
 use flate2::read::GzDecoder;
 use crate::models::FileInfo;
 use walkdir::WalkDir;

@@ -41,8 +41,8 @@ export const OperationsDrawer = () => {
                     {fileOperations.map(op => (
                         <div key={op.id} className="p-3 rounded-md text-xs" style={{ backgroundColor: 'var(--ke-bg-input)', border: '1px solid var(--ke-border-subtle)' }}>
                             <div className="flex justify-between items-start mb-2">
-                                <div className="font-medium truncate pr-2 flex-1" style={{ color: 'var(--ke-text)' }} title={op.description}>
-                                    {op.type.toUpperCase()}: {op.description}
+                                <div className="font-medium truncate pr-2 flex-1" style={{ color: 'var(--ke-text)' }} title={op.currentPath || op.type}>
+                                    {op.type.toUpperCase()}{op.currentPath ? `: ${op.currentPath}` : ''}
                                 </div>
                                 <div className="flex items-center space-x-1">
                                     {op.status === 'completed' || op.status === 'error' ? (

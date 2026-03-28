@@ -281,9 +281,13 @@ export const useStore = create<AppState>((set, get) => {
       const destTab = currentAppState[destSide].tabs[currentAppState[destSide].activeTabIndex];
       const showHidden = currentAppState.preferences.general.showHiddenFiles;
       const files = getProcessedFiles(activeTab.files, currentAppState[side].layout, activeTab.filterQuery, showHidden);
-      const sources = activeTab.selection.length > 0 
-        ? activeTab.selection.map(i => `${activeTab.path === "/" ? "" : activeTab.path}/${files[i].name}`)
-        : [`${activeTab.path === "/" ? "" : activeTab.path}/${files[activeTab.cursorIndex].name}`];
+      let sources: string[];
+      if (activeTab.selection.length > 0) {
+        sources = activeTab.selection.filter(i => i >= 0 && files[i] && files[i].name !== '..').map(i => `${activeTab.path === "/" ? "" : activeTab.path}/${files[i].name}`);
+      } else {
+        const file = activeTab.cursorIndex >= 0 ? files[activeTab.cursorIndex] : null;
+        sources = file && file.name !== '..' ? [`${activeTab.path === "/" ? "" : activeTab.path}/${file.name}`] : [];
+      }
       if (sources.length === 0) return;
       
       let defaultName = "archive.zip";
@@ -547,7 +551,7 @@ export const useStore = create<AppState>((set, get) => {
           const files = getProcessedFiles(activeTab.files, state[side].layout, activeTab.filterQuery, showHidden);
           let targetFiles: string[] = [];
           if (activeTab.selection.length > 0) {
-              targetFiles = activeTab.selection.map(i => `${activeTab.path === "/" ? "" : activeTab.path}/${files[i].name}`);
+              targetFiles = activeTab.selection.filter(i => i >= 0 && files[i] && files[i].name !== '..').map(i => `${activeTab.path === "/" ? "" : activeTab.path}/${files[i].name}`);
           } else {
               const file = files[activeTab.cursorIndex];
               if (file && file.name !== "..") {

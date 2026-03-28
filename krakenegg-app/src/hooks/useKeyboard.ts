@@ -381,10 +381,13 @@ export function useKeyboard() {
               // Calculate folder size on Space (Total Commander behavior)
               try {
                 const size = await invoke<number>('calculate_folder_size', { path: filePath });
-                // Update the file's size in the store
+                // Update the file's size in the store — find by name in raw files (cursorIndex is for processedFiles)
                 const updatedFiles = [...activeTab.files];
-                updatedFiles[activeTab.cursorIndex] = { ...fileToPreview, size };
-                state.setFiles(activeSide, updatedFiles);
+                const rawIndex = updatedFiles.findIndex(f => f.name === fileToPreview.name);
+                if (rawIndex >= 0) {
+                  updatedFiles[rawIndex] = { ...updatedFiles[rawIndex], size };
+                  state.setFiles(activeSide, updatedFiles);
+                }
               } catch (err) {
                 state.setOperationError(`Size calculation failed: ${err}`);
               }
@@ -427,10 +430,6 @@ export function useKeyboard() {
             }
           }
           }
-          break;
-        case 'Delete':
-          e.preventDefault();
-          handleHotkeyAction('delete');
           break;
       }
     };
