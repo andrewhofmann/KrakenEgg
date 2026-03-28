@@ -883,8 +883,12 @@ pub async fn write_file_content(path: String, content: String) -> Result<(), Str
 
 #[tauri::command]
 pub async fn create_empty_file(path: String) -> Result<(), String> {
-    fs::File::create(&path)
-        .map_err(|e| format!("Failed to create file '{}': {}", path, e.to_string()))?;
+    // Use create_new to fail if file already exists instead of silently truncating
+    std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&path)
+        .map_err(|e| format!("Failed to create file '{}': {}", path, e))?;
     Ok(())
 }
 

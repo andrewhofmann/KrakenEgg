@@ -5,6 +5,19 @@ use flate2::read::GzDecoder;
 use crate::models::FileInfo;
 use walkdir::WalkDir;
 
+/// Guard that deletes a temp file on drop (cleanup on error paths)
+struct TempFileGuard {
+    path: PathBuf,
+    disarmed: bool,
+}
+impl TempFileGuard {
+    fn new(path: PathBuf) -> Self { Self { path, disarmed: false } }
+    fn disarm(&mut self) { self.disarmed = true; }
+}
+impl Drop for TempFileGuard {
+    fn drop(&mut self) { if !self.disarmed { let _ = fs::remove_file(&self.path); } }
+}
+
 pub fn parse_archive_path(full_path: &str) -> Option<(PathBuf, PathBuf)> {
     // Check longer extensions first to match .tar.gz before .tar
     let archive_exts = [".tar.gz", ".tgz", ".tar", ".zip"];
@@ -223,9 +236,11 @@ pub fn add_files_to_zip(archive_path: &Path, sources: &[String], dest_dir_intern
     }
 
     let tmp_path = archive_path.with_extension("tmp");
+    let mut guard = TempFileGuard::new(tmp_path.clone());
+
     let file = fs::File::open(archive_path).map_err(|e| e.to_string())?;
     let mut zip = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
-    
+
     let tmp_file = fs::File::create(&tmp_path).map_err(|e| e.to_string())?;
     let mut zip_w = zip::ZipWriter::new(tmp_file);
     let options = zip::write::SimpleFileOptions::default();
@@ -238,7 +253,7 @@ pub fn add_files_to_zip(archive_path: &Path, sources: &[String], dest_dir_intern
     for src in sources {
         let src_path = Path::new(src);
         let src_name = src_path.file_name().unwrap_or_default().to_string_lossy();
-        
+
         if src_path.is_dir() {
             for entry in WalkDir::new(src_path) {
                 let entry = entry.map_err(|e| e.to_string())?;
@@ -250,7 +265,7 @@ pub fn add_files_to_zip(archive_path: &Path, sources: &[String], dest_dir_intern
                     } else {
                         format!("{}/", dest_dir_internal.trim_end_matches('/')) + &rel.to_string_lossy().replace('\\', "/")
                     };
-                    
+
                     zip_w.start_file(internal_path, options).map_err(|e| e.to_string())?;
                     let mut f = fs::File::open(path).map_err(|e| e.to_string())?;
                     io::copy(&mut f, &mut zip_w).map_err(|e| e.to_string())?;
@@ -269,7 +284,9 @@ pub fn add_files_to_zip(archive_path: &Path, sources: &[String], dest_dir_intern
     }
 
     zip_w.finish().map_err(|e| e.to_string())?;
-    fs::rename(tmp_path, archive_path).map_err(|e| e.to_string())?;
+    // Temp file is complete — rename atomically, then disarm the cleanup guard
+    fs::rename(&tmp_path, archive_path).map_err(|e| e.to_string())?;
+    guard.disarm();
     Ok(())
 }
 
@@ -280,16 +297,18 @@ pub fn remove_files_from_zip(archive_path: &Path, internal_paths: &[String]) -> 
     }
 
     let tmp_path = archive_path.with_extension("tmp");
+    let mut guard = TempFileGuard::new(tmp_path.clone());
+
     let file = fs::File::open(archive_path).map_err(|e| e.to_string())?;
     let mut zip = zip::ZipArchive::new(file).map_err(|e| e.to_string())?;
-    
+
     let tmp_file = fs::File::create(&tmp_path).map_err(|e| e.to_string())?;
     let mut zip_w = zip::ZipWriter::new(tmp_file);
 
     for i in 0..zip.len() {
         let entry = zip.by_index(i).map_err(|e| e.to_string())?;
         let name = entry.name().to_string();
-        
+
         let should_delete = internal_paths.iter().any(|target| {
             name == *target || name.starts_with(&format!("{}/", target))
         });
@@ -300,7 +319,8 @@ pub fn remove_files_from_zip(archive_path: &Path, internal_paths: &[String]) -> 
     }
 
     zip_w.finish().map_err(|e| e.to_string())?;
-    fs::rename(tmp_path, archive_path).map_err(|e| e.to_string())?;
+    fs::rename(&tmp_path, archive_path).map_err(|e| e.to_string())?;
+    guard.disarm();
     Ok(())
 }
 

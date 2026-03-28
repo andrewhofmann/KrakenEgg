@@ -269,7 +269,7 @@ export const useStore = create<AppState>((set, get) => {
         set((state) => ({ editor: { ...state.editor, error: String(err), loading: false } }));
       }
     },
-    hideEditor: () => set((state) => ({ editor: { ...state.editor, show: false, content: '', path: '' } })),
+    hideEditor: () => set((state) => ({ editor: { ...state.editor, show: false, content: '', path: '', dirty: false } })),
     setEditorContent: (content: string) => set((state) => ({ editor: { ...state.editor, content, dirty: true } })),
     saveEditorContent: async () => {
       const editorState = get().editor;
@@ -287,7 +287,7 @@ export const useStore = create<AppState>((set, get) => {
 
   const searchActions = {
     showSearch: () => set((state) => ({ search: { ...state.search, show: true, error: null, results: [] } })),
-    hideSearch: () => set((state) => ({ search: { ...state.search, show: false, query: '' } })),
+    hideSearch: () => set((state) => ({ search: { ...state.search, show: false, query: '', results: [], error: null } })),
     setSearchQuery: (query: string) => set((state) => ({ search: { ...state.search, query } })),
     setSearchContent: (enabled: boolean) => set((state) => ({ search: { ...state.search, searchContent: enabled } })),
     setSearchMode: (mode: 'substring' | 'glob' | 'regex') => set((state) => ({ search: { ...state.search, searchMode: mode } })),
