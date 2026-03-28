@@ -103,6 +103,9 @@ export function usePanelData(side: "left" | "right") {
         cleanedUp = true;
         if (unlistenFn) unlistenFn();
         if (unwatchFn) unwatchFn();
+        // Always unwatch the path even if setupWatcher hasn't completed yet
+        // (prevents leaked watchers when navigating rapidly)
+        invoke("unwatch_directory", { path }).catch(() => {});
     };
   }, [path, refreshVersion, tabId, side, setFiles, setLoading, setError, activeTabIndex]);
 }

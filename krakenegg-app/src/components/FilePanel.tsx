@@ -844,7 +844,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
                                     <Star size={12} className="mr-2 text-yellow-500" />
                                     <span className="truncate text-xs">{path}</span>
                                 </div>
-                                <button onClick={(e) => { e.stopPropagation(); removeFromHotlist(path); }} className="opacity-0 group-hover:opacity-100 hover:text-red-300"><ChevronRight size={12} className="rotate-45" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); removeFromHotlist(path); }} className="opacity-0 group-hover:opacity-100" style={{ color: 'var(--ke-error)' }}><ChevronRight size={12} className="rotate-45" /></button>
                             </div>
                         ))}
                         <button 

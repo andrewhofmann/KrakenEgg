@@ -13,8 +13,9 @@ export const ConfirmationModal = () => {
 
   useEffect(() => {
     if (show) {
-      setTimeout(() => cancelRef.current?.focus(), 50);
+      const timer = setTimeout(() => cancelRef.current?.focus(), 50);
       setStrategy('prompt'); // Reset
+      return () => clearTimeout(timer);
     }
   }, [show]);
 
