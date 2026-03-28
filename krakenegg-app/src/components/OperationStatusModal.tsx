@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { X, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { useStore } from '../store';
 import { formatSize } from '../utils/format';
@@ -9,6 +9,11 @@ export const OperationStatusModal = () => {
   const hideOperationStatus = useStore((state) => state.hideOperationStatus);
   const cancelOperation = useStore((state) => state.cancelOperation);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Dismiss error/success messages on any click anywhere in the app
+  const handleGlobalClick = useCallback(() => {
+    if (show && !progress && !conflict) hideOperationStatus();
+  }, [show, progress, conflict, hideOperationStatus]);
 
   useEffect(() => {
     // Only auto-hide if NOT error and NOT progress AND NOT conflict
@@ -21,12 +26,15 @@ export const OperationStatusModal = () => {
         // Clear auto-hide timer for error, progress, or conflict states
         if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     }
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, [show, isError, progress, conflict, hideOperationStatus]);
+
+    // Add global click listener to dismiss error/success messages
+    if (show && !progress && !conflict) {
+      const timer = setTimeout(() => window.addEventListener('mousedown', handleGlobalClick), 100);
+      return () => { clearTimeout(timer); window.removeEventListener('mousedown', handleGlobalClick); if (timerRef.current) clearTimeout(timerRef.current); };
+    }
+
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [show, isError, progress, conflict, hideOperationStatus, handleGlobalClick]);
 
   if (!show) return null;
 
