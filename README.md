@@ -5,12 +5,12 @@ A modern, cross-platform dual-pane file manager built for macOS, inspired by Tot
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey.svg)
 ![Tests](https://img.shields.io/badge/tests-1044%20passing-brightgreen.svg)
-![CI](https://github.com/andreshofmann/KrakenEgg/actions/workflows/ci.yml/badge.svg)
-![Security](https://github.com/andreshofmann/KrakenEgg/actions/workflows/security.yml/badge.svg)
+![CI](https://github.com/andrewhofmann/KrakenEgg/actions/workflows/ci.yml/badge.svg)
+![Security](https://github.com/andrewhofmann/KrakenEgg/actions/workflows/security.yml/badge.svg)
 
 ## Download
 
-**[Download Latest Release (macOS)](https://github.com/andreshofmann/KrakenEgg/releases/latest)**
+**[Download Latest Release (macOS)](https://github.com/andrewhofmann/KrakenEgg/releases/latest)**
 
 Or build from source — see [Getting Started](#getting-started) below.
 
@@ -65,7 +65,7 @@ Or build from source — see [Getting Started](#getting-started) below.
 
 ```bash
 # Clone the repository
-git clone https://github.com/andreshofmann/KrakenEgg.git
+git clone https://github.com/andrewhofmann/KrakenEgg.git
 cd KrakenEgg/krakenegg-app
 
 # Install dependencies

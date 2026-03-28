@@ -7,7 +7,7 @@ Thank you for your interest in contributing to KrakenEgg! This document provides
 1. Install prerequisites: Rust, Node.js (v18+), pnpm (v10+)
 2. Clone the repo and install dependencies:
    ```bash
-   git clone https://github.com/andreshofmann/KrakenEgg.git
+   git clone https://github.com/andrewhofmann/KrakenEgg.git
    cd KrakenEgg/krakenegg-app
    pnpm install
    ```

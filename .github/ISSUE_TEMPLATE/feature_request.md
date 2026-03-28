@@ -3,7 +3,7 @@ name: Feature Request
 about: Suggest a new feature for KrakenEgg
 title: '[Feature] '
 labels: enhancement
-assignees: andreshofmann
+assignees: andrewhofmann
 ---
 
 ## Problem

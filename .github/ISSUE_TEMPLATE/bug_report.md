@@ -3,7 +3,7 @@ name: Bug Report
 about: Report a bug in KrakenEgg
 title: '[Bug] '
 labels: bug
-assignees: andreshofmann
+assignees: andrewhofmann
 ---
 
 ## Description
