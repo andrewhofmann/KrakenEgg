@@ -78,7 +78,7 @@ export const FileRow = memo(({
   };
 
   const textColorClass = isSelected && isActive
-      ? "text-white/90"
+      ? "text-[var(--ke-selection-text)]"
       : "text-[var(--ke-text-secondary)]";
 
   const renderCell = (col: SortColumn) => {
@@ -149,13 +149,13 @@ export const FileRow = memo(({
       onDragLeave={(e) => onDragLeave(e, file)}
       onDrop={(e) => onDrop(e, file)}
       className={clsx(
-        "transition-colors font-normal select-none leading-none items-center border-b border-white/[0.03]",
+        "transition-colors font-normal select-none leading-none items-center border-b border-[var(--ke-border-subtle)]",
         isSelected && isActive
-          ? "bg-[var(--ke-selection)] text-white"
+          ? "bg-[var(--ke-selection)] text-[var(--ke-selection-text)]"
           : isActive ? "hover:bg-[var(--ke-bg-hover)]" : "opacity-70",
 
-        isDragTarget && "bg-blue-500/20 ring-2 ring-blue-400 z-20 rounded",
-        isCursor && isActive && !isDragTarget && !isSelected && "ring-1 ring-white/20 z-10"
+        isDragTarget && "bg-[var(--ke-accent)]/20 ring-2 ring-[var(--ke-accent)] z-20 rounded",
+        isCursor && isActive && !isDragTarget && !isSelected && "ring-1 ring-[var(--ke-border)] z-10"
       )}
     >
       {columns.map(col => (

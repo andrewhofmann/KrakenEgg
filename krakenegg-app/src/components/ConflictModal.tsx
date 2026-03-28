@@ -16,7 +16,8 @@ export const ConflictModal = () => {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[300]" />
         <Dialog.Content
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-macos-glass border border-white/10 rounded-lg p-6 w-[480px] z-[301] focus:outline-none shadow-2xl animate-scale-in"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg p-6 w-[480px] z-[301] focus:outline-none shadow-2xl"
+            style={{ backgroundColor: 'var(--ke-bg-elevated)', border: '1px solid var(--ke-border)' }}
             onPointerDownOutside={(e) => e.preventDefault()}
             onEscapeKeyDown={(e) => e.preventDefault()}
         >

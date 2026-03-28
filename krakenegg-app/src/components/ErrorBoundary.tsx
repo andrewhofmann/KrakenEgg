@@ -37,15 +37,16 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="flex flex-col items-center justify-center h-full p-8 text-center">
           <AlertTriangle size={32} className="text-red-400 mb-3" />
-          <h3 className="text-sm font-semibold text-red-300 mb-1">
+          <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--ke-error)' }}>
             {this.props.fallbackTitle || 'Something went wrong'}
           </h3>
-          <p className="text-xs text-gray-400 mb-4 max-w-sm">
+          <p className="text-xs mb-4 max-w-sm" style={{ color: 'var(--ke-text-secondary)' }}>
             {this.state.error?.message || 'An unexpected error occurred'}
           </p>
           <button
             onClick={this.handleReset}
-            className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-xs text-white transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded text-xs transition-colors"
+            style={{ backgroundColor: 'var(--ke-bg-hover)', color: 'var(--ke-text)' }}
           >
             <RefreshCw size={12} />
             Try Again
