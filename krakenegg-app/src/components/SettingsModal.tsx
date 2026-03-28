@@ -133,7 +133,17 @@ export const SettingsModal = () => {
       } else {
         return; // Wait for non-modifier key
       }
-      setHotkey(editingHotkey, parts.join('+'));
+      const newBinding = parts.join('+');
+      // Check for conflicts — warn if another action uses this key
+      const conflict = Object.entries(hotkeys).find(
+        ([action, binding]) => action !== editingHotkey && binding === newBinding
+      );
+      if (conflict) {
+        const conflictLabel = HOTKEY_LABELS[conflict[0] as HotkeyAction] || conflict[0];
+        // Clear the conflicting binding (last one wins)
+        setHotkey(conflict[0] as HotkeyAction, '');
+      }
+      setHotkey(editingHotkey, newBinding);
       setEditingHotkey(null);
     };
     window.addEventListener('keydown', handler, true);

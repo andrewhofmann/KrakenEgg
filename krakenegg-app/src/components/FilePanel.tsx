@@ -500,7 +500,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     const hasSelection = currentSelection.length > 0;
     const isSingleFile = hasSelection && currentSelection.length === 1 && file && !file.is_dir;
     const isSingleDir = hasSelection && currentSelection.length === 1 && file && file.is_dir;
-    const isArchiveFile = isSingleFile && (file.name.endsWith('.zip') || file.name.endsWith('.tar.gz') || file.name.endsWith('.tgz') || file.name.endsWith('.tar'));
+    const isArchiveFile = isSingleFile && /\.(zip|tar\.gz|tgz|tar)$/i.test(file.name);
 
     const items = [];
 

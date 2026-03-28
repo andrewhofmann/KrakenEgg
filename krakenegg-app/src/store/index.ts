@@ -89,7 +89,10 @@ export const useStore = create<AppState>((set, get) => {
           return { [side]: { ...panel, tabs: newTabs, activeTabIndex: newActiveIndex } };
         }); get().saveState();
     },
-    setActiveTab: (side: 'left' | 'right', index: number) => { set((state) => ({ [side]: { ...state[side], activeTabIndex: index } })); get().saveState(); },
+    setActiveTab: (side: 'left' | 'right', index: number) => { set((state) => {
+      const clamped = Math.max(0, Math.min(index, state[side].tabs.length - 1));
+      return { [side]: { ...state[side], activeTabIndex: clamped } };
+    }); get().saveState(); },
     moveTab: (fromSide: 'left' | 'right', fromIndex: number, toSide: 'left' | 'right', toIndex?: number) => {
         set((state) => {
             const fromTabs = [...state[fromSide].tabs];
