@@ -15,7 +15,7 @@ export const EditorModal = () => {
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-[var(--ke-border)] shrink-0">
           <h3 className="text-sm font-semibold text-[var(--ke-text)] truncate">
-            {title} {dirty && <span className="text-yellow-400 ml-2"> (Unsaved)</span>}
+            {title} {dirty && <span className="ml-2" style={{ color: 'var(--ke-warning)' }}> (Unsaved)</span>}
           </h3>
           <div className="flex space-x-2">
             <button

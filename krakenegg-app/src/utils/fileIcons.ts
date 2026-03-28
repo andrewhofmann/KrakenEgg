@@ -67,20 +67,20 @@ export function getFileIcon(file: { is_dir: boolean; extension?: string; is_syml
 }
 
 export function getFileIconColor(file: { is_dir: boolean; extension?: string; name: string }, isSelected: boolean, isActive: boolean): string {
-  if (isSelected && isActive) return 'text-white';
+  if (isSelected && isActive) return 'text-[var(--ke-selection-text)]';
 
-  if (file.is_dir) return 'text-blue-400';
+  if (file.is_dir) return 'text-[var(--ke-icon-folder)]';
 
   const ext = file.extension?.toLowerCase() || '';
 
-  // Color groups
-  if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tiff', 'tif'].includes(ext)) return 'text-pink-400';
-  if (['ts', 'tsx', 'js', 'jsx', 'rs', 'py', 'go', 'java', 'c', 'cpp', 'swift', 'rb'].includes(ext)) return 'text-green-400';
-  if (['json', 'yaml', 'yml', 'toml', 'xml'].includes(ext)) return 'text-yellow-400';
-  if (['zip', 'tar', 'gz', 'rar', '7z', 'tgz', 'bz2'].includes(ext)) return 'text-orange-400';
-  if (['mp3', 'wav', 'ogg', 'flac', 'aac'].includes(ext)) return 'text-purple-400';
-  if (['mp4', 'avi', 'mov', 'mkv', 'webm'].includes(ext)) return 'text-red-400';
-  if (['sh', 'bash', 'zsh', 'bat', 'cmd'].includes(ext)) return 'text-emerald-400';
+  // Color groups — using CSS variables for theme support
+  if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tiff', 'tif'].includes(ext)) return 'text-[var(--ke-icon-image)]';
+  if (['ts', 'tsx', 'js', 'jsx', 'rs', 'py', 'go', 'java', 'c', 'cpp', 'swift', 'rb'].includes(ext)) return 'text-[var(--ke-icon-code)]';
+  if (['json', 'yaml', 'yml', 'toml', 'xml'].includes(ext)) return 'text-[var(--ke-icon-data)]';
+  if (['zip', 'tar', 'gz', 'rar', '7z', 'tgz', 'bz2'].includes(ext)) return 'text-[var(--ke-icon-archive)]';
+  if (['mp3', 'wav', 'ogg', 'flac', 'aac'].includes(ext)) return 'text-[var(--ke-icon-audio)]';
+  if (['mp4', 'avi', 'mov', 'mkv', 'webm'].includes(ext)) return 'text-[var(--ke-icon-video)]';
+  if (['sh', 'bash', 'zsh', 'bat', 'cmd'].includes(ext)) return 'text-[var(--ke-icon-script)]';
 
-  return 'text-gray-400';
+  return 'text-[var(--ke-icon-default)]';
 }

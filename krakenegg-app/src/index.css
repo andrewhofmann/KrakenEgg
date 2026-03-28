@@ -51,6 +51,15 @@
   --ke-scrollbar-hover: rgba(255, 255, 255, 0.3);
   --ke-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   --ke-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --ke-icon-folder: #60A5FA;
+  --ke-icon-image: #F472B6;
+  --ke-icon-code: #4ADE80;
+  --ke-icon-data: #FACC15;
+  --ke-icon-archive: #FB923C;
+  --ke-icon-audio: #C084FC;
+  --ke-icon-video: #F87171;
+  --ke-icon-script: #34D399;
+  --ke-icon-default: #9CA3AF;
 }
 
 [data-theme="light"] {
@@ -81,6 +90,15 @@
   --ke-scrollbar-hover: rgba(0, 0, 0, 0.35);
   --ke-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   --ke-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --ke-icon-folder: #3B82F6;
+  --ke-icon-image: #EC4899;
+  --ke-icon-code: #16A34A;
+  --ke-icon-data: #CA8A04;
+  --ke-icon-archive: #EA580C;
+  --ke-icon-audio: #9333EA;
+  --ke-icon-video: #DC2626;
+  --ke-icon-script: #059669;
+  --ke-icon-default: #6B7280;
 }
 
 body {

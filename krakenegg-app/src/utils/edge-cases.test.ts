@@ -342,34 +342,34 @@ describe('getFileIcon', () => {
 });
 
 describe('getFileIconColor', () => {
-  it('directory is blue', () => {
+  it('directory uses folder CSS variable', () => {
     const color = getFileIconColor({ is_dir: true, name: 'dir' }, false, false);
-    expect(color).toContain('blue');
+    expect(color).toContain('--ke-icon-folder');
   });
 
-  it('selected + active is white', () => {
+  it('selected + active uses selection-text CSS variable', () => {
     const color = getFileIconColor({ is_dir: false, name: 'file.txt', extension: 'txt' }, true, true);
-    expect(color).toContain('white');
+    expect(color).toContain('--ke-selection-text');
   });
 
-  it('image extension is pink', () => {
+  it('image extension uses image CSS variable', () => {
     const color = getFileIconColor({ is_dir: false, name: 'photo.png', extension: 'png' }, false, false);
-    expect(color).toContain('pink');
+    expect(color).toContain('--ke-icon-image');
   });
 
-  it('code extension is green', () => {
+  it('code extension uses code CSS variable', () => {
     const color = getFileIconColor({ is_dir: false, name: 'app.ts', extension: 'ts' }, false, false);
-    expect(color).toContain('green');
+    expect(color).toContain('--ke-icon-code');
   });
 
-  it('archive extension is orange', () => {
+  it('archive extension uses archive CSS variable', () => {
     const color = getFileIconColor({ is_dir: false, name: 'a.zip', extension: 'zip' }, false, false);
-    expect(color).toContain('orange');
+    expect(color).toContain('--ke-icon-archive');
   });
 
-  it('unknown extension is gray', () => {
+  it('unknown extension uses default CSS variable', () => {
     const color = getFileIconColor({ is_dir: false, name: 'file.xyz', extension: 'xyz' }, false, false);
-    expect(color).toContain('gray');
+    expect(color).toContain('--ke-icon-default');
   });
 });
 

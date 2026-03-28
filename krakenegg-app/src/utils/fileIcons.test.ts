@@ -50,27 +50,27 @@ describe('getFileIcon', () => {
 });
 
 describe('getFileIconColor', () => {
-  it('returns white for selected active items', () => {
-    expect(getFileIconColor({ is_dir: false, name: 'f.txt', extension: 'txt' }, true, true)).toBe('text-white');
+  it('returns selection-text for selected active items', () => {
+    expect(getFileIconColor({ is_dir: false, name: 'f.txt', extension: 'txt' }, true, true)).toBe('text-[var(--ke-selection-text)]');
   });
 
-  it('returns blue for directories', () => {
-    expect(getFileIconColor({ is_dir: true, name: 'dir' }, false, true)).toBe('text-blue-400');
+  it('returns folder color for directories', () => {
+    expect(getFileIconColor({ is_dir: true, name: 'dir' }, false, true)).toBe('text-[var(--ke-icon-folder)]');
   });
 
-  it('returns pink for images', () => {
-    expect(getFileIconColor({ is_dir: false, name: 'img.png', extension: 'png' }, false, true)).toBe('text-pink-400');
+  it('returns image color for images', () => {
+    expect(getFileIconColor({ is_dir: false, name: 'img.png', extension: 'png' }, false, true)).toBe('text-[var(--ke-icon-image)]');
   });
 
-  it('returns green for code files', () => {
-    expect(getFileIconColor({ is_dir: false, name: 'app.ts', extension: 'ts' }, false, true)).toBe('text-green-400');
+  it('returns code color for code files', () => {
+    expect(getFileIconColor({ is_dir: false, name: 'app.ts', extension: 'ts' }, false, true)).toBe('text-[var(--ke-icon-code)]');
   });
 
-  it('returns orange for archives', () => {
-    expect(getFileIconColor({ is_dir: false, name: 'a.zip', extension: 'zip' }, false, true)).toBe('text-orange-400');
+  it('returns archive color for archives', () => {
+    expect(getFileIconColor({ is_dir: false, name: 'a.zip', extension: 'zip' }, false, true)).toBe('text-[var(--ke-icon-archive)]');
   });
 
-  it('returns gray for unknown types', () => {
-    expect(getFileIconColor({ is_dir: false, name: 'f.xyz', extension: 'xyz' }, false, true)).toBe('text-gray-400');
+  it('returns default color for unknown types', () => {
+    expect(getFileIconColor({ is_dir: false, name: 'f.xyz', extension: 'xyz' }, false, true)).toBe('text-[var(--ke-icon-default)]');
   });
 });
