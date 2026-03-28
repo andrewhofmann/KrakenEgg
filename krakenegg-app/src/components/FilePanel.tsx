@@ -277,10 +277,16 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
   const getSelectedPaths = (files: FileInfo[]) => {
     if (!activeTab) return [];
+    const buildPath = (name: string) => activeTab.path === "/" ? `/${name}` : `${activeTab.path}/${name}`;
     if (activeTab.selection.length > 0) {
+      return activeTab.selection
+        .map(i => files[i])
+        .filter(f => f && f.name !== "..")
+        .map(f => buildPath(f.name));
     } else {
       const file = files[activeTab.cursorIndex];
       if (file && file.name !== "..") {
+        return [buildPath(file.name)];
       }
     }
     return [];
@@ -363,7 +369,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       setPath(side, newPath);
     } else if (file && activeTab) {
       try {
-        await invoke('open_with_default', { path });
+        const openPath = activeTab.path === "/" ? `/${file.name}` : `${activeTab.path}/${file.name}`;
+        await invoke('open_with_default', { path: openPath });
       } catch (err) {
         useStore.getState().setOperationError(`Failed to open file: ${err}`);
       }
@@ -482,7 +489,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       setSelection(side, [index]);
     } else if (index === -1) {
         setCursor(side, -1);
-        setSelection(side, [-1]);
+        setSelection(side, []);  // Don't include -1 in selection — it's the parent row
     }
 
     const currentSelection = getSelectedPaths(processedFiles);
@@ -673,6 +680,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     setRenamingIndex(null);
     try {
       useStore.getState().showOperationStatus(`Renaming '${oldName}' to '${newName}'...`);
+      const oldPath = activeTab.path === "/" ? `/${oldName}` : `${activeTab.path}/${oldName}`;
+      const newPath = activeTab.path === "/" ? `/${newName}` : `${activeTab.path}/${newName}`;
       await invoke('move_items', { sources: [oldPath], dest: newPath });
       refreshPanel(side);
       useStore.getState().showOperationStatus(`Renamed successfully.`);

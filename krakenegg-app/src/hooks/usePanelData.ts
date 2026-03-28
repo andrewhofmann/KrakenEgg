@@ -57,7 +57,10 @@ export function usePanelData(side: "left" | "right") {
             setLoading(side, false);
         }
       } catch (err) {
-        if (mounted) setError(side, String(err));
+        if (mounted) {
+          setError(side, String(err));
+          setLoading(side, false);
+        }
       }
     };
 

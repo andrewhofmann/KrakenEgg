@@ -420,11 +420,17 @@ export const useStore = create<AppState>((set, get) => {
     copySelectedFiles: (side: 'left' | 'right') => {
       const currentAppState = get();
       const activeTab = currentAppState[side].tabs[currentAppState[side].activeTabIndex];
+      if (!activeTab) return;
       const showHidden = currentAppState.preferences.general.showHiddenFiles;
       const files = getProcessedFiles(activeTab.files, currentAppState[side].layout, activeTab.filterQuery, showHidden);
-      const sources = activeTab.selection.length > 0 
-        ? activeTab.selection.map(i => `${activeTab.path === "/" ? "" : activeTab.path}/${files[i].name}`)
-        : [`${activeTab.path === "/" ? "" : activeTab.path}/${files[activeTab.cursorIndex].name}`];
+      const buildPath = (name: string) => `${activeTab.path === "/" ? "" : activeTab.path}/${name}`;
+      let sources: string[];
+      if (activeTab.selection.length > 0) {
+        sources = activeTab.selection.filter(i => i >= 0 && files[i] && files[i].name !== '..').map(i => buildPath(files[i].name));
+      } else {
+        const file = activeTab.cursorIndex >= 0 ? files[activeTab.cursorIndex] : null;
+        sources = file && file.name !== '..' ? [buildPath(file.name)] : [];
+      }
       if (sources.length > 0) {
         currentAppState.setClipboard('files', sources, 'copy', side);
         currentAppState.showOperationStatus(`Copied ${sources.length} items to clipboard.`);
@@ -435,11 +441,17 @@ export const useStore = create<AppState>((set, get) => {
     cutSelectedFiles: (side: 'left' | 'right') => {
       const currentAppState = get();
       const activeTab = currentAppState[side].tabs[currentAppState[side].activeTabIndex];
+      if (!activeTab) return;
       const showHidden = currentAppState.preferences.general.showHiddenFiles;
       const files = getProcessedFiles(activeTab.files, currentAppState[side].layout, activeTab.filterQuery, showHidden);
-      const sources = activeTab.selection.length > 0 
-        ? activeTab.selection.map(i => `${activeTab.path === "/" ? "" : activeTab.path}/${files[i].name}`)
-        : [`${activeTab.path === "/" ? "" : activeTab.path}/${files[activeTab.cursorIndex].name}`];
+      const buildPath = (name: string) => `${activeTab.path === "/" ? "" : activeTab.path}/${name}`;
+      let sources: string[];
+      if (activeTab.selection.length > 0) {
+        sources = activeTab.selection.filter(i => i >= 0 && files[i] && files[i].name !== '..').map(i => buildPath(files[i].name));
+      } else {
+        const file = activeTab.cursorIndex >= 0 ? files[activeTab.cursorIndex] : null;
+        sources = file && file.name !== '..' ? [buildPath(file.name)] : [];
+      }
       if (sources.length > 0) {
         currentAppState.setClipboard('files', sources, 'cut', side);
         currentAppState.showOperationStatus(`Cut ${sources.length} items to clipboard.`);
