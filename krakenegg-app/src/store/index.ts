@@ -121,7 +121,9 @@ export const useStore = create<AppState>((set, get) => {
   };
 
   const navigationActions = {
-    setPath: (side: 'left' | 'right', path: string) => {
+    setPath: (side: 'left' | 'right', rawPath: string) => {
+        // Normalize: strip trailing slashes (except root "/")
+        const path = rawPath.length > 1 ? rawPath.replace(/\/+$/, '') : rawPath;
         set((state) => updateActiveTab(state, side, (tab) => {
           const history = tab.history.slice(0, tab.historyIndex + 1);
           if (history[history.length - 1] === path) return {};
@@ -609,7 +611,7 @@ export const useStore = create<AppState>((set, get) => {
 
       // Validate file name
       const trimmed = fileName.trim();
-      if (!trimmed || trimmed === '.' || trimmed === '..' || /[<>:"|?*\x00-\x1f]/.test(trimmed) || trimmed.length > 255) {
+      if (!trimmed || trimmed === '.' || trimmed === '..' || /[<>:"|?*\/\\\x00-\x1f]/.test(trimmed) || trimmed.length > 255) {
         currentAppState.setOperationError(`Invalid file name: "${fileName}"`);
         return;
       }
