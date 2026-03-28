@@ -34,7 +34,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   const clipboard = useStore((s) => s.clipboard);
 
   const { setActiveSide, setPath, setSort, setColumnOrder, setColumnWidth,
-    setCursor, setSelection, setFiles, setFilterQuery, setLoading,
+    setCursor, setSelection, setFilterQuery,
     showContextMenu, hideContextMenu, refreshPanel, addTab,
     copySelectedFiles, cutSelectedFiles, pasteFiles,
     copyToOppositePanel, moveToOppositePanel,
@@ -312,7 +312,6 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       }
   };
 
-  const { setCursorAndSelection } = useStore((s) => s);
   const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingClickRef = useRef<{ index: number; e: React.MouseEvent } | null>(null);
 

@@ -1,5 +1,5 @@
 import { useStore } from "../store";
-import { X, Search, File, Folder } from "lucide-react";
+import { X, Search } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { formatSize } from "../utils/format";
 import { getFileIcon, getFileIconColor } from "../utils/fileIcons";

@@ -1,7 +1,6 @@
 import { useStore } from '../store';
-import { X, ChevronUp, ChevronDown, Activity, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, ChevronUp, ChevronDown, Activity, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
-import { formatSize } from '../utils/format';
 import clsx from 'clsx';
 
 export const OperationsDrawer = () => {

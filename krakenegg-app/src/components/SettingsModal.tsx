@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useStore, Preferences, PaneLayout, HotkeyAction } from "../store";
-import { DEFAULT_HOTKEYS } from "../store/constants";
+import { useStore, PaneLayout, HotkeyAction } from "../store";
+import { DEFAULT_HOTKEYS, createTab } from "../store/constants";
 import { X, Save, Layout, Settings, Monitor, MousePointer, Keyboard, RotateCcw } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import clsx from "clsx";
@@ -175,12 +175,11 @@ export const SettingsModal = () => {
       interface SavedPanel { tabs: SavedTab[]; active_tab_index: number; }
       interface SavedLayout { left: SavedPanel; right: SavedPanel; active_side: string; hotkeys?: any; preferences?: any; }
       const loaded = await invoke<SavedLayout | null>('load_named_layout', { name });
-      if (loaded?.left?.tabs && loaded?.right?.tabs) {
-        const mkTab = (path: string) => ({ id: Math.random().toString(36).substring(7), path, files: [], selection: [], cursorIndex: 0, loading: false, error: null, refreshVersion: 0, filterQuery: '', filterFocusSignal: 0, showFilterWidget: false, history: [path], historyIndex: 0 });
+      if (loaded?.left?.tabs?.length > 0 && loaded?.right?.tabs?.length > 0) {
         const defLayout: PaneLayout = { sortColumn: 'name', sortDirection: 'asc', columns: ['name', 'ext', 'size', 'date'], columnWidths: { name: 0, ext: 45, size: 80, date: 140 } };
         useStore.setState({
-          left: { tabs: loaded.left.tabs.map(t => ({ ...mkTab(t.path), id: t.id, history: t.history, historyIndex: t.history_index ?? 0 })), activeTabIndex: loaded.left.active_tab_index, layout: defLayout },
-          right: { tabs: loaded.right.tabs.map(t => ({ ...mkTab(t.path), id: t.id, history: t.history, historyIndex: t.history_index ?? 0 })), activeTabIndex: loaded.right.active_tab_index, layout: defLayout },
+          left: { tabs: loaded.left.tabs.map(t => ({ ...createTab(t.path), id: t.id, history: t.history || [t.path], historyIndex: t.history_index ?? 0 })), activeTabIndex: Math.min(loaded.left.active_tab_index, loaded.left.tabs.length - 1), layout: defLayout },
+          right: { tabs: loaded.right.tabs.map(t => ({ ...createTab(t.path), id: t.id, history: t.history || [t.path], historyIndex: t.history_index ?? 0 })), activeTabIndex: Math.min(loaded.right.active_tab_index, loaded.right.tabs.length - 1), layout: defLayout },
           activeSide: loaded.active_side as 'left' | 'right',
         });
         showOperationStatus(`Layout '${name}' loaded.`);
