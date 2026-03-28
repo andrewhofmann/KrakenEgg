@@ -689,35 +689,27 @@ pub async fn compress_files_with_progress(
     let mut errors = String::new();
 
     // Strategy 1: Rust Zip Deflate
-    if let Ok(_) = compress_rust_zip(&sources, &dest_path, true) {
-        let _ = window.emit("operation_success", "Strategy 1 (Rust Deflate) Succeeded");
-        return Ok(())
-    } else if let Err(e) = compress_rust_zip(&sources, &dest_path, true) {
-        errors.push_str(&format!("RustZip(Deflate): {}; ", e));
+    match compress_rust_zip(&sources, &dest_path, true) {
+        Ok(_) => { let _ = window.emit("operation_success", "Strategy 1 (Rust Deflate) Succeeded"); return Ok(()); }
+        Err(e) => errors.push_str(&format!("RustZip(Deflate): {}; ", e)),
     }
 
     // Strategy 2: Rust Zip Stored
-    if let Ok(_) = compress_rust_zip(&sources, &dest_path, false) {
-        let _ = window.emit("operation_success", "Strategy 2 (Rust Stored) Succeeded");
-        return Ok(())
-    } else if let Err(e) = compress_rust_zip(&sources, &dest_path, false) {
-        errors.push_str(&format!("RustZip(Stored): {}; ", e));
+    match compress_rust_zip(&sources, &dest_path, false) {
+        Ok(_) => { let _ = window.emit("operation_success", "Strategy 2 (Rust Stored) Succeeded"); return Ok(()); }
+        Err(e) => errors.push_str(&format!("RustZip(Stored): {}; ", e)),
     }
 
     // Strategy 3: System Zip
-    if let Ok(_) = compress_system_zip(&sources, &dest_path) {
-        let _ = window.emit("operation_success", "Strategy 3 (System Zip) Succeeded");
-        return Ok(())
-    } else if let Err(e) = compress_system_zip(&sources, &dest_path) {
-        errors.push_str(&format!("SystemZip: {}; ", e));
+    match compress_system_zip(&sources, &dest_path) {
+        Ok(_) => { let _ = window.emit("operation_success", "Strategy 3 (System Zip) Succeeded"); return Ok(()); }
+        Err(e) => errors.push_str(&format!("SystemZip: {}; ", e)),
     }
 
     // Strategy 4: System Ditto
-    if let Ok(_) = compress_system_ditto(&sources, &dest_path) {
-        let _ = window.emit("operation_success", "Strategy 4 (Ditto) Succeeded");
-        return Ok(())
-    } else if let Err(e) = compress_system_ditto(&sources, &dest_path) {
-        errors.push_str(&format!("Ditto: {}; ", e));
+    match compress_system_ditto(&sources, &dest_path) {
+        Ok(_) => { let _ = window.emit("operation_success", "Strategy 4 (Ditto) Succeeded"); return Ok(()); }
+        Err(e) => errors.push_str(&format!("Ditto: {}; ", e)),
     }
 
     Err(format!("All strategies failed: {}", errors))

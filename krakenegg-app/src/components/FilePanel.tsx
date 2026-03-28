@@ -513,11 +513,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     const items = [];
 
     if (file) {
-      if (file.is_dir) {
-        items.push({ label: "Open", action: () => handleDoubleClick(e, file) });
-      } else {
-        items.push({ label: "Open", action: () => handleDoubleClick(e, file) }); 
-      }
+      items.push({ label: "Open", action: () => handleDoubleClick(e, file) });
       items.push({ label: useStore.getState().quickView ? "Hide Quick Info (Ctrl+Q)" : "Quick Info (Ctrl+Q)", action: () => useStore.getState().toggleQuickView() });
       items.push({ 
         label: "Quick Look (Space)", 

@@ -234,6 +234,16 @@ pub fn add_files_to_zip(archive_path: &Path, sources: &[String], dest_dir_intern
     if !archive_path.to_string_lossy().ends_with(".zip") {
         return Err("Adding files only supported for ZIP archives currently".to_string());
     }
+    // Prevent adding archive to itself
+    if let Ok(canon) = fs::canonicalize(archive_path) {
+        for src in sources {
+            if let Ok(src_canon) = fs::canonicalize(src) {
+                if canon == src_canon {
+                    return Err("Cannot add archive file to itself".to_string());
+                }
+            }
+        }
+    }
 
     let tmp_path = archive_path.with_extension("tmp");
     let mut guard = TempFileGuard::new(tmp_path.clone());
