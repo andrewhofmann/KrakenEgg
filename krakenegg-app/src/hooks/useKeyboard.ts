@@ -273,8 +273,9 @@ export function useKeyboard() {
               '*.*',
               (pattern: string) => {
                 if (!pattern) return;
-                // Convert glob pattern to regex
+                // Convert glob pattern to regex — escape backslashes first to prevent injection
                 const regexStr = pattern
+                  .replace(/\\/g, '\\\\')
                   .replace(/\./g, '\\.')
                   .replace(/\*/g, '.*')
                   .replace(/\?/g, '.')
