@@ -20,7 +20,7 @@ jobs:
         working-directory: krakenegg-app
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 10
       - uses: actions/setup-node@v4
@@ -83,7 +83,7 @@ jobs:
         working-directory: krakenegg-app
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 10
       - uses: actions/setup-node@v4
@@ -110,7 +110,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: krakenegg-app/src-tauri
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 10
       - uses: actions/setup-node@v4
