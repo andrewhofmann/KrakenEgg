@@ -50,11 +50,11 @@ export const SearchModal = () => {
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 backdrop-blur-sm bg-black/50">
-      <div className="relative flex flex-col w-full max-w-2xl h-3/4 rounded-lg shadow-2xl bg-macos-glass border border-[var(--ke-border)]">
+      <div className="relative flex flex-col w-full max-w-2xl h-3/4 rounded-lg shadow-2xl bg-[var(--ke-bg-elevated)] border border-[var(--ke-border)]">
         {/* Header */}
         <div className="flex items-center justify-between p-3 border-b border-[var(--ke-border)] shrink-0">
           <h3 className="text-sm font-semibold text-[var(--ke-text)]">Search Files</h3>
-          <button onClick={hideSearch} className="p-1 rounded-md hover:bg-[var(--ke-bg-hover)] text-macos-textSecondary hover:text-[var(--ke-text)] transition-colors" aria-label="Close search">
+          <button onClick={hideSearch} className="p-1 rounded-md hover:bg-[var(--ke-bg-hover)] text-[var(--ke-text-secondary)] hover:text-[var(--ke-text)] transition-colors" aria-label="Close search">
             <X size={16} />
           </button>
         </div>
@@ -63,11 +63,11 @@ export const SearchModal = () => {
         <div className="p-4 border-b border-[var(--ke-border)] flex flex-col gap-3">
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-macos-textSecondary" />
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ke-text-secondary)]" />
               <input
                 ref={inputRef}
                 type="text"
-                className="w-full bg-[var(--ke-bg-input)] border border-[var(--ke-border)] rounded-md py-2 pl-10 pr-4 text-sm text-[var(--ke-text)] focus:outline-none focus:border-macos-active placeholder:text-[var(--ke-text-disabled)]"
+                className="w-full bg-[var(--ke-bg-input)] border border-[var(--ke-border)] rounded-md py-2 pl-10 pr-4 text-sm text-[var(--ke-text)] focus:outline-none focus:border-[var(--ke-accent)] placeholder:text-[var(--ke-text-disabled)]"
                 placeholder="Search filename or content..."
                 value={query}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -89,7 +89,7 @@ export const SearchModal = () => {
                 type="checkbox"
                 checked={searchContent}
                 onChange={(e) => setSearchContent(e.target.checked)}
-                className="accent-macos-active"
+                className="accent-[var(--ke-accent)]"
               />
               Search content
             </label>

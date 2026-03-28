@@ -720,13 +720,13 @@ export const useStore = create<AppState>((set, get) => {
         };
     }),
     setConflict: (conflict: ConflictInfo | null) => set((state) => ({ operationStatus: { ...state.operationStatus, conflict } })),
-    resolveConflict: (id: string, resolution: string) => { invoke('resolve_conflict', { id, resolution }); set((state) => ({ operationStatus: { ...state.operationStatus, conflict: null } })); },
-    cancelOperation: () => { const p = get().operationStatus.progress; if(p) invoke('cancel_operation', { id: p.id }); },
-    
+    resolveConflict: (id: string, resolution: string) => { invoke('resolve_conflict', { id, resolution }).catch(() => {}); set((state) => ({ operationStatus: { ...state.operationStatus, conflict: null } })); },
+    cancelOperation: () => { const p = get().operationStatus.progress; if(p) invoke('cancel_operation', { id: p.id }).catch(() => {}); },
+
     addFileOperation: (op: FileOperation) => set((state) => ({ fileOperations: [...state.fileOperations, op] })),
     updateFileOperation: (id: string, updates: Partial<FileOperation>) => set((state) => ({ fileOperations: state.fileOperations.map(op => op.id === id ? { ...op, ...updates } : op) })),
     removeFileOperation: (id: string) => set((state) => ({ fileOperations: state.fileOperations.filter(op => op.id !== id) })),
-    cancelFileOperation: (id: string) => { invoke('cancel_operation', { id }); set((state) => ({ fileOperations: state.fileOperations.map(op => op.id === id ? { ...op, status: 'error', error: 'Cancelled' } : op) })); }
+    cancelFileOperation: (id: string) => { invoke('cancel_operation', { id }).catch(() => {}); set((state) => ({ fileOperations: state.fileOperations.map(op => op.id === id ? { ...op, status: 'error', error: 'Cancelled' } : op) })); }
   };
 
   const goToPathModalActions = {

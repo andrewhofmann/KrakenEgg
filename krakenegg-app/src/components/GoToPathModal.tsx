@@ -1,6 +1,5 @@
 import { useRef, useEffect } from 'react';
 import { useStore } from '../store';
-import clsx from 'clsx';
 
 export const GoToPathModal = () => {
   const { show, initialPath } = useStore((state) => state.goToPathModal);
@@ -39,40 +38,32 @@ export const GoToPathModal = () => {
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div role="dialog" aria-label="Go To Path" className="bg-macos-modal-bg p-6 rounded-lg shadow-xl border border-macos-border max-w-lg w-full">
-        <h2 className="text-lg font-semibold text-[var(--ke-text)] mb-4">Go To Path</h2>
-        <p className="text-sm text-macos-textSecondary mb-4">Enter the full path to navigate to:</p>
+      <div role="dialog" aria-label="Go To Path" className="p-6 rounded-lg shadow-xl max-w-lg w-full" style={{ backgroundColor: 'var(--ke-bg-elevated)', border: '1px solid var(--ke-border)' }}>
+        <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--ke-text)' }}>Go To Path</h2>
+        <p className="text-sm mb-4" style={{ color: 'var(--ke-text-secondary)' }}>Enter the full path to navigate to:</p>
         <input
           ref={inputRef}
           type="text"
           defaultValue={initialPath}
           onKeyDown={handleKeyDown}
-          className={clsx(
-            "w-full px-3 py-2 rounded-md bg-macos-input-bg text-[var(--ke-text)] border",
-            "border-macos-border focus:outline-none focus:ring-1 focus:ring-macos-active"
-          )}
+          className="w-full px-3 py-2 rounded-md border focus:outline-none"
+          style={{ backgroundColor: 'var(--ke-bg-input)', color: 'var(--ke-text)', borderColor: 'var(--ke-border)' }}
           placeholder="/Users/username/Documents"
         />
         <div className="mt-6 flex justify-end space-x-3">
           <button
             aria-label="Cancel"
             onClick={handleCancel}
-            className={clsx(
-              "px-4 py-2 rounded-md text-sm font-medium",
-              "bg-[var(--ke-bg-hover)] hover:bg-[var(--ke-bg-active)] text-[var(--ke-text)]",
-              "focus:outline-none focus:ring-2 focus:ring-[var(--ke-border)] focus:ring-offset-2 focus:ring-offset-macos-modal-bg"
-            )}
+            className="px-4 py-2 rounded-md text-sm font-medium focus:outline-none transition-colors"
+            style={{ backgroundColor: 'var(--ke-bg-hover)', color: 'var(--ke-text)' }}
           >
             Cancel
           </button>
           <button
             aria-label="Go"
             onClick={handleConfirm}
-            className={clsx(
-              "px-4 py-2 rounded-md text-sm font-medium",
-              "bg-[var(--ke-accent)] hover:bg-[var(--ke-accent-hover)] text-[var(--ke-text)]",
-              "focus:outline-none focus:ring-2 focus:ring-macos-active focus:ring-offset-2 focus:ring-offset-macos-modal-bg"
-            )}
+            className="px-4 py-2 rounded-md text-sm font-medium focus:outline-none transition-colors"
+            style={{ backgroundColor: 'var(--ke-accent)', color: 'var(--ke-text)' }}
           >
             Go
           </button>

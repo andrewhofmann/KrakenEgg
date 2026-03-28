@@ -34,7 +34,7 @@ export const OperationStatusModal = () => {
     <div className="fixed top-4 right-4 z-[250] max-w-md w-full p-4 pointer-events-none" role="status" aria-live="polite">
       <div 
         className={clsx(
-          "bg-macos-glass border rounded-lg shadow-2xl p-4 flex flex-col gap-3 animate-in slide-in-from-right-4 fade-in duration-200 pointer-events-auto backdrop-blur-xl",
+          "bg-[var(--ke-bg-elevated)] border rounded-lg shadow-2xl p-4 flex flex-col gap-3 animate-in slide-in-from-right-4 fade-in duration-200 pointer-events-auto backdrop-blur-xl",
           isError ? "border-[var(--ke-error)] bg-[var(--ke-error-bg)]" : "border-[var(--ke-border)] bg-[var(--ke-bg-elevated)]"
         )}
       >

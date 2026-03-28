@@ -769,7 +769,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
                }}
            >
               <div className="flex items-center">
-                {isArchive ? <Package size={13} className="mr-2 shrink-0" style={{ color: 'var(--ke-accent)' }} /> : <HardDrive size={13} className="text-macos-textSecondary mr-2 shrink-0" />}
+                {isArchive ? <Package size={13} className="mr-2 shrink-0" style={{ color: 'var(--ke-accent)' }} /> : <HardDrive size={13} className="text-[var(--ke-text-secondary)] mr-2 shrink-0" />}
                 
                 {isPathEditing ? (
                     <input 
@@ -819,14 +819,14 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
            <div className="flex items-center space-x-1">
               <button 
                   onClick={() => setShowHistory(!showHistory)}
-                  className={clsx("p-0.5 rounded transition-colors", showHistory ? "bg-[var(--ke-bg-active)]" : "text-macos-textSecondary hover:bg-[var(--ke-bg-hover)]")}
+                  className={clsx("p-0.5 rounded transition-colors", showHistory ? "bg-[var(--ke-bg-active)]" : "text-[var(--ke-text-secondary)] hover:bg-[var(--ke-bg-hover)]")}
                   title="History & Bookmarks (Alt+Down)"
               >
                   <ChevronDown size={12} />
               </button>
               
               {activeTab.showFilterWidget && <SearchFilter value={activeTab.filterQuery || ''} onChange={(val) => setFilterQuery(side, val)} onClear={() => setFilterQuery(side, '')} className="w-32 focus-within:w-48 transition-all duration-200" focusSignal={activeTab.filterFocusSignal} autoFocus={true} />}
-              <button onClick={handleUpDir} className="p-0.5 hover:bg-[var(--ke-bg-hover)] rounded text-macos-textSecondary transition-colors" aria-label="Go Up"><ChevronRight size={14} className="rotate-270" /></button>
+              <button onClick={handleUpDir} className="p-0.5 hover:bg-[var(--ke-bg-hover)] rounded text-[var(--ke-text-secondary)] transition-colors" aria-label="Go Up"><ChevronRight size={14} className="rotate-270" /></button>
            </div>
 
            {/* History Dropdown */}
@@ -869,7 +869,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
            )}
         </div>
 
-        <div className="grid text-[11px] px-3 py-0.5 text-macos-textSecondary sticky top-0 z-10 backdrop-blur-sm select-none" style={{ borderTop: '1px solid var(--ke-border-subtle)', backgroundColor: 'var(--ke-bg-secondary)', gridTemplateColumns: gridTemplate }}>
+        <div className="grid text-[11px] px-3 py-0.5 text-[var(--ke-text-secondary)] sticky top-0 z-10 backdrop-blur-sm select-none" style={{ borderTop: '1px solid var(--ke-border-subtle)', backgroundColor: 'var(--ke-bg-secondary)', gridTemplateColumns: gridTemplate }}>
             {layout.columns.map((col, index) => (
                 <div 
                     key={col} 
@@ -937,7 +937,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         {!activeTab.loading && !activeTab.error && (
           <>
             {activeTab.path !== "/" && (
-              <div id={`${side}-row--1`} onClick={(e) => { e.stopPropagation(); handleFileClick(e, -1); }} onDoubleClick={handleUpDir} style={{ gridTemplateColumns: gridTemplate, borderBottom: '1px solid var(--ke-border-subtle)', ...(activeTab.cursorIndex === -1 && isActive ? { backgroundColor: 'var(--ke-accent)' } : {}) }} className={clsx("grid items-center px-3 py-0.5 cursor-default text-[13px] transition-colors", activeTab.cursorIndex === -1 && isActive ? "ring-1 ring-[var(--ke-border)]" : "hover:bg-[var(--ke-bg-hover)] text-macos-textSecondary")}>
+              <div id={`${side}-row--1`} onClick={(e) => { e.stopPropagation(); handleFileClick(e, -1); }} onDoubleClick={handleUpDir} style={{ gridTemplateColumns: gridTemplate, borderBottom: '1px solid var(--ke-border-subtle)', ...(activeTab.cursorIndex === -1 && isActive ? { backgroundColor: 'var(--ke-accent)' } : {}) }} className={clsx("grid items-center px-3 py-0.5 cursor-default text-[13px] transition-colors", activeTab.cursorIndex === -1 && isActive ? "ring-1 ring-[var(--ke-border)]" : "hover:bg-[var(--ke-bg-hover)] text-[var(--ke-text-secondary)]")}>
                 <div className="flex items-center"><ChevronRight size={14} className="mr-2 rotate-180 opacity-50" /><span>..</span></div>
                 {layout.columns.slice(1).map(c => <div key={c}></div>)}
               </div>
