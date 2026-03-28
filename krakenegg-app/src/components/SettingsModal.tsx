@@ -197,7 +197,7 @@ export const SettingsModal = () => {
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 backdrop-blur-sm bg-black/60 font-sans" role="dialog" aria-label="Settings">
-      <div className="relative flex w-full max-w-3xl h-[600px] rounded-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+      <div className="relative flex w-full max-w-3xl max-h-[80vh] h-[500px] rounded-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
            style={{ backgroundColor: 'var(--ke-bg-elevated)', border: '1px solid var(--ke-border)', boxShadow: 'var(--ke-shadow)' }}>
 
         {/* Sidebar */}
@@ -210,7 +210,10 @@ export const SettingsModal = () => {
             <NavItem id="shortcuts" label="Shortcuts" icon={Keyboard} />
             <NavItem id="layouts" label="Layouts" icon={Layout} />
           </div>
-          <div className="text-[10px] px-2" style={{ color: 'var(--ke-text-disabled)' }}>KrakenEgg v0.2.0</div>
+          <div className="text-[10px] px-2 space-y-0.5" style={{ color: 'var(--ke-text-disabled)' }}>
+            <div>KrakenEgg v0.2.0</div>
+            <div>by Andrew Hofmann</div>
+          </div>
         </div>
 
         {/* Content */}
