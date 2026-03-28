@@ -288,7 +288,7 @@ export const useStore = create<AppState>((set, get) => {
 
   const searchActions = {
     showSearch: () => set((state) => ({ search: { ...state.search, show: true, error: null, results: [] } })),
-    hideSearch: () => set((state) => ({ search: { ...state.search, show: false, query: '', results: [], error: null } })),
+    hideSearch: () => set((state) => ({ search: { ...state.search, show: false, query: '', results: [], error: null, loading: false } })),
     setSearchQuery: (query: string) => set((state) => ({ search: { ...state.search, query } })),
     setSearchContent: (enabled: boolean) => set((state) => ({ search: { ...state.search, searchContent: enabled } })),
     setSearchMode: (mode: 'substring' | 'glob' | 'regex') => set((state) => ({ search: { ...state.search, searchMode: mode } })),
@@ -297,10 +297,11 @@ export const useStore = create<AppState>((set, get) => {
       const activePanel = currentAppState[currentAppState.activeSide];
       const activeTab = activePanel.tabs[activePanel.activeTabIndex];
       const { query, searchContent, searchMode } = currentAppState.search;
-      if (!query || !activeTab) return;
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery || !activeTab) return;
       set((state) => ({ search: { ...state.search, loading: true, error: null } }));
       try {
-        const results = await invoke<FileInfo[]>('search_files', { query, path: activeTab.path, searchContent, searchMode });
+        const results = await invoke<FileInfo[]>('search_files', { query: trimmedQuery, path: activeTab.path, searchContent, searchMode });
         set((state) => ({ search: { ...state.search, results, loading: false } }));
       } catch (err) {
         set((state) => ({ search: { ...state.search, error: String(err), loading: false } }));
@@ -420,7 +421,7 @@ export const useStore = create<AppState>((set, get) => {
                 global_history?: string[]; hotlist?: string[];
             }
             const loaded = await invoke<SavedState | null>('load_app_state');
-            if (loaded && loaded.left?.tabs && loaded.right?.tabs) {
+            if (loaded && loaded.left?.tabs?.length > 0 && loaded.right?.tabs?.length > 0) {
                 set((state) => ({
                     left: {
                         ...state.left,
@@ -430,7 +431,7 @@ export const useStore = create<AppState>((set, get) => {
                             history: t.history || [t.path],
                             historyIndex: t.history_index || 0
                         })),
-                        activeTabIndex: loaded.left.active_tab_index || 0
+                        activeTabIndex: Math.min(loaded.left.active_tab_index || 0, loaded.left.tabs.length - 1)
                     },
                     right: {
                         ...state.right,
@@ -440,7 +441,7 @@ export const useStore = create<AppState>((set, get) => {
                             history: t.history || [t.path],
                             historyIndex: t.history_index || 0
                         })),
-                        activeTabIndex: loaded.right.active_tab_index || 0
+                        activeTabIndex: Math.min(loaded.right.active_tab_index || 0, loaded.right.tabs.length - 1)
                     },
                     activeSide: (loaded.active_side === 'left' || loaded.active_side === 'right') ? loaded.active_side : 'left',
                     hotkeys: loaded.hotkeys || state.hotkeys,
