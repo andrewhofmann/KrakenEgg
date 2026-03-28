@@ -565,15 +565,15 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     });
     items.push({ label: "---", action: () => {} });
 
-    items.push({ 
-      label: "Copy to Other Pane (F5)", 
+    items.push({
+      label: "Copy to Other Pane (F5)",
       action: () => copyToOppositePanel(side),
-      disabled: !hasSelection && index !== -1
+      disabled: !hasSelection && (!file || file.name === '..')
     });
-    items.push({ 
-      label: "Move to Other Pane (F6)", 
+    items.push({
+      label: "Move to Other Pane (F6)",
       action: () => moveToOppositePanel(side),
-      disabled: !hasSelection && index !== -1
+      disabled: !hasSelection && (!file || file.name === '..')
     });
     items.push({ label: "---", action: () => {} });
 
@@ -620,9 +620,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     items.push({
       label: "Rename (Shift+F6)",
       action: () => {
-        const currentFile = processedFiles[activeTab.cursorIndex];
-        if (!currentFile || currentFile.name === "..") return;
-        setRenamingIndex(activeTab.cursorIndex);
+        if (!file || file.name === "..") return;
+        setRenamingIndex(index);
       },
       disabled: !isSingleFile && !isSingleDir
     });
