@@ -12,13 +12,13 @@ export const InputModal = () => {
   useEffect(() => {
     if (show) {
       setValue(initialValue || "");
-      // Focus logic needs a slight delay or useEffect dependency tweak sometimes
-      setTimeout(() => {
+      const timer = setTimeout(() => {
           if (inputRef.current) {
               inputRef.current.focus();
               inputRef.current.select();
           }
       }, 10);
+      return () => clearTimeout(timer);
     }
   }, [show, initialValue]);
 

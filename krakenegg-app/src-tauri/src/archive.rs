@@ -133,11 +133,19 @@ where
             
             if name == target_prefix || (target_prefix.len() > 0 && name.starts_with(&format!("{}/", target_prefix))) {
                 let rel_clean = name.trim_start_matches(&target_prefix).trim_start_matches('/');
+                // Guard against path traversal (zip slip)
+                if rel_clean.contains("..") {
+                    continue;
+                }
                 let out_path = if rel_clean.is_empty() {
                     dest_path.to_path_buf()
                 } else {
                     dest_path.join(rel_clean)
                 };
+                // Verify output path stays within dest_path
+                if !out_path.starts_with(dest_path) {
+                    continue;
+                }
 
                 if file.is_dir() {
                     fs::create_dir_all(&out_path).map_err(|e| e.to_string())?;
@@ -167,13 +175,26 @@ where
             let path = entry.path().map_err(|e| e.to_string())?;
             let name = path.to_str().unwrap_or("").replace('\\', "/");
             
+            // Skip symlinks to prevent symlink traversal attacks
+            if entry.header().entry_type().is_symlink() || entry.header().entry_type().is_hard_link() {
+                continue;
+            }
+
             if name == target_prefix || (target_prefix.len() > 0 && name.starts_with(&format!("{}/", target_prefix))) {
                 let rel_clean = name.trim_start_matches(&target_prefix).trim_start_matches('/');
+                // Guard against path traversal (zip slip)
+                if rel_clean.contains("..") {
+                    continue;
+                }
                 let out_path = if rel_clean.is_empty() {
                     dest_path.to_path_buf()
                 } else {
                     dest_path.join(rel_clean)
                 };
+                // Verify output path stays within dest_path
+                if !out_path.starts_with(dest_path) {
+                    continue;
+                }
 
                 if entry.header().entry_type().is_dir() {
                     fs::create_dir_all(&out_path).map_err(|e| e.to_string())?;

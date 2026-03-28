@@ -26,7 +26,7 @@ export const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp
 
 export const createTab = (path: string): TabState => ({
   id: Math.random().toString(36).substring(7),
-  path, files: [], selection: [], cursorIndex: 0, loading: false, error: null, refreshVersion: 0, filterQuery: '', filterFocusSignal: 0, showFilterWidget: false, history: [path], historyIndex: 0,
+  path, files: [], selection: [], cursorIndex: 0, loading: false, error: null, refreshVersion: 0, filterQuery: '', filterFocusSignal: 0, showFilterWidget: false, history: [path], historyIndex: 0, previousFolderName: null,
 });
 
 export const getExtension = (filename: string) => {

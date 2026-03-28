@@ -125,8 +125,16 @@ export const useStore = create<AppState>((set, get) => {
         set((state) => updateActiveTab(state, side, (tab) => {
           const history = tab.history.slice(0, tab.historyIndex + 1);
           if (history[history.length - 1] === path) return {};
-          return { path, selection: [], cursorIndex: 0, history: [...history, path], historyIndex: history.length, filterQuery: '', filterFocusSignal: 0 };
-        })); 
+          // If navigating up, remember the folder we came from so cursor lands on it
+          let previousFolderName: string | null = null;
+          const oldPath = tab.path;
+          if (oldPath.startsWith(path) && oldPath !== path) {
+            // We're going to a parent — extract the immediate child folder name
+            const relative = oldPath.slice(path === '/' ? 1 : path.length + 1);
+            previousFolderName = relative.split('/')[0] || null;
+          }
+          return { path, selection: [], cursorIndex: 0, history: [...history, path], historyIndex: history.length, filterQuery: '', filterFocusSignal: 0, previousFolderName };
+        }));
         get().addToHistory(path);
         get().saveState();
     },
@@ -136,7 +144,12 @@ export const useStore = create<AppState>((set, get) => {
             const newIndex = tab.historyIndex - 1;
             const path = tab.history[newIndex];
             get().addToHistory(path);
-            return { path, historyIndex: newIndex, selection: [], cursorIndex: 0, filterQuery: '', filterFocusSignal: 0 };
+            let previousFolderName: string | null = null;
+            if (tab.path.startsWith(path) && tab.path !== path) {
+              const relative = tab.path.slice(path === '/' ? 1 : path.length + 1);
+              previousFolderName = relative.split('/')[0] || null;
+            }
+            return { path, historyIndex: newIndex, selection: [], cursorIndex: 0, filterQuery: '', filterFocusSignal: 0, previousFolderName };
           }
           return {};
         })); get().saveState();
@@ -147,7 +160,12 @@ export const useStore = create<AppState>((set, get) => {
             const newIndex = tab.historyIndex + 1;
             const path = tab.history[newIndex];
             get().addToHistory(path);
-            return { path, historyIndex: newIndex, selection: [], cursorIndex: 0, filterQuery: '', filterFocusSignal: 0 };
+            let previousFolderName: string | null = null;
+            if (tab.path.startsWith(path) && tab.path !== path) {
+              const relative = tab.path.slice(path === '/' ? 1 : path.length + 1);
+              previousFolderName = relative.split('/')[0] || null;
+            }
+            return { path, historyIndex: newIndex, selection: [], cursorIndex: 0, filterQuery: '', filterFocusSignal: 0, previousFolderName };
           }
           return {};
         })); get().saveState();
@@ -165,7 +183,21 @@ export const useStore = create<AppState>((set, get) => {
   };
 
   const dataActions = {
-    setFiles: (side: 'left' | 'right', files: FileInfo[]) => set((state) => updateActiveTab(state, side, () => ({ files, loading: false, error: null }))),
+    setFiles: (side: 'left' | 'right', files: FileInfo[]) => set((state) => updateActiveTab(state, side, (tab) => {
+      const update: Partial<TabState> = { files, loading: false, error: null };
+      // If we navigated up, place cursor on the folder we came from
+      if (tab.previousFolderName) {
+        const layout = state[side].layout;
+        const showHidden = state.preferences.general.showHiddenFiles;
+        const processed = getProcessedFiles(files, layout, tab.filterQuery, showHidden);
+        const idx = processed.findIndex(f => f.name === tab.previousFolderName);
+        if (idx >= 0) {
+          update.cursorIndex = idx;
+        }
+        update.previousFolderName = null;
+      }
+      return update;
+    })),
     setLoading: (side: 'left' | 'right', loading: boolean) => set((state) => updateActiveTab(state, side, () => ({ loading }))),
     setError: (side: 'left' | 'right', error: string | null) => set((state) => updateActiveTab(state, side, () => ({ error, loading: false }))),
     setSelection: (side: 'left' | 'right', selection: number[]) => set((state) => updateActiveTab(state, side, () => ({ selection }))),

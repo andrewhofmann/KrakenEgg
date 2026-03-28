@@ -33,6 +33,7 @@ export interface TabState {
   showFilterWidget: boolean;
   history: string[];
   historyIndex: number;
+  previousFolderName: string | null;
 }
 
 export interface ViewerState { show: boolean; title: string; content: string; loading: boolean; error: string | null; isImage: boolean; }

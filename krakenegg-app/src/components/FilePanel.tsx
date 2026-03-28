@@ -40,6 +40,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     copyToOppositePanel, moveToOppositePanel,
     addToHotlist, removeFromHotlist,
     requestConfirmation, requestInput,
+    showOperationStatus, setOperationError,
   } = useStore((s) => s);
 
   const compressSelection = useStore((s) => s.archive.compressSelection);
@@ -451,6 +452,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         
         let dest = activeTab.path;
         if (file && file.is_dir && file.name !== "..") {
+          dest = activeTab.path === "/" ? `/${file.name}` : `${activeTab.path}/${file.name}`;
         }
 
         if (!dest || sources.length === 0) return;
