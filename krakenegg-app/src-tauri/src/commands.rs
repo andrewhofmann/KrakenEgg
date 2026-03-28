@@ -515,33 +515,47 @@ pub async fn move_items_with_progress(
     dest: String
 ) -> Result<(), String> {
     let dest_path = Path::new(&dest);
-    let mut all_renamed = true;
-    
+
     // Check for Virtual Paths
     let is_virtual_op = parse_archive_path(&dest).is_some() || sources.iter().any(|s| parse_archive_path(s).is_some());
 
     if !is_virtual_op {
-        for src in &sources {
+        // Try fast rename for ALL sources first — only use this path if ALL can be renamed
+        // (same filesystem, no conflicts). If any would fail, fall back to copy+delete for ALL.
+        let can_fast_rename = sources.iter().all(|src| {
             let src_path = Path::new(src);
-            let file_name = src_path.file_name().ok_or("Invalid source")?;
-            let target = dest_path.join(file_name);
-            
-            // FIX: If target exists, force fallback to copy/delete to trigger conflict UI
-            if target.exists() {
-                all_renamed = false;
-                break;
+            if let Some(file_name) = src_path.file_name() {
+                let target = dest_path.join(file_name);
+                !target.exists() // No conflict
+            } else {
+                false
             }
+        });
 
-            if fs::rename(src_path, target).is_err() {
-                all_renamed = false;
-                break;
+        if can_fast_rename {
+            let mut rename_ok = true;
+            let mut renamed: Vec<(String, std::path::PathBuf)> = Vec::new();
+            for src in &sources {
+                let src_path = Path::new(src);
+                let file_name = src_path.file_name().ok_or("Invalid source")?;
+                let target = dest_path.join(file_name);
+                if fs::rename(src_path, &target).is_ok() {
+                    renamed.push((src.clone(), target));
+                } else {
+                    // Rename failed (cross-device?) — undo what we did and fall back
+                    for (orig, moved) in renamed.iter().rev() {
+                        let _ = fs::rename(moved, orig);
+                    }
+                    rename_ok = false;
+                    break;
+                }
             }
-        }
-        if all_renamed {
-            return Ok(())
+            if rename_ok {
+                return Ok(());
+            }
         }
     }
-    
+
     copy_items_with_progress(window.clone(), state.clone(), id.clone(), sources.clone(), dest).await?;
     delete_items_with_progress(window, state, id, sources).await?;
     Ok(())
