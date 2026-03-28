@@ -527,17 +527,17 @@ export const useStore = create<AppState>((set, get) => {
             currentAppState.showOperationStatus(`${isCopy ? "Copying" : "Moving"} ${sources.length} items...`);
             if (isCopy) await invoke('copy_items', { sources, dest });
             else await invoke('move_items', { sources, dest });
-            
+
             const destPath = destTab.path;
             const sourcePath = sourcePanel ? currentAppState[sourcePanel].tabs[currentAppState[sourcePanel].activeTabIndex].path : null;
             const pathsToRefresh = [destPath];
             if (sourcePath && !isCopy) pathsToRefresh.push(sourcePath);
             get().refreshPaths(pathsToRefresh);
             currentAppState.hideOperationStatus();
+            // Clear clipboard only on success — preserve on error so user can retry
+            currentAppState.clearClipboard();
           } catch (err) {
             currentAppState.setOperationError(`${isCopy ? "Copy" : "Move"} failed: ${err}`);
-          } finally {
-            currentAppState.clearClipboard();
           }
         }, true);
     },
@@ -690,13 +690,15 @@ export const useStore = create<AppState>((set, get) => {
         }
         if (sources.length === 0) return;
         state.requestConfirmation("Move", `Move ${sources.length} items?`, async (_option) => {
-            try { 
-                await invoke('move_items_with_progress', { 
-                    id: Math.random().toString(36), 
-                    sources, 
-                    destPath: destTab.path 
-                }); 
-                get().refreshPaths([sourceTab.path, destTab.path]); 
+            try {
+                await invoke('move_items_with_progress', {
+                    id: Math.random().toString(36),
+                    sources,
+                    destPath: destTab.path
+                });
+                get().refreshPaths([sourceTab.path, destTab.path]);
+                // Clear stale selection after files moved
+                set((s) => updateActiveTab(s, sourceSide, () => ({ selection: [], cursorIndex: 0 })));
             } catch (e) { state.setOperationError(`${e}`); }
         }, true);
     }

@@ -12,16 +12,14 @@ export const OperationStatusModal = () => {
 
   useEffect(() => {
     // Only auto-hide if NOT error and NOT progress AND NOT conflict
-    if (show && !isError && !progress && !conflict) { 
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
+    if (show && !isError && !progress && !conflict) {
+      if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
         hideOperationStatus();
-      }, 3000); // Hide after 3 seconds
-    } else if (progress || conflict) {
-        // If progress or conflict, clear timer so it doesn't hide
-        if (timerRef.current) clearTimeout(timerRef.current);
+      }, 3000);
+    } else {
+        // Clear auto-hide timer for error, progress, or conflict states
+        if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
     }
     return () => {
       if (timerRef.current) {
@@ -83,8 +81,8 @@ export const OperationStatusModal = () => {
               <div className="w-full pl-8">
                 <div className="h-1.5 w-full rounded-full overflow-hidden mb-2 bg-[var(--ke-bg-hover)]">
                     <div
-                        className="h-full bg-blue-500 transition-all duration-300 ease-out rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"
-                        style={{ width: `${pct}%` }}
+                        className="h-full transition-all duration-300 ease-out rounded-full"
+                        style={{ width: `${pct}%`, backgroundColor: 'var(--ke-accent)' }}
                     />
                 </div>
                 <div className="flex justify-between items-center">

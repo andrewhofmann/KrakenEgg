@@ -946,7 +946,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
               <AutoSizer>{({ height, width }: { height: number; width: number }) => (
                 <FixedSizeList
                   listRef={listRef}
-                  style={{ height: height - (activeTab.path !== "/" ? 24 : 0), width }}
+                  style={{ height: height - (activeTab.path !== "/" ? preferences.appearance.rowHeight : 0), width }}
                   rowCount={processedFiles.length}
                   rowHeight={preferences.appearance.rowHeight}
                   rowComponent={RowComponent}
