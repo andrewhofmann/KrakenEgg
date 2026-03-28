@@ -319,39 +319,43 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     if (!activeTab) return;
 
     // Update cursor IMMEDIATELY so Enter/keyboard works on the right file
-    // Delay selection update to allow double-click to cancel
     setCursor(side, index);
 
-    pendingClickRef.current = { index, e };
+    // Cancel any pending click from a previous row
     if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+    pendingClickRef.current = { index, e };
+
+    // Delay selection to allow double-click to cancel
+    // Use the index captured in THIS closure, not activeTab.cursorIndex
+    const clickIndex = index;
+    const shiftKey = e.shiftKey;
+    const metaKey = e.metaKey || e.ctrlKey;
+    const prevCursor = activeTab.cursorIndex;
+    const prevSelection = [...activeTab.selection];
 
     clickTimerRef.current = setTimeout(() => {
-      const click = pendingClickRef.current;
-      if (!click) return;
+      if (!pendingClickRef.current || pendingClickRef.current.index !== clickIndex) return;
       pendingClickRef.current = null;
 
-      const idx = click.index;
-      const ev = click.e;
-
-      if (ev.shiftKey) {
-        const start = Math.max(0, Math.min(activeTab.cursorIndex, idx));
-        const end = Math.max(activeTab.cursorIndex, idx);
+      if (shiftKey) {
+        const start = Math.max(0, Math.min(prevCursor, clickIndex));
+        const end = Math.max(prevCursor, clickIndex);
         const newSelection = [];
         for (let i = start; i <= end; i++) newSelection.push(i);
         setSelection(side, newSelection);
-      } else if (ev.metaKey || ev.ctrlKey) {
-        const isSelected = activeTab.selection.includes(idx);
+      } else if (metaKey) {
+        const isSelected = prevSelection.includes(clickIndex);
         const newSelection = isSelected
-          ? activeTab.selection.filter(i => i !== idx)
-          : [...activeTab.selection, idx];
+          ? prevSelection.filter(i => i !== clickIndex)
+          : [...prevSelection, clickIndex];
         setSelection(side, newSelection);
       } else {
-        setSelection(side, [idx]);
+        setSelection(side, [clickIndex]);
       }
     }, 200);
 
     hideContextMenu();
-  }, [activeTab, side, setActiveSide, setCursorAndSelection, hideContextMenu]);
+  }, [activeTab, side, setActiveSide, setCursor, setSelection, hideContextMenu]);
 
   const handleDoubleClick = useCallback(async (_e: React.MouseEvent, file: FileInfo) => {
     if (!file || file.name === '..') {

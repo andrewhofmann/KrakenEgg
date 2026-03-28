@@ -598,13 +598,19 @@ export const useStore = create<AppState>((set, get) => {
     copyToOppositePanel: (sourceSide: 'left' | 'right') => {
         const state = get();
         const sourceTab = state[sourceSide].tabs[state[sourceSide].activeTabIndex];
+        if (!sourceTab) return;
         const destSide = sourceSide === 'left' ? 'right' : 'left';
         const destTab = state[destSide].tabs[state[destSide].activeTabIndex];
         const showHidden = state.preferences.general.showHiddenFiles;
         const files = getProcessedFiles(sourceTab.files, state[sourceSide].layout, sourceTab.filterQuery, showHidden);
-        const sources = sourceTab.selection.length > 0
-            ? sourceTab.selection.map(i => `${sourceTab.path === "/" ? "" : sourceTab.path}/${files[i].name}`)
-            : [`${sourceTab.path === "/" ? "" : sourceTab.path}/${files[sourceTab.cursorIndex].name}`];
+        const buildPath = (name: string) => `${sourceTab.path === "/" ? "" : sourceTab.path}/${name}`;
+        let sources: string[];
+        if (sourceTab.selection.length > 0) {
+            sources = sourceTab.selection.filter(i => i >= 0 && files[i] && files[i].name !== '..').map(i => buildPath(files[i].name));
+        } else {
+            const file = sourceTab.cursorIndex >= 0 ? files[sourceTab.cursorIndex] : null;
+            sources = file && file.name !== '..' ? [buildPath(file.name)] : [];
+        }
         if (sources.length === 0) return;
         state.requestConfirmation("Copy", `Copy ${sources.length} items?`, async (_option) => {
             try { 
@@ -620,13 +626,19 @@ export const useStore = create<AppState>((set, get) => {
     moveToOppositePanel: (sourceSide: 'left' | 'right') => {
         const state = get();
         const sourceTab = state[sourceSide].tabs[state[sourceSide].activeTabIndex];
+        if (!sourceTab) return;
         const destSide = sourceSide === 'left' ? 'right' : 'left';
         const destTab = state[destSide].tabs[state[destSide].activeTabIndex];
         const showHidden = state.preferences.general.showHiddenFiles;
         const files = getProcessedFiles(sourceTab.files, state[sourceSide].layout, sourceTab.filterQuery, showHidden);
-        const sources = sourceTab.selection.length > 0
-            ? sourceTab.selection.map(i => `${sourceTab.path === "/" ? "" : sourceTab.path}/${files[i].name}`)
-            : [`${sourceTab.path === "/" ? "" : sourceTab.path}/${files[sourceTab.cursorIndex].name}`];
+        const buildPath = (name: string) => `${sourceTab.path === "/" ? "" : sourceTab.path}/${name}`;
+        let sources: string[];
+        if (sourceTab.selection.length > 0) {
+            sources = sourceTab.selection.filter(i => i >= 0 && files[i] && files[i].name !== '..').map(i => buildPath(files[i].name));
+        } else {
+            const file = sourceTab.cursorIndex >= 0 ? files[sourceTab.cursorIndex] : null;
+            sources = file && file.name !== '..' ? [buildPath(file.name)] : [];
+        }
         if (sources.length === 0) return;
         state.requestConfirmation("Move", `Move ${sources.length} items?`, async (_option) => {
             try { 
