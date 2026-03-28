@@ -14,8 +14,10 @@ pub fn delete_recursive(path: &Path) -> std::io::Result<()> {
 pub fn copy_recursive(src: &Path, dest: &Path) -> std::io::Result<()> {
     if src.is_dir() {
         fs::create_dir_all(dest)?;
-        for entry in WalkDir::new(src).min_depth(1) {
+        for entry in WalkDir::new(src).min_depth(1).follow_links(false) {
             let entry = entry?;
+            // Skip symlinks to prevent infinite loops and copying outside intended tree
+            if entry.file_type().is_symlink() { continue; }
             let rel_path = entry.path().strip_prefix(src).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
             let target_path = dest.join(rel_path);
             if entry.file_type().is_dir() {

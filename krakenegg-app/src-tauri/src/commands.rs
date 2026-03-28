@@ -849,7 +849,17 @@ pub async fn read_file_content(path: String) -> Result<String, String> {
     let mut buffer = Vec::new();
     // Read up to 5MB for viewing — large enough for most text files
     file.take(5 * 1024 * 1024).read_to_end(&mut buffer).map_err(|e| e.to_string())?;
-    String::from_utf8(buffer).map_err(|e| e.to_string())
+    // Check for binary content before attempting UTF-8 conversion
+    if crate::utils::is_binary(&buffer) {
+        return Err(format!("Binary file ({} bytes) — cannot display as text", buffer.len()));
+    }
+    match String::from_utf8(buffer) {
+        Ok(s) => Ok(s),
+        Err(e) => {
+            // Fallback to lossy conversion for files with mixed encoding
+            Ok(String::from_utf8_lossy(e.as_bytes()).into_owned())
+        }
+    }
 }
 
 #[tauri::command]

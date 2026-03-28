@@ -47,7 +47,10 @@ pub fn get_config_path(base_dir: Option<&Path>) -> Result<PathBuf, String> {
 
 pub fn save_state_to_file(state: &AppStateConfig, config_file: &Path) -> Result<(), String> {
     let json_string = serde_json::to_string_pretty(state).map_err(|e| e.to_string())?;
-    fs::write(config_file, json_string).map_err(|e| e.to_string())?;
+    // Atomic write: write to temp file then rename to prevent corruption on crash
+    let tmp_file = config_file.with_extension("json.tmp");
+    fs::write(&tmp_file, &json_string).map_err(|e| e.to_string())?;
+    fs::rename(&tmp_file, config_file).map_err(|e| e.to_string())?;
     Ok(())
 }
 
