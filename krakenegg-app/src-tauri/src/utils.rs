@@ -194,4 +194,208 @@ mod tests {
     fn test_is_text_file_no_extension() {
         assert!(is_text_file_by_extension(Path::new("Makefile")));
     }
+
+    // --- copy_recursive additional tests ---
+
+    #[test]
+    fn test_copy_recursive_creates_parent_dirs() {
+        let dir = TempDir::new().unwrap();
+        let src = dir.path().join("source.txt");
+        fs::write(&src, "parent test").unwrap();
+        let dest = dir.path().join("a/b/c/dest.txt");
+        copy_recursive(&src, &dest).unwrap();
+        assert_eq!(fs::read_to_string(&dest).unwrap(), "parent test");
+    }
+
+    #[test]
+    fn test_copy_recursive_overwrites_existing_file() {
+        let dir = TempDir::new().unwrap();
+        let src = dir.path().join("src.txt");
+        let dest = dir.path().join("dest.txt");
+        fs::write(&src, "new content").unwrap();
+        fs::write(&dest, "old content").unwrap();
+        copy_recursive(&src, &dest).unwrap();
+        assert_eq!(fs::read_to_string(&dest).unwrap(), "new content");
+    }
+
+    #[test]
+    fn test_copy_recursive_empty_directory() {
+        let dir = TempDir::new().unwrap();
+        let src = dir.path().join("empty_dir");
+        fs::create_dir(&src).unwrap();
+        let dest = dir.path().join("copied_empty");
+        copy_recursive(&src, &dest).unwrap();
+        assert!(dest.exists());
+        assert!(dest.is_dir());
+        assert_eq!(fs::read_dir(&dest).unwrap().count(), 0);
+    }
+
+    // --- delete_recursive additional tests ---
+
+    #[test]
+    fn test_delete_recursive_deeply_nested() {
+        let dir = TempDir::new().unwrap();
+        let deep = dir.path().join("a/b/c");
+        fs::create_dir_all(&deep).unwrap();
+        fs::write(deep.join("file.txt"), "deep").unwrap();
+        delete_recursive(&dir.path().join("a")).unwrap();
+        assert!(!dir.path().join("a").exists());
+    }
+
+    #[test]
+    fn test_delete_recursive_with_many_files() {
+        let dir = TempDir::new().unwrap();
+        let sub = dir.path().join("many");
+        fs::create_dir(&sub).unwrap();
+        for i in 0..50 {
+            fs::write(sub.join(format!("file_{}.txt", i)), format!("content {}", i)).unwrap();
+        }
+        assert_eq!(fs::read_dir(&sub).unwrap().count(), 50);
+        delete_recursive(&sub).unwrap();
+        assert!(!sub.exists());
+    }
+
+    // --- format_permissions additional tests ---
+
+    #[test]
+    fn test_format_permissions_000() {
+        assert_eq!(format_permissions(0o000), "------------");
+    }
+
+    #[test]
+    fn test_format_permissions_777() {
+        assert_eq!(format_permissions(0o777), "---rwxrwxrwx");
+    }
+
+    #[test]
+    fn test_format_permissions_suid() {
+        let result = format_permissions(0o4755);
+        assert!(result.starts_with("s--"));
+        assert_eq!(result, "s--rwxr-xr-x");
+    }
+
+    #[test]
+    fn test_format_permissions_sgid() {
+        let result = format_permissions(0o2755);
+        assert_eq!(result, "-s-rwxr-xr-x");
+    }
+
+    #[test]
+    fn test_format_permissions_sticky() {
+        let result = format_permissions(0o1755);
+        assert_eq!(result, "--trwxr-xr-x");
+    }
+
+    // --- format_size additional tests ---
+
+    #[test]
+    fn test_format_size_zero() {
+        assert_eq!(format_size(0), "0 B");
+    }
+
+    #[test]
+    fn test_format_size_exactly_1kb() {
+        assert_eq!(format_size(1024), "1.0 KB");
+    }
+
+    #[test]
+    fn test_format_size_exactly_1mb() {
+        assert_eq!(format_size(1024 * 1024), "1.0 MB");
+    }
+
+    #[test]
+    fn test_format_size_exactly_1gb() {
+        assert_eq!(format_size(1024 * 1024 * 1024), "1.0 GB");
+    }
+
+    #[test]
+    fn test_format_size_large_tb() {
+        // 1 TB = 1024 GB, should show as 1024.0 GB
+        assert_eq!(format_size(1024u64 * 1024 * 1024 * 1024), "1024.0 GB");
+    }
+
+    #[test]
+    fn test_format_size_boundary_1023() {
+        assert_eq!(format_size(1023), "1023 B");
+    }
+
+    #[test]
+    fn test_format_size_boundary_1024() {
+        assert_eq!(format_size(1024), "1.0 KB");
+    }
+
+    // --- is_binary additional tests ---
+
+    #[test]
+    fn test_is_binary_empty_data() {
+        let data: &[u8] = b"";
+        assert!(!is_binary(data));
+    }
+
+    #[test]
+    fn test_is_binary_all_text() {
+        let data = b"The quick brown fox jumps over the lazy dog.\n1234567890";
+        assert!(!is_binary(data));
+    }
+
+    #[test]
+    fn test_is_binary_null_at_start() {
+        let data = b"\x00hello world";
+        assert!(is_binary(data));
+    }
+
+    #[test]
+    fn test_is_binary_null_at_end() {
+        let data = b"hello world\x00";
+        assert!(is_binary(data));
+    }
+
+    #[test]
+    fn test_is_binary_large_text() {
+        // 8KB+ of pure text should not be binary
+        let data: Vec<u8> = "abcdefghij\n".repeat(1000).into_bytes();
+        assert!(data.len() > 8192);
+        assert!(!is_binary(&data));
+    }
+
+    // --- is_text_file_by_extension additional tests ---
+
+    #[test]
+    fn test_is_text_file_by_extension_all_binary_types() {
+        let binary_exts = [
+            "png", "jpg", "jpeg", "gif", "bmp", "tiff", "ico", "webp",
+            "zip", "rar", "7z", "tar", "gz", "bz2", "xz", "tgz",
+            "mp3", "wav", "ogg", "mp4", "avi", "mov", "mkv",
+            "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+            "exe", "dll", "so", "dylib", "bin", "dat",
+        ];
+        for ext in &binary_exts {
+            let filename = format!("file.{}", ext);
+            let path = Path::new(&filename);
+            assert!(!is_text_file_by_extension(path), "Expected {} to be binary", ext);
+        }
+    }
+
+    #[test]
+    fn test_is_text_file_by_extension_all_text_types() {
+        let text_exts = [
+            "rs", "txt", "json", "toml", "yaml", "yml", "xml", "html",
+            "css", "js", "ts", "tsx", "jsx", "md", "py", "rb", "go",
+            "java", "c", "cpp", "h", "hpp", "sh", "bat", "conf", "ini",
+            "sql", "csv",
+        ];
+        for ext in &text_exts {
+            let filename = format!("file.{}", ext);
+            let path = Path::new(&filename);
+            assert!(is_text_file_by_extension(path), "Expected {} to be text", ext);
+        }
+    }
+
+    #[test]
+    fn test_is_text_file_by_extension_case_insensitive() {
+        assert!(!is_text_file_by_extension(Path::new("image.PNG")));
+        assert!(!is_text_file_by_extension(Path::new("archive.ZIP")));
+        assert!(!is_text_file_by_extension(Path::new("video.MP4")));
+        assert!(!is_text_file_by_extension(Path::new("document.PDF")));
+    }
 }

@@ -713,3 +713,8 @@ export const useStore = create<AppState>((set, get) => {
     ...settingsModalActions,
   };
 });
+
+// Expose store for E2E testing in development mode
+if (import.meta.env.DEV) {
+  (window as any).__keStore = useStore;
+}
