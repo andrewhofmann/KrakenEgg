@@ -814,6 +814,10 @@ pub async fn extract_archive(archive_path: String, dest_dir: String) -> Result<(
 
 #[tauri::command]
 pub async fn create_directory(path: String) -> Result<(), String> {
+    let p = Path::new(&path);
+    if p.exists() {
+        return Err(format!("'{}' already exists", p.file_name().unwrap_or_default().to_string_lossy()));
+    }
     fs::create_dir_all(&path).map_err(|e| e.to_string())
 }
 

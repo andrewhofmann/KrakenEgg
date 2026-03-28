@@ -7,7 +7,7 @@ describe('formatSize', () => {
   });
 
   it('formats bytes correctly', () => {
-    expect(formatSize(500)).toBe('500.0 B');
+    expect(formatSize(500)).toBe('500 B');
   });
 
   it('formats KB correctly', () => {

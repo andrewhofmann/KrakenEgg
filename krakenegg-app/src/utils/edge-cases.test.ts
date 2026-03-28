@@ -14,12 +14,12 @@ describe('formatSize', () => {
     expect(formatSize(0)).toBe('--');
   });
 
-  it('formatSize(1) returns "1.0 B"', () => {
-    expect(formatSize(1)).toBe('1.0 B');
+  it('formatSize(1) returns "1 B"', () => {
+    expect(formatSize(1)).toBe('1 B');
   });
 
-  it('formatSize(1023) returns "1023.0 B"', () => {
-    expect(formatSize(1023)).toBe('1023.0 B');
+  it('formatSize(1023) returns "1023 B"', () => {
+    expect(formatSize(1023)).toBe('1023 B');
   });
 
   it('formatSize(1024) returns "1.0 KB"', () => {
@@ -48,8 +48,8 @@ describe('formatSize', () => {
     expect(() => formatSize(-1)).not.toThrow();
   });
 
-  it('formatSize(500) returns "500.0 B"', () => {
-    expect(formatSize(500)).toBe('500.0 B');
+  it('formatSize(500) returns "500 B"', () => {
+    expect(formatSize(500)).toBe('500 B');
   });
 
   it('formatSize(2.5 MB) returns correct string', () => {

@@ -2,7 +2,9 @@ export const formatSize = (size: number) => {
   if (size <= 0) return "--";
   const units = ["B", "KB", "MB", "GB", "TB", "PB"];
   const i = Math.min(Math.floor(Math.log(size) / Math.log(1024)), units.length - 1);
-  return `${(size / Math.pow(1024, i)).toFixed(1)} ${units[i]}`;
+  const value = size / Math.pow(1024, i);
+  // No decimals for bytes, 1 decimal for everything else
+  return i === 0 ? `${Math.round(value)} B` : `${value.toFixed(1)} ${units[i]}`;
 };
 
 export const formatDate = (timestamp: number | undefined) => {
