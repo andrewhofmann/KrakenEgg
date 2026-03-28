@@ -17,7 +17,7 @@ jobs:
       run:
         working-directory: krakenegg-app/src-tauri
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo install cargo-audit
       - run: cargo audit
@@ -30,7 +30,7 @@ jobs:
       run:
         working-directory: krakenegg-app
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
         with:
           version: 10
