@@ -312,9 +312,11 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     setActiveSide(side);
     if (!activeTab) return;
 
-    // Store click data for delayed processing (allows double-click to cancel)
-    pendingClickRef.current = { index, e };
+    // Update cursor IMMEDIATELY so Enter/keyboard works on the right file
+    // Delay selection update to allow double-click to cancel
+    setCursor(side, index);
 
+    pendingClickRef.current = { index, e };
     if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
 
     clickTimerRef.current = setTimeout(() => {
@@ -325,27 +327,22 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       const idx = click.index;
       const ev = click.e;
 
-      if (idx === -1) {
-        setCursorAndSelection(side, -1, [-1]);
-        return;
-      }
-
       if (ev.shiftKey) {
         const start = Math.max(0, Math.min(activeTab.cursorIndex, idx));
         const end = Math.max(activeTab.cursorIndex, idx);
         const newSelection = [];
         for (let i = start; i <= end; i++) newSelection.push(i);
-        setCursorAndSelection(side, idx, newSelection);
+        setSelection(side, newSelection);
       } else if (ev.metaKey || ev.ctrlKey) {
         const isSelected = activeTab.selection.includes(idx);
         const newSelection = isSelected
           ? activeTab.selection.filter(i => i !== idx)
           : [...activeTab.selection, idx];
-        setCursorAndSelection(side, idx, newSelection);
+        setSelection(side, newSelection);
       } else {
-        setCursorAndSelection(side, idx, [idx]);
+        setSelection(side, [idx]);
       }
-    }, 200); // 200ms delay — if double-click arrives within this, click is cancelled
+    }, 200);
 
     hideContextMenu();
   }, [activeTab, side, setActiveSide, setCursorAndSelection, hideContextMenu]);
@@ -395,9 +392,11 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     if (!activeTab) return;
     const isDraggedItemSelected = activeTab.selection.length > 0 && activeTab.selection.some(i => processedFiles[i] && processedFiles[i].name === file.name);
     
+    const joinP = (dir: string, name: string) => dir === "/" ? `/${name}` : `${dir}/${name}`;
     const paths = isDraggedItemSelected
+        ? activeTab.selection.map(i => joinP(activeTab.path, processedFiles[i]?.name)).filter(Boolean)
+        : [joinP(activeTab.path, file.name)];
 
-    // Use standard URI list for compatibility and a custom type for internal state
     e.dataTransfer.setData("text/uri-list", paths.join('\r\n'));
     e.dataTransfer.setData("application/x-krakenegg-source", side);
     e.dataTransfer.effectAllowed = "copyMove";
@@ -505,7 +504,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         label: "Quick Look (Space)", 
         action: async () => {
             try {
-                await invoke('preview_file', { path });
+                const filePath = activeTab.path === "/" ? `/${file.name}` : `${activeTab.path}/${file.name}`;
+                await invoke('preview_file', { path: filePath });
             } catch (err) {
                 useStore.getState().setOperationError(`Quick Look failed: ${err}`);
             }
@@ -533,7 +533,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
                 if (name) {
                     try {
                       showOperationStatus(`Creating directory '${name}'...`);
-                      await invoke('create_directory', { path });
+                      const dirPath = activeTab.path === "/" ? `/${name}` : `${activeTab.path}/${name}`;
+                      await invoke('create_directory', { path: dirPath });
                       refreshPanel(side);
                       showOperationStatus(`Directory '${name}' created successfully.`);
                     } catch (err) {

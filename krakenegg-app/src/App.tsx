@@ -96,35 +96,42 @@ function App() {
             case 'paste_files': store.pasteFiles(side); break;
             case 'delete_files': store.deleteSelectedFiles(side); break;
             case 'select_all': {
-                const panel = store[side];
-                const tab = panel.tabs[panel.activeTabIndex];
-                if (tab) store.setSelection(side, tab.files.map((_: unknown, i: number) => i));
+                const saPanel = store[side];
+                const saTab = saPanel.tabs[saPanel.activeTabIndex];
+                if (saTab) {
+                    const visible = getProcessedFiles(saTab.files, saPanel.layout, saTab.filterQuery, store.preferences.general.showHiddenFiles);
+                    store.setSelection(side, visible.map((_: unknown, i: number) => i));
+                }
                 break;
             }
             case 'deselect_all': store.setSelection(side, []); break;
             case 'invert_selection': {
-                const panel = store[side];
-                const tab = panel.tabs[panel.activeTabIndex];
-                if (tab) {
-                    const all = new Set(tab.files.map((_: unknown, i: number) => i));
-                    const inverted = [...all].filter(i => !tab.selection.includes(i));
+                const ivPanel = store[side];
+                const ivTab = ivPanel.tabs[ivPanel.activeTabIndex];
+                if (ivTab) {
+                    const visible = getProcessedFiles(ivTab.files, ivPanel.layout, ivTab.filterQuery, store.preferences.general.showHiddenFiles);
+                    const all = new Set(visible.map((_: unknown, i: number) => i));
+                    const inverted = [...all].filter(i => !ivTab.selection.includes(i));
                     store.setSelection(side, inverted);
                 }
                 break;
             }
             case 'rename': {
-                const panel = store[side];
-                const tab = panel.tabs[panel.activeTabIndex];
-                const file = tab?.files[tab.cursorIndex];
-                if (file && file.name !== '..') {
-                    store.requestInput("Rename", `New name for "${file.name}":`, file.name, async (newName) => {
-                        if (newName && newName !== file.name) {
-                            const oldPath = currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`;
-                            const newPath = currentPath === '/' ? `/${newName}` : `${currentPath}/${newName}`;
-                            await invoke('move_items', { sources: [oldPath], dest: newPath });
-                            store.refreshPanel(side);
-                        }
-                    });
+                const rnPanel = store[side];
+                const rnTab = rnPanel.tabs[rnPanel.activeTabIndex];
+                if (rnTab) {
+                    const visible = getProcessedFiles(rnTab.files, rnPanel.layout, rnTab.filterQuery, store.preferences.general.showHiddenFiles);
+                    const file = visible[rnTab.cursorIndex];
+                    if (file && file.name !== '..') {
+                        store.requestInput("Rename", `New name for "${file.name}":`, file.name, async (newName) => {
+                            if (newName && newName !== file.name) {
+                                const oldPath = currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`;
+                                const newPath = currentPath === '/' ? `/${newName}` : `${currentPath}/${newName}`;
+                                await invoke('move_items', { sources: [oldPath], dest: newPath });
+                                store.refreshPanel(side);
+                            }
+                        });
+                    }
                 }
                 break;
             }
@@ -134,16 +141,20 @@ function App() {
             case 'move_to_opposite': store.moveToOppositePanel(side); break;
             // View menu
             case 'view_file': {
-                const panel = store[side];
-                const tab = panel.tabs[panel.activeTabIndex];
-                const file = tab?.files[tab.cursorIndex];
-                if (file && !file.is_dir) store.showViewer(file.name, currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`);
+                const vfPanel = store[side];
+                const vfTab = vfPanel.tabs[vfPanel.activeTabIndex];
+                if (vfTab) {
+                    const visible = getProcessedFiles(vfTab.files, vfPanel.layout, vfTab.filterQuery, store.preferences.general.showHiddenFiles);
+                    const file = visible[vfTab.cursorIndex];
+                    if (file && !file.is_dir) store.showViewer(file.name, currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`);
+                }
                 break;
             }
             case 'edit_file': {
-                const panel = store[side];
-                const tab = panel.tabs[panel.activeTabIndex];
-                const file = tab?.files[tab.cursorIndex];
+                const efPanel = store[side];
+                const efTab = efPanel.tabs[efPanel.activeTabIndex];
+                const efVisible = efTab ? getProcessedFiles(efTab.files, efPanel.layout, efTab.filterQuery, store.preferences.general.showHiddenFiles) : [];
+                const file = efVisible[efTab?.cursorIndex ?? -1];
                 if (file && !file.is_dir) store.showEditor(file.name, currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`);
                 break;
             }
