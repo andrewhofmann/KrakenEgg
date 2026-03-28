@@ -821,22 +821,15 @@ pub async fn create_directory(path: String) -> Result<(), String> {
 pub async fn preview_file(path: String) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
-        let output = Command::new("qlmanage")
+        // Spawn qlmanage without blocking — it opens its own window
+        Command::new("qlmanage")
             .arg("-p")
             .arg(&path)
-            .output()
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .spawn()
             .map_err(|e| e.to_string())?;
-
-        if output.status.success() {
-            Ok(())
-        } else {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            if stderr.contains("No quicklook generator found") {
-                Err(stderr.to_string())
-            } else {
-                Ok(())
-            }
-        }
+        Ok(())
     }
     #[cfg(not(target_os = "macos"))]
     {
@@ -929,21 +922,21 @@ pub async fn search_files(query: String, path: String, search_content: bool, sea
         _ => None, // substring mode
     };
 
-    let walker = WalkDir::new(root_path).into_iter().filter_map(|e| e.ok());
+    // Skip hidden directories entirely (don't traverse into them) but allow the root itself
+    let walker = WalkDir::new(root_path).into_iter().filter_entry(|e| {
+        let name = e.file_name().to_string_lossy();
+        // Allow root directory (depth 0) even if hidden, skip all other hidden dirs
+        e.depth() == 0 || !name.starts_with('.')
+    }).filter_map(|e| e.ok());
 
     for entry in walker {
         let entry_path = entry.path();
         let file_name_os = entry.file_name();
         let file_name = file_name_os.to_string_lossy();
 
-        if file_name.starts_with('.') {
-            if entry.file_type().is_dir() {
-                if let Some(s) = entry.depth().checked_sub(1) {
-                    if s == 0 { continue; }
-                }
-            } else {
-                continue;
-            }
+        // Skip hidden files (hidden dirs already filtered by walker)
+        if entry.depth() > 0 && file_name.starts_with('.') {
+            continue;
         }
 
         let mut match_found = false;
