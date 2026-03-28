@@ -1,0 +1,44 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly Monday 6am UTC
+
+jobs:
+  # ─── Rust Dependency Audit ───
+  cargo-audit:
+    name: Rust Dependency Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: krakenegg-app/src-tauri
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo install cargo-audit
+      - run: cargo audit
+
+  # ─── Node.js Dependency Audit ───
+  npm-audit:
+    name: Node.js Dependency Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: krakenegg-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          cache-dependency-path: krakenegg-app/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --audit-level=high || true
+        name: Audit npm dependencies
