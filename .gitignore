@@ -52,3 +52,8 @@ coverage/
 
 # Claude Code
 .claude/
+CLAUDE.md
+
+# Local-only directories (not needed for build)
+legacy/
+graphics/
