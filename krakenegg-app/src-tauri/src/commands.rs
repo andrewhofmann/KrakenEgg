@@ -614,9 +614,19 @@ pub async fn move_items_with_progress(
 
 #[tauri::command]
 pub async fn delete_items(paths: Vec<String>) -> Result<(), String> {
-    for path in paths {
-        let p = Path::new(&path);
+    let mut archive_deletions: std::collections::HashMap<std::path::PathBuf, Vec<String>> = std::collections::HashMap::new();
+    for path in &paths {
+        if let Some((archive_path, internal_path)) = parse_archive_path(path) {
+            if !internal_path.as_os_str().is_empty() {
+                archive_deletions.entry(archive_path).or_default().push(internal_path.to_string_lossy().to_string());
+                continue;
+            }
+        }
+        let p = Path::new(path);
         crate::utils::delete_recursive(p).map_err(|e| e.to_string())?;
+    }
+    for (archive, targets) in archive_deletions {
+        remove_files_from_zip(&archive, &targets)?;
     }
     Ok(())
 }
@@ -884,12 +894,23 @@ pub async fn create_directory(path: String) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn preview_file(path: String) -> Result<(), String> {
+    // Extract from archive if needed
+    let actual_path = if let Some((archive_path, internal_path)) = parse_archive_path(&path) {
+        let temp_dir = std::env::temp_dir().join("kraken_preview");
+        fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
+        extract_entry(&archive_path, &internal_path, &temp_dir, |_| {}, |_| Ok(true))
+            .map_err(|e| e.to_string())?;
+        let file_name = internal_path.file_name().unwrap_or_default();
+        temp_dir.join(file_name).to_string_lossy().to_string()
+    } else {
+        path
+    };
+
     #[cfg(target_os = "macos")]
     {
-        // Spawn qlmanage without blocking — it opens its own window
         Command::new("qlmanage")
             .arg("-p")
-            .arg(&path)
+            .arg(&actual_path)
             .stdout(std::process::Stdio::null())
             .stderr(std::process::Stdio::null())
             .spawn()

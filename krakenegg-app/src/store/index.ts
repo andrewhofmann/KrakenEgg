@@ -393,16 +393,16 @@ export const useStore = create<AppState>((set, get) => {
       else if (lower.endsWith(".tgz")) folderName = folderName.slice(0, -4);
       else if (lower.endsWith(".zip")) folderName = folderName.slice(0, -4);
       else if (lower.endsWith(".tar")) folderName = folderName.slice(0, -4);
-      else { currentAppState.setOperationError(`'${file.name}' is not a supported archive format`); return; }
+      else { get().setOperationError(`'${file.name}' is not a supported archive format`); return; }
       const destDir = `${activeTab.path === "/" ? "" : activeTab.path}/${folderName}`;
       set((state) => updateActiveTab(state, side, () => ({ loading: true })));
       try {
-        currentAppState.showOperationStatus(`Extracting '${file.name}' to '${folderName}'...`);
+        get().showOperationStatus(`Extracting '${file.name}' to '${folderName}'...`);
         await invoke('create_directory', { path: destDir });
         await invoke('extract_archive', { archivePath, destDir });
         get().refreshPaths([activeTab.path]);
-        currentAppState.showOperationStatus(`Extracted '${file.name}' successfully.`);
-      } catch (err) { currentAppState.setOperationError(`Extraction failed: ${err}`); }
+        get().showOperationStatus(`Extracted '${file.name}' successfully.`);
+      } catch (err) { get().setOperationError(`Extraction failed: ${err}`); }
       finally { set((state) => updateActiveTab(state, side, () => ({ loading: false }))); }
     },
   };
@@ -641,7 +641,7 @@ export const useStore = create<AppState>((set, get) => {
       // Validate file name
       const trimmed = fileName.trim();
       if (!trimmed || trimmed === '.' || trimmed === '..' || /[<>:"|?*\/\\\x00-\x1f]/.test(trimmed) || trimmed.length > 255) {
-        currentAppState.setOperationError(`Invalid file name: "${fileName}"`);
+        get().setOperationError(`Invalid file name: "${fileName}"`);
         return;
       }
 
@@ -649,8 +649,8 @@ export const useStore = create<AppState>((set, get) => {
       try {
         await invoke('create_empty_file', { path: filePath });
         get().refreshPaths([activeTab.path]);
-        currentAppState.showOperationStatus(`File '${trimmed}' created successfully.`);
-      } catch (err) { currentAppState.setOperationError(`Failed to create file: ${err}`); }
+        get().showOperationStatus(`File '${trimmed}' created successfully.`);
+      } catch (err) { get().setOperationError(`Failed to create file: ${err}`); }
     },
   };
 
