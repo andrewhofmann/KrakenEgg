@@ -912,6 +912,9 @@ pub async fn read_file_content(path: String) -> Result<String, String> {
 
 #[tauri::command]
 pub async fn write_file_content(path: String, content: String) -> Result<(), String> {
+    if parse_archive_path(&path).is_some() {
+        return Err("Editing files inside archives is not yet supported. Extract the file first.".to_string());
+    }
     fs::write(&path, content).map_err(|e| e.to_string())
 }
 

@@ -22,7 +22,7 @@ export const DEFAULT_LAYOUT: PaneLayout = {
     sortColumn: 'name', sortDirection: 'asc', columns: ['name', 'ext', 'size', 'date'], columnWidths: { name: 0, ext: 45, size: 80, date: 140 },
 };
 
-export const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.svg', '.ico'];
+export const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.svg', '.ico', '.tiff', '.tif', '.heic', '.heif', '.avif'];
 
 export const createTab = (path: string): TabState => ({
   id: Math.random().toString(36).substring(7),
