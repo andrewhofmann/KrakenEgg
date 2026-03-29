@@ -130,11 +130,9 @@ pub async fn calculate_folder_size(path: String) -> Result<u64, String> {
         }
 
         let mut size: u64 = 0;
-        for entry in WalkDir::new(root) {
-            if let Ok(entry) = entry {
-                if entry.path().is_file() {
-                    size += entry.metadata().map(|m| m.len()).unwrap_or(0);
-                }
+        for entry in WalkDir::new(root).into_iter().flatten() {
+            if entry.path().is_file() {
+                size += entry.metadata().map(|m| m.len()).unwrap_or(0);
             }
         }
         Ok(size)
@@ -318,11 +316,9 @@ pub async fn copy_items_with_progress(
         if src_path.is_file() {
             bytes_total += fs::metadata(src_path).map(|m| m.len()).unwrap_or(0);
         } else if src_path.is_dir() {
-            for entry in WalkDir::new(src_path) {
-                if let Ok(e) = entry {
-                    if e.path().is_file() {
-                        bytes_total += e.metadata().map(|m| m.len()).unwrap_or(0);
-                    }
+            for e in WalkDir::new(src_path).into_iter().flatten() {
+                if e.path().is_file() {
+                    bytes_total += e.metadata().map(|m| m.len()).unwrap_or(0);
                 }
             }
         }
@@ -615,11 +611,9 @@ pub async fn delete_items_with_progress(
         if p.is_file() {
             bytes_total += fs::metadata(p).map(|m| m.len()).unwrap_or(0);
         } else if p.is_dir() {
-            for entry in WalkDir::new(p) {
-                if let Ok(e) = entry {
-                    if e.path().is_file() {
-                        bytes_total += e.metadata().map(|m| m.len()).unwrap_or(0);
-                    }
+            for e in WalkDir::new(p).into_iter().flatten() {
+                if e.path().is_file() {
+                    bytes_total += e.metadata().map(|m| m.len()).unwrap_or(0);
                 }
             }
         }
@@ -724,8 +718,8 @@ fn compress_rust_zip(sources: &[String], dest_path: &str, deflate: bool) -> Resu
         }
     }
 
-    let file = fs::File::create(&path).map_err(|e| format!("Create failed: {}", e))?;
-    let dest_canon = fs::canonicalize(&path).ok();
+    let file = fs::File::create(path).map_err(|e| format!("Create failed: {}", e))?;
+    let dest_canon = fs::canonicalize(path).ok();
     
     let mut zip = zip::ZipWriter::new(file);
     let method = if deflate { zip::CompressionMethod::Deflated } else { zip::CompressionMethod::Stored };
@@ -958,11 +952,10 @@ pub async fn search_files(query: String, path: String, search_content: bool, sea
             }
         }
 
-        if !match_found && search_content && entry.file_type().is_file() && is_text_file_by_extension(entry_path) {
-             if file_contains_content(entry_path, &query_lower) {
+        if !match_found && search_content && entry.file_type().is_file() && is_text_file_by_extension(entry_path)
+             && file_contains_content(entry_path, &query_lower) {
                  match_found = true;
              }
-        }
 
         if match_found {
              let metadata = entry.metadata().map_err(|e| e.to_string())?;

@@ -18,7 +18,7 @@ pub fn copy_recursive(src: &Path, dest: &Path) -> std::io::Result<()> {
             let entry = entry?;
             // Skip symlinks to prevent infinite loops and copying outside intended tree
             if entry.file_type().is_symlink() { continue; }
-            let rel_path = entry.path().strip_prefix(src).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            let rel_path = entry.path().strip_prefix(src).map_err(std::io::Error::other)?;
             let target_path = dest.join(rel_path);
             if entry.file_type().is_dir() {
                 fs::create_dir_all(&target_path)?;
@@ -43,7 +43,7 @@ pub fn format_permissions(mode: u32) -> String {
         if mode & 0o1000 != 0 { 't' } else { '-' }, // Sticky bit
         perms[((mode >> 6) & 0o7) as usize],
         perms[((mode >> 3) & 0o7) as usize],
-        perms[((mode >> 0) & 0o7) as usize],
+        perms[(mode & 0o7) as usize],
     )
 }
 

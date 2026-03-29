@@ -144,7 +144,7 @@ where
             let mut file = zip.by_index(i).map_err(|e| e.to_string())?;
             let name = file.name().replace('\\', "/");
             
-            if name == target_prefix || (target_prefix.len() > 0 && name.starts_with(&format!("{}/", target_prefix))) {
+            if name == target_prefix || (!target_prefix.is_empty() && name.starts_with(&format!("{}/", target_prefix))) {
                 let rel_clean = name.trim_start_matches(&target_prefix).trim_start_matches('/');
                 // Guard against path traversal (zip slip)
                 if rel_clean.contains("..") {
@@ -163,11 +163,10 @@ where
                 if file.is_dir() {
                     fs::create_dir_all(&out_path).map_err(|e| e.to_string())?;
                 } else {
-                    if out_path.exists() {
-                        if !conflict_cb(&out_path)? {
+                    if out_path.exists()
+                        && !conflict_cb(&out_path)? {
                             continue; // Skip
                         }
-                    }
 
                     if let Some(parent) = out_path.parent() {
                         fs::create_dir_all(parent).map_err(|e| e.to_string())?;
@@ -193,7 +192,7 @@ where
                 continue;
             }
 
-            if name == target_prefix || (target_prefix.len() > 0 && name.starts_with(&format!("{}/", target_prefix))) {
+            if name == target_prefix || (!target_prefix.is_empty() && name.starts_with(&format!("{}/", target_prefix))) {
                 let rel_clean = name.trim_start_matches(&target_prefix).trim_start_matches('/');
                 // Guard against path traversal (zip slip)
                 if rel_clean.contains("..") {
@@ -212,11 +211,10 @@ where
                 if entry.header().entry_type().is_dir() {
                     fs::create_dir_all(&out_path).map_err(|e| e.to_string())?;
                 } else {
-                    if out_path.exists() {
-                        if !conflict_cb(&out_path)? {
+                    if out_path.exists()
+                        && !conflict_cb(&out_path)? {
                             continue;
                         }
-                    }
 
                     if let Some(parent) = out_path.parent() {
                         fs::create_dir_all(parent).map_err(|e| e.to_string())?;
