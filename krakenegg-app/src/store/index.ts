@@ -187,7 +187,7 @@ export const useStore = create<AppState>((set, get) => {
           const newHistory = [path, ...state.globalHistory.filter(p => p !== path)].slice(0, 30);
           return { globalHistory: newHistory };
       }),
-      addToHotlist: (path: string) => set((state) => ({ hotlist: [...state.hotlist.filter(p => p !== path), path] })),
+      addToHotlist: (path: string) => set((state) => ({ hotlist: [...state.hotlist.filter(p => p !== path), path].slice(-50) })),
       removeFromHotlist: (path: string) => set((state) => ({ hotlist: state.hotlist.filter(p => p !== path) })),
   };
 

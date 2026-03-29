@@ -872,8 +872,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
            {/* History Dropdown */}
            {showHistory && (
                <div className="absolute top-full left-0 w-full rounded-b-md shadow-2xl z-50 flex flex-col animate-in slide-in-from-top-2 duration-100" style={{ backgroundColor: 'var(--ke-bg-elevated)', border: '1px solid var(--ke-border)' }}>
-                   {/* Backdrop to close */}
-                   <div className="fixed inset-0 z-[-1]" onClick={() => setShowHistory(false)} />
+                   {/* Backdrop to close — must be above main content but below dropdown */}
+                   <div className="fixed inset-0 z-40" onClick={() => setShowHistory(false)} />
                    
                    <div className="p-1" style={{ borderBottom: '1px solid var(--ke-border-subtle)', backgroundColor: 'var(--ke-bg-secondary)' }}>
                         <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--ke-text-tertiary)' }}>Bookmarks</div>

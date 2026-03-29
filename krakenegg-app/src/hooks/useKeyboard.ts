@@ -61,16 +61,20 @@ export function useKeyboard() {
       } = state;
 
       // Ignore if input is focused (e.g. Search bar) or if a modal is open
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || 
-          state.confirmation.show || state.inputModal.show || state.goToPathModal.show || state.settingsModal.show) {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement ||
+          state.confirmation.show || state.inputModal.show || state.goToPathModal.show ||
+          state.settingsModal.show || state.search.show || state.viewer.show || state.editor.show) {
         // Allow specific hotkeys to always work, e.g., Escape to close modal
         if (e.key === 'Escape') {
           if (state.confirmation.show) state.closeConfirmation();
           else if (state.inputModal.show) state.closeInputModal();
           else if (state.goToPathModal.show) state.hideGoToPathModal();
           else if (state.settingsModal.show) state.hideSettingsModal();
+          else if (state.search.show) state.hideSearch();
+          else if (state.viewer.show) state.hideViewer();
+          else if (state.editor.show) state.hideEditor();
         }
-        return; 
+        return;
       }
       
       // Font zoom shortcuts (Cmd+Plus / Cmd+Minus / Cmd+0)
