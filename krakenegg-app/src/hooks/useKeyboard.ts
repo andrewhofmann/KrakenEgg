@@ -94,7 +94,8 @@ export function useKeyboard() {
       }
       if ((e.metaKey || e.ctrlKey) && e.key === '0') {
         e.preventDefault();
-        state.setPreference('appearance', 'fontSize', 13); // Reset to default
+        state.setPreference('appearance', 'fontSize', 13);
+        state.setPreference('appearance', 'rowHeight', 22);
         return;
       }
 
@@ -107,7 +108,7 @@ export function useKeyboard() {
         return;
       }
 
-      // Ctrl+Enter: Open terminal at current directory
+      // Ctrl+Enter: Open current directory in Finder
       if (e.ctrlKey && e.key === 'Enter') {
         e.preventDefault();
         const currentPath = state[activeSide].tabs[state[activeSide].activeTabIndex]?.path;

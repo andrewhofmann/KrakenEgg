@@ -660,6 +660,7 @@ export const useStore = create<AppState>((set, get) => {
   const fileFilteringActions = {
     setFilterQuery: (side: 'left' | 'right', query: string) => set((state) => updateActiveTab(state, side, () => ({ filterQuery: query, selection: [], cursorIndex: 0 }))),
     triggerFilterFocus: (side: 'left' | 'right') => set((state) => updateActiveTab(state, side, (tab) => ({ filterFocusSignal: tab.filterFocusSignal + 1, showFilterWidget: true }))),
+    hideFilterWidget: (side: 'left' | 'right') => set((state) => updateActiveTab(state, side, () => ({ showFilterWidget: false, filterQuery: '' }))),
   };
 
   const dualPaneActions = {

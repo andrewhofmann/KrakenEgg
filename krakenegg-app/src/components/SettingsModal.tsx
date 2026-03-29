@@ -306,7 +306,7 @@ export const SettingsModal = () => {
                   <div className="space-y-2">
                     <Toggle checked={preferences.appearance.showGridLines} onChange={(v) => setPreference('appearance', 'showGridLines', v)}
                       label="Show Grid Lines" description="Display subtle dividers between file rows" />
-                    <Toggle checked={preferences.appearance.compactMode} onChange={(v) => setPreference('appearance', 'compactMode', v)}
+                    <Toggle checked={preferences.appearance.compactMode} onChange={(v) => { setPreference('appearance', 'compactMode', v); setPreference('appearance', 'rowHeight', v ? 18 : 22); setPreference('appearance', 'fontSize', v ? 11 : 13); }}
                       label="Compact Mode" description="Reduce padding for denser file list display" />
                   </div>
                 </div>

@@ -6,6 +6,7 @@ interface SearchFilterProps {
   value: string;
   onChange: (value: string) => void;
   onClear: () => void;
+  onClose?: () => void;
   placeholder?: string;
   autoFocus?: boolean;
   className?: string;
@@ -16,6 +17,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
   value,
   onChange,
   onClear,
+  onClose,
   placeholder = 'Filter files...',
   autoFocus = false,
   className,
@@ -44,6 +46,7 @@ export const SearchFilter: React.FC<SearchFilterProps> = ({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); onClose?.(); } }}
         placeholder={placeholder}
         className={clsx(
           "w-full rounded-md py-1.5 pl-9 pr-3 text-sm border transition-all",

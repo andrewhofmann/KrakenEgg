@@ -865,7 +865,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
                   <ChevronDown size={12} />
               </button>
               
-              {activeTab.showFilterWidget && <SearchFilter value={activeTab.filterQuery || ''} onChange={(val) => setFilterQuery(side, val)} onClear={() => setFilterQuery(side, '')} className="w-32 focus-within:w-48 transition-all duration-200" focusSignal={activeTab.filterFocusSignal} autoFocus={true} />}
+              {activeTab.showFilterWidget && <SearchFilter value={activeTab.filterQuery || ''} onChange={(val) => setFilterQuery(side, val)} onClear={() => setFilterQuery(side, '')} onClose={() => useStore.getState().hideFilterWidget(side)} className="w-32 focus-within:w-48 transition-all duration-200" focusSignal={activeTab.filterFocusSignal} autoFocus={true} />}
               <button onClick={handleUpDir} className="p-0.5 hover:bg-[var(--ke-bg-hover)] rounded text-[var(--ke-text-secondary)] transition-colors" aria-label="Go Up"><ChevronRight size={14} className="rotate-270" /></button>
            </div>
 
