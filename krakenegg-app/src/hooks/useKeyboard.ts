@@ -63,7 +63,8 @@ export function useKeyboard() {
       // Ignore if input is focused (e.g. Search bar) or if a modal is open
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement ||
           state.confirmation.show || state.inputModal.show || state.goToPathModal.show ||
-          state.settingsModal.show || state.search.show || state.viewer.show || state.editor.show) {
+          state.settingsModal.show || state.search.show || state.viewer.show || state.editor.show ||
+          state.multiRename.show || state.operationStatus.conflict) {
         // Allow specific hotkeys to always work, e.g., Escape to close modal
         if (e.key === 'Escape') {
           if (state.confirmation.show) state.closeConfirmation();
@@ -73,6 +74,7 @@ export function useKeyboard() {
           else if (state.search.show) state.hideSearch();
           else if (state.viewer.show) state.hideViewer();
           else if (state.editor.show) state.hideEditor();
+          else if (state.multiRename.show) state.closeMultiRename();
         }
         return;
       }
@@ -158,7 +160,8 @@ export function useKeyboard() {
             swapPanes();
             break;
           case 'refresh_panel':
-            refreshPanel(activeSide);
+            refreshPanel('left');
+            refreshPanel('right');
             break;
           case 'new_file':
             requestInput(
