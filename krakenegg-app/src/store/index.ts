@@ -70,6 +70,13 @@ export const useStore = create<AppState>((set, get) => {
                 }
             }
         }));
+        // Reset cursor when visible files change (hidden files toggled)
+        if (category === 'general' && key === 'showHiddenFiles') {
+            set(state => ({
+                left: { ...state.left, tabs: state.left.tabs.map(t => ({ ...t, selection: [], cursorIndex: 0 })) },
+                right: { ...state.right, tabs: state.right.tabs.map(t => ({ ...t, selection: [], cursorIndex: 0 })) },
+            }));
+        }
         get().saveState();
     }
   };
@@ -383,7 +390,7 @@ export const useStore = create<AppState>((set, get) => {
       else if (folderName.endsWith(".tgz")) folderName = folderName.slice(0, -4);
       else if (folderName.endsWith(".zip")) folderName = folderName.slice(0, -4);
       else if (folderName.endsWith(".tar")) folderName = folderName.slice(0, -4);
-      else return; 
+      else { currentAppState.setOperationError(`'${file.name}' is not a supported archive format`); return; }
       const destDir = `${activeTab.path === "/" ? "" : activeTab.path}/${folderName}`;
       set((state) => updateActiveTab(state, side, () => ({ loading: true })));
       try {

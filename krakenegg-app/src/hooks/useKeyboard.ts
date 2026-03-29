@@ -385,6 +385,32 @@ export function useKeyboard() {
             }
           }
           break;
+        case 'PageDown': {
+          e.preventDefault();
+          const pageSize = Math.max(1, Math.floor(20)); // ~20 rows per page
+          const pgDownIdx = Math.min(visibleFiles.length - 1, activeTab.cursorIndex + pageSize);
+          if (e.shiftKey) {
+            const range: number[] = [];
+            for (let i = activeTab.cursorIndex; i <= pgDownIdx; i++) if (i >= 0) range.push(i);
+            setCursorAndSelection(activeSide, pgDownIdx, [...new Set([...activeTab.selection, ...range])]);
+          } else {
+            setCursorAndSelection(activeSide, pgDownIdx, [pgDownIdx]);
+          }
+          break;
+        }
+        case 'PageUp': {
+          e.preventDefault();
+          const pgSize = Math.max(1, Math.floor(20));
+          const pgUpIdx = Math.max(activeTab.path === "/" ? 0 : -1, activeTab.cursorIndex - pgSize);
+          if (e.shiftKey) {
+            const range: number[] = [];
+            for (let i = Math.max(0, pgUpIdx); i <= activeTab.cursorIndex; i++) range.push(i);
+            setCursorAndSelection(activeSide, pgUpIdx, [...new Set([...activeTab.selection, ...range])].filter(i => i >= 0));
+          } else {
+            setCursorAndSelection(activeSide, pgUpIdx, pgUpIdx >= 0 ? [pgUpIdx] : []);
+          }
+          break;
+        }
         case 'Delete': // Forward-delete key (Fn+Backspace on Mac) — also triggers delete
           e.preventDefault();
           deleteSelectedFiles(activeSide);

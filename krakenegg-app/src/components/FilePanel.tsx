@@ -975,7 +975,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         {!activeTab.loading && !activeTab.error && (
           <>
             {activeTab.path !== "/" && (
-              <div id={`${side}-row--1`} onClick={(e) => { e.stopPropagation(); handleFileClick(e, -1); }} onDoubleClick={handleUpDir} style={{ gridTemplateColumns: gridTemplate, borderBottom: '1px solid var(--ke-border-subtle)', ...(activeTab.cursorIndex === -1 && isActive ? { backgroundColor: 'var(--ke-accent)' } : {}) }} className={clsx("grid items-center px-3 py-0.5 cursor-default text-[13px] transition-colors", activeTab.cursorIndex === -1 && isActive ? "ring-1 ring-[var(--ke-border)]" : "hover:bg-[var(--ke-bg-hover)] text-[var(--ke-text-secondary)]")}>
+              <div id={`${side}-row--1`} onClick={(e) => { e.stopPropagation(); handleFileClick(e, -1); }} onDoubleClick={handleUpDir} style={{ gridTemplateColumns: gridTemplate, height: preferences.appearance.rowHeight, borderBottom: '1px solid var(--ke-border-subtle)', ...(activeTab.cursorIndex === -1 && isActive ? { backgroundColor: 'var(--ke-accent)' } : {}) }} className={clsx("grid items-center px-3 cursor-default text-[13px] transition-colors", activeTab.cursorIndex === -1 && isActive ? "ring-1 ring-[var(--ke-border)]" : "hover:bg-[var(--ke-bg-hover)] text-[var(--ke-text-secondary)]")}>
                 <div className="flex items-center"><ChevronRight size={14} className="mr-2 rotate-180 opacity-50" /><span>..</span></div>
                 {layout.columns.slice(1).map(c => <div key={c}></div>)}
               </div>
