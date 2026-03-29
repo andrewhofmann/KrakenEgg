@@ -187,16 +187,26 @@ export const useStore = create<AppState>((set, get) => {
   const dataActions = {
     setFiles: (side: 'left' | 'right', files: FileInfo[]) => set((state) => updateActiveTab(state, side, (tab) => {
       const update: Partial<TabState> = { files, loading: false, error: null };
+      const layout = state[side].layout;
+      const showHidden = state.preferences.general.showHiddenFiles;
+      const processed = getProcessedFiles(files, layout, tab.filterQuery, showHidden);
       // If we navigated up, place cursor on the folder we came from
       if (tab.previousFolderName) {
-        const layout = state[side].layout;
-        const showHidden = state.preferences.general.showHiddenFiles;
-        const processed = getProcessedFiles(files, layout, tab.filterQuery, showHidden);
         const idx = processed.findIndex(f => f.name === tab.previousFolderName);
         if (idx >= 0) {
           update.cursorIndex = idx;
         }
         update.previousFolderName = null;
+      }
+      // Clamp cursor to valid range when file count changes (e.g. after delete)
+      const maxIdx = processed.length - 1;
+      if (tab.cursorIndex > maxIdx && !update.cursorIndex) {
+        update.cursorIndex = Math.max(0, maxIdx);
+      }
+      // Filter out stale selection indices
+      if (tab.selection.length > 0) {
+        const valid = tab.selection.filter(i => i >= 0 && i <= maxIdx);
+        if (valid.length !== tab.selection.length) update.selection = valid;
       }
       return update;
     })),
@@ -569,6 +579,8 @@ export const useStore = create<AppState>((set, get) => {
                useStore.getState().showOperationStatus(`Deleting...`);
                await invoke('delete_items', { paths: sources });
                get().refreshPaths([activeTab.path]);
+               // Clear stale selection and clamp cursor after deletion
+               set((s) => updateActiveTab(s, side, () => ({ selection: [], cursorIndex: Math.max(0, activeTab.cursorIndex - sources.length) })));
                useStore.getState().hideOperationStatus();
              } catch (err) { useStore.getState().setOperationError(`Delete failed: ${err}`); }
         };
@@ -670,6 +682,8 @@ export const useStore = create<AppState>((set, get) => {
                     dest: destTab.path
                 });
                 get().refreshPaths([sourceTab.path, destTab.path]);
+                // Clear selection after copy completes
+                set((s) => updateActiveTab(s, sourceSide, () => ({ selection: [] })));
             } catch (e) { get().setOperationError(`${e}`); }
         }, true);
     },

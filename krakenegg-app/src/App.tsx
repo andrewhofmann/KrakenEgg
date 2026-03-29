@@ -30,12 +30,18 @@ function App() {
   const { contextMenu, hideContextMenu, settingsModal } = useStore(state => state);
   const theme = useStore(state => state.preferences.appearance.theme);
 
-  // Apply theme to document
+  // Apply theme to document — listen for system theme changes when set to "system"
   useEffect(() => {
-    const resolvedTheme = theme === 'system'
-      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : theme;
-    document.documentElement.setAttribute('data-theme', resolvedTheme);
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+    const apply = () => {
+      const resolved = theme === 'system' ? (mql.matches ? 'dark' : 'light') : theme;
+      document.documentElement.setAttribute('data-theme', resolved);
+    };
+    apply();
+    if (theme === 'system') {
+      mql.addEventListener('change', apply);
+      return () => mql.removeEventListener('change', apply);
+    }
   }, [theme]);
 
   useEffect(() => {
