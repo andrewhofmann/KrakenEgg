@@ -961,6 +961,28 @@ use regex::Regex;
 
 #[tauri::command]
 pub async fn search_files(query: String, path: String, search_content: bool, search_mode: Option<String>) -> Result<Vec<FileInfo>, String> {
+    // Handle searching inside archives — list contents and filter by name
+    if let Some((archive_path, internal_path)) = parse_archive_path(&path) {
+        let all = list_archive_contents(&archive_path, &internal_path)?;
+        let query_lower = query.to_lowercase();
+        let mode = search_mode.as_deref().unwrap_or("substring");
+        let regex = match mode {
+            "regex" => Some(Regex::new(&query).map_err(|e| format!("Invalid regex: {}", e))?),
+            "glob" => {
+                let pattern = query.chars().fold(String::new(), |mut acc, c| {
+                    match c { '*' => acc.push_str(".*"), '?' => acc.push('.'), '.' | '+' | '(' | ')' | '[' | ']' | '{' | '}' | '^' | '$' | '|' | '\\' => { acc.push('\\'); acc.push(c); } _ => acc.push(c) }
+                    acc
+                });
+                Some(Regex::new(&format!("(?i)^{}$", pattern)).map_err(|e| format!("Invalid glob: {}", e))?)
+            }
+            _ => None,
+        };
+        let results: Vec<FileInfo> = all.into_iter().filter(|f| {
+            match &regex { Some(rx) => rx.is_match(&f.name), None => f.name.to_lowercase().contains(&query_lower) }
+        }).collect();
+        return Ok(results);
+    }
+
     let mut files: Vec<FileInfo> = Vec::new();
     let query_lower = query.to_lowercase();
     let root_path = Path::new(&path);
