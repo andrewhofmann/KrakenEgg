@@ -153,6 +153,9 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     return () => {
         window.removeEventListener('keydown', handleKeyDown);
         if (searchTimeout.current) { clearTimeout(searchTimeout.current); searchTimeout.current = null; }
+        // Clear type-ahead display when effect cleans up (e.g. path change, panel switch)
+        searchBuffer.current = "";
+        setTypeAheadDisplay("");
     };
   }, [isActive, processedFiles, side, setCursor, setSelection, isPathEditing, showHistory]);
 
@@ -314,19 +317,35 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
   const clickTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingClickRef = useRef<{ index: number; e: React.MouseEvent } | null>(null);
+  const lastClickRef = useRef<{ index: number; time: number } | null>(null);
 
   // Cleanup click timer on unmount to prevent state updates after unmount
   useEffect(() => {
     return () => { if (clickTimerRef.current) clearTimeout(clickTimerRef.current); };
   }, []);
 
-  // STABLE click handlers — read from store inside callback to avoid depending on activeTab
-  // This prevents handler recreation on cursor change, which would break double-click.
+  // STABLE click handler — detects double-click internally via timing
+  // instead of relying on browser dblclick event (which breaks when react-window remounts rows)
   const handleFileClick = useCallback((e: React.MouseEvent, index: number) => {
     const store = useStore.getState();
     store.setActiveSide(side);
     const tab = store[side].tabs[store[side].activeTabIndex];
     if (!tab) return;
+
+    const now = Date.now();
+    const lastClick = lastClickRef.current;
+
+    // Detect double-click: same index, within 400ms
+    if (lastClick && lastClick.index === index && (now - lastClick.time) < 400) {
+      lastClickRef.current = null;
+      if (clickTimerRef.current) { clearTimeout(clickTimerRef.current); clickTimerRef.current = null; }
+      pendingClickRef.current = null;
+      // Trigger double-click action
+      const file = processedFiles[index];
+      if (file) handleDoubleClick(e, file);
+      return;
+    }
+    lastClickRef.current = { index, time: now };
 
     store.setCursor(side, index);
 
@@ -361,7 +380,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     }, 200);
 
     store.hideContextMenu();
-  }, [side]);
+  }, [side, processedFiles, handleDoubleClick]);
 
   const handleDoubleClick = useCallback(async (_e: React.MouseEvent, file: FileInfo) => {
     const store = useStore.getState();
