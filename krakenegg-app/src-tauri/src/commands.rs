@@ -427,9 +427,9 @@ pub async fn copy_items_with_progress(
                 return Err(e.to_string());
             }
             
-            for entry in WalkDir::new(src_path) {
-                if token.load(Ordering::Relaxed) { break; } 
-                
+            for entry in WalkDir::new(src_path).min_depth(1) {
+                if token.load(Ordering::Relaxed) { break; }
+
                 let entry = entry.map_err(|e| e.to_string())?;
                 let path = entry.path();
                 let rel_path = path.strip_prefix(src_path).map_err(|e| e.to_string())?;
