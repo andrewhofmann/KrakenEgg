@@ -15,6 +15,8 @@ pub struct TabStateConfig {
 pub struct PanelStateConfig {
     pub tabs: Vec<TabStateConfig>,
     pub active_tab_index: usize,
+    #[serde(default)]
+    pub layout: serde_json::Value,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -134,6 +136,7 @@ mod tests {
                     history_index: 0,
                 }],
                 active_tab_index: 0,
+                layout: serde_json::Value::Null,
             },
             right: PanelStateConfig {
                 tabs: vec![TabStateConfig {
@@ -143,6 +146,7 @@ mod tests {
                     history_index: 0,
                 }],
                 active_tab_index: 0,
+                layout: serde_json::Value::Null,
             },
             active_side: "left".to_string(),
             hotkeys: HashMap::new(),

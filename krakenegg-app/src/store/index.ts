@@ -411,11 +411,13 @@ export const useStore = create<AppState>((set, get) => {
             const config = {
                 left: {
                     tabs: currentAppState.left.tabs.map(t => ({ id: t.id, path: t.path, history: t.history, history_index: t.historyIndex })),
-                    active_tab_index: currentAppState.left.activeTabIndex
+                    active_tab_index: currentAppState.left.activeTabIndex,
+                    layout: currentAppState.left.layout,
                 },
                 right: {
                     tabs: currentAppState.right.tabs.map(t => ({ id: t.id, path: t.path, history: t.history, history_index: t.historyIndex })),
-                    active_tab_index: currentAppState.right.activeTabIndex
+                    active_tab_index: currentAppState.right.activeTabIndex,
+                    layout: currentAppState.right.layout,
                 },
                 active_side: currentAppState.activeSide,
                 hotkeys: currentAppState.hotkeys,
@@ -431,7 +433,7 @@ export const useStore = create<AppState>((set, get) => {
     loadState: async () => {
         try {
             interface SavedTabConfig { id: string; path: string; history: string[]; history_index: number; }
-            interface SavedPanelConfig { tabs: SavedTabConfig[]; active_tab_index: number; }
+            interface SavedPanelConfig { tabs: SavedTabConfig[]; active_tab_index: number; layout?: PaneLayout; }
             interface SavedState {
                 left: SavedPanelConfig; right: SavedPanelConfig; active_side: string;
                 hotkeys?: HotkeyState; preferences?: Preferences;
@@ -448,7 +450,8 @@ export const useStore = create<AppState>((set, get) => {
                             history: t.history || [t.path],
                             historyIndex: t.history_index || 0
                         })),
-                        activeTabIndex: Math.min(loaded.left.active_tab_index || 0, loaded.left.tabs.length - 1)
+                        activeTabIndex: Math.min(loaded.left.active_tab_index || 0, loaded.left.tabs.length - 1),
+                        layout: loaded.left.layout || state.left.layout,
                     },
                     right: {
                         ...state.right,
@@ -458,7 +461,8 @@ export const useStore = create<AppState>((set, get) => {
                             history: t.history || [t.path],
                             historyIndex: t.history_index || 0
                         })),
-                        activeTabIndex: Math.min(loaded.right.active_tab_index || 0, loaded.right.tabs.length - 1)
+                        activeTabIndex: Math.min(loaded.right.active_tab_index || 0, loaded.right.tabs.length - 1),
+                        layout: loaded.right.layout || state.right.layout,
                     },
                     activeSide: (loaded.active_side === 'left' || loaded.active_side === 'right') ? loaded.active_side : 'left',
                     hotkeys: loaded.hotkeys || state.hotkeys,
