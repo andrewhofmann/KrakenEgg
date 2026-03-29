@@ -127,6 +127,7 @@ pub fn run() {
             commands::get_recursive_info,
             commands::copy_items,
             commands::copy_items_with_progress,
+            commands::rename_item,
             commands::move_items,
             commands::move_items_with_progress,
             commands::delete_items,

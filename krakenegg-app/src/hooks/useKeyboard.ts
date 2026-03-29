@@ -209,7 +209,7 @@ export function useKeyboard() {
                       const newPath = joinPath(activeTab.path, newName);
                        try {
                           showOperationStatus(`Renaming '${currentFile.name}' to '${newName}'...`);
-                          await invoke('move_items', { sources: [oldPath], dest: newPath });
+                          await invoke('rename_item', { oldPath, newPath });
                           refreshPanel(activeSide);
                           showOperationStatus(`Renamed '${currentFile.name}' to '${newName}' successfully.`);
                       } catch (err) {

@@ -525,20 +525,21 @@ export const useStore = create<AppState>((set, get) => {
         `${isCopy ? "Copy" : "Move"} ${sources.length} items to ${dest}?`,
         async (_option) => {
           try {
+            const opId = Math.random().toString(36).substring(7);
             currentAppState.showOperationStatus(`${isCopy ? "Copying" : "Moving"} ${sources.length} items...`);
-            if (isCopy) await invoke('copy_items', { sources, dest });
-            else await invoke('move_items', { sources, dest });
+            if (isCopy) await invoke('copy_items_with_progress', { id: opId, sources, dest });
+            else await invoke('move_items_with_progress', { id: opId, sources, dest });
 
             const destPath = destTab.path;
-            const sourcePath = sourcePanel ? currentAppState[sourcePanel].tabs[currentAppState[sourcePanel].activeTabIndex].path : null;
+            const sourcePath = sourcePanel ? get()[sourcePanel].tabs[get()[sourcePanel].activeTabIndex]?.path : null;
             const pathsToRefresh = [destPath];
             if (sourcePath && !isCopy) pathsToRefresh.push(sourcePath);
             get().refreshPaths(pathsToRefresh);
-            currentAppState.hideOperationStatus();
+            get().hideOperationStatus();
             // Clear clipboard only on success — preserve on error so user can retry
-            currentAppState.clearClipboard();
+            get().clearClipboard();
           } catch (err) {
-            currentAppState.setOperationError(`${isCopy ? "Copy" : "Move"} failed: ${err}`);
+            get().setOperationError(`${isCopy ? "Copy" : "Move"} failed: ${err}`);
           }
         }, true);
     },

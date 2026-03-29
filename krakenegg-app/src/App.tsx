@@ -127,7 +127,7 @@ function App() {
                             if (newName && newName !== file.name) {
                                 const oldPath = currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`;
                                 const newPath = currentPath === '/' ? `/${newName}` : `${currentPath}/${newName}`;
-                                await invoke('move_items', { sources: [oldPath], dest: newPath });
+                                await invoke('rename_item', { oldPath, newPath });
                                 store.refreshPanel(side);
                             }
                         });

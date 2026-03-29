@@ -487,6 +487,16 @@ pub async fn copy_items_with_progress(
 }
 
 #[tauri::command]
+pub async fn rename_item(old_path: String, new_path: String) -> Result<(), String> {
+    let src = Path::new(&old_path);
+    let dst = Path::new(&new_path);
+    if dst.exists() {
+        return Err(format!("'{}' already exists", dst.file_name().unwrap_or_default().to_string_lossy()));
+    }
+    fs::rename(src, dst).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub async fn move_items(sources: Vec<String>, dest: String) -> Result<(), String> {
     let dest_path = Path::new(&dest);
     for src in sources {

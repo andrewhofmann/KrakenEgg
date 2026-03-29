@@ -707,7 +707,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       useStore.getState().showOperationStatus(`Renaming '${oldName}' to '${newName}'...`);
       const oldPath = activeTab.path === "/" ? `/${oldName}` : `${activeTab.path}/${oldName}`;
       const newPath = activeTab.path === "/" ? `/${newName}` : `${activeTab.path}/${newName}`;
-      await invoke('move_items', { sources: [oldPath], dest: newPath });
+      await invoke('rename_item', { oldPath, newPath });
       refreshPanel(side);
       useStore.getState().showOperationStatus(`Renamed successfully.`);
     } catch (err) {
