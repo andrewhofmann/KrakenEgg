@@ -73,6 +73,15 @@ fn file_contains_content(path: &Path, query_lower: &str) -> bool {
 
 #[tauri::command]
 pub async fn get_recursive_info(path: String) -> Result<RecursiveInfo, String> {
+    // Handle paths inside archives
+    if let Some((archive_path, internal_path)) = parse_archive_path(&path) {
+        let contents = list_archive_contents(&archive_path, &internal_path)?;
+        let files = contents.iter().filter(|f| !f.is_dir).count();
+        let folders = contents.iter().filter(|f| f.is_dir).count();
+        let size: u64 = contents.iter().map(|f| f.size).sum();
+        return Ok(RecursiveInfo { files, folders, size, skipped: 0 });
+    }
+
     tauri::async_runtime::spawn_blocking(move || {
         let root = Path::new(&path);
         if !root.exists() {
@@ -120,6 +129,13 @@ pub async fn get_recursive_info(path: String) -> Result<RecursiveInfo, String> {
 /// Calculate folder size on demand (e.g., Space key on a folder like Total Commander)
 #[tauri::command]
 pub async fn calculate_folder_size(path: String) -> Result<u64, String> {
+    // Handle folders inside archives — sum sizes from archive listing
+    if let Some((archive_path, internal_path)) = parse_archive_path(&path) {
+        let contents = list_archive_contents(&archive_path, &internal_path)?;
+        let size: u64 = contents.iter().map(|f| f.size).sum();
+        return Ok(size);
+    }
+
     tauri::async_runtime::spawn_blocking(move || {
         let root = Path::new(&path);
         if !root.exists() {
@@ -1100,6 +1116,18 @@ pub async fn search_files(query: String, path: String, search_content: bool, sea
 
 #[tauri::command]
 pub async fn open_with_default(path: String) -> Result<(), String> {
+    // If file is inside an archive, extract to temp and open the temp file
+    let actual_path = if let Some((archive_path, internal_path)) = parse_archive_path(&path) {
+        let temp_dir = std::env::temp_dir().join("kraken_open");
+        fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
+        extract_entry(&archive_path, &internal_path, &temp_dir, |_| {}, |_| Ok(true))
+            .map_err(|e| e.to_string())?;
+        let file_name = internal_path.file_name().unwrap_or_default();
+        temp_dir.join(file_name).to_string_lossy().to_string()
+    } else {
+        path
+    };
+
     #[cfg(target_os = "macos")]
     let cmd = "open";
     #[cfg(target_os = "windows")]
@@ -1108,14 +1136,14 @@ pub async fn open_with_default(path: String) -> Result<(), String> {
     let cmd = "xdg-open";
 
     let mut command = Command::new(cmd);
-    
+
     #[cfg(target_os = "windows")]
     {
-        command.arg("/C").arg("start").arg("").arg(&path);
+        command.arg("/C").arg("start").arg("").arg(&actual_path);
     }
     #[cfg(not(target_os = "windows"))]
     {
-        command.arg(&path);
+        command.arg(&actual_path);
     }
 
     let output = command.output().map_err(|e| e.to_string())?;
