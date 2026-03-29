@@ -320,24 +320,24 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     return () => { if (clickTimerRef.current) clearTimeout(clickTimerRef.current); };
   }, []);
 
+  // STABLE click handlers — read from store inside callback to avoid depending on activeTab
+  // This prevents handler recreation on cursor change, which would break double-click.
   const handleFileClick = useCallback((e: React.MouseEvent, index: number) => {
-    setActiveSide(side);
-    if (!activeTab) return;
+    const store = useStore.getState();
+    store.setActiveSide(side);
+    const tab = store[side].tabs[store[side].activeTabIndex];
+    if (!tab) return;
 
-    // Update cursor IMMEDIATELY so Enter/keyboard works on the right file
-    setCursor(side, index);
+    store.setCursor(side, index);
 
-    // Cancel any pending click from a previous row
     if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
     pendingClickRef.current = { index, e };
 
-    // Delay selection to allow double-click to cancel
-    // Use the index captured in THIS closure, not activeTab.cursorIndex
     const clickIndex = index;
     const shiftKey = e.shiftKey;
     const metaKey = e.metaKey || e.ctrlKey;
-    const prevCursor = activeTab.cursorIndex;
-    const prevSelection = [...activeTab.selection];
+    const prevCursor = tab.cursorIndex;
+    const prevSelection = [...tab.selection];
 
     clickTimerRef.current = setTimeout(() => {
       if (!pendingClickRef.current || pendingClickRef.current.index !== clickIndex) return;
@@ -348,45 +348,47 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         const end = Math.max(prevCursor, clickIndex);
         const newSelection = [];
         for (let i = start; i <= end; i++) newSelection.push(i);
-        setSelection(side, newSelection);
+        store.setSelection(side, newSelection);
       } else if (metaKey) {
         const isSelected = prevSelection.includes(clickIndex);
         const newSelection = isSelected
           ? prevSelection.filter(i => i !== clickIndex)
           : [...prevSelection, clickIndex];
-        setSelection(side, newSelection);
+        store.setSelection(side, newSelection);
       } else {
-        setSelection(side, [clickIndex]);
+        store.setSelection(side, [clickIndex]);
       }
     }, 200);
 
-    hideContextMenu();
-  }, [activeTab, side, setActiveSide, setCursor, setSelection, hideContextMenu]);
+    store.hideContextMenu();
+  }, [side]);
 
   const handleDoubleClick = useCallback(async (_e: React.MouseEvent, file: FileInfo) => {
+    const store = useStore.getState();
+    const tab = store[side].tabs[store[side].activeTabIndex];
     if (!file || file.name === '..') {
-      if (activeTab && activeTab.path !== '/') {
-        const parentPath = activeTab.path.substring(0, activeTab.path.lastIndexOf('/')) || '/';
-        setPath(side, parentPath);
+      if (tab && tab.path !== '/') {
+        const parentPath = tab.path.substring(0, tab.path.lastIndexOf('/')) || '/';
+        store.setPath(side, parentPath);
       }
-      hideContextMenu();
+      store.hideContextMenu();
       return;
     }
     const isArchiveFile = /\.(zip|tar|gz|tgz)$/i.test(file.name);
 
-    if ((file.is_dir || isArchiveFile) && activeTab) {
-      const newPath = activeTab.path === "/" ? `/${file.name}` : `${activeTab.path}/${file.name}`;
-      setPath(side, newPath);
-    } else if (file && activeTab) {
+    if ((file.is_dir || isArchiveFile) && tab) {
+      const newPath = tab.path === "/" ? `/${file.name}` : `${tab.path}/${file.name}`;
+      store.setPath(side, newPath);
+    } else if (file && tab) {
       try {
-        const openPath = activeTab.path === "/" ? `/${file.name}` : `${activeTab.path}/${file.name}`;
+        const openPath = tab.path === "/" ? `/${file.name}` : `${tab.path}/${file.name}`;
         await invoke('open_with_default', { path: openPath });
       } catch (err) {
-        useStore.getState().setOperationError(`Failed to open file: ${err}`);
+        store.setOperationError(`Failed to open file: ${err}`);
       }
     }
-    hideContextMenu();
-  }, [activeTab, side, setPath, hideContextMenu]);
+    store.hideContextMenu();
+  }, [side]);
 
   const handleDoubleClickWrapper = useCallback(async (e: React.MouseEvent, file: FileInfo) => {
     if (clickTimerRef.current) {
@@ -700,8 +702,16 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     setRenamingIndex(null);
   }, []);
 
-  // Row component wrapper — reads cursor/selection from store inside each row
-  // to avoid recreating RowComponent on every cursor change (which breaks double-click)
+  // Use refs for handlers that change frequently — keeps RowComponent stable for double-click
+  const contextMenuRef = useRef(handleContextMenu);
+  const dropRef = useRef(handleDrop);
+  const renameSubmitRef = useRef(handleRenameSubmit);
+  contextMenuRef.current = handleContextMenu;
+  dropRef.current = handleDrop;
+  renameSubmitRef.current = handleRenameSubmit;
+
+  // Row component — MUST stay stable to prevent react-window from remounting rows
+  // (which destroys pending double-click events). Reads cursor/selection from store.
   const StableRowComponent = useMemo(() => {
     const Row = ({ index, style: rowStyle }: { index: number; style: React.CSSProperties }) => {
       const isCursor = useStore(s => s[side].tabs[s[side].activeTabIndex]?.cursorIndex === index);
@@ -721,19 +731,19 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
           columns={layout.columns}
           onClick={handleFileClick}
           onDoubleClick={handleDoubleClickWrapper}
-          onContextMenu={handleContextMenu}
+          onContextMenu={(...args) => contextMenuRef.current(...args)}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onRenameSubmit={handleRenameSubmit}
+          onDrop={(...args) => dropRef.current(...args)}
+          onRenameSubmit={(...args) => renameSubmitRef.current(...args)}
           onRenameCancel={handleRenameCancel}
         />
       );
     };
     return Row;
-  }, [processedFiles, side, isActive, dragTargetIndex, renamingIndex, layout.columns, handleFileClick, handleDoubleClickWrapper, handleContextMenu, handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleDrop, handleRenameSubmit, handleRenameCancel]);
+  }, [processedFiles, side, isActive, dragTargetIndex, renamingIndex, layout.columns, handleFileClick, handleDoubleClickWrapper, handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleRenameCancel]);
 
   // -- CONDITIONAL RENDER MUST BE AT END --
   const showQuickView = !isActive && quickView;

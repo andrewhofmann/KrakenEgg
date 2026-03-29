@@ -662,14 +662,14 @@ export const useStore = create<AppState>((set, get) => {
         }
         if (sources.length === 0) return;
         state.requestConfirmation("Copy", `Copy ${sources.length} items?`, async (_option) => {
-            try { 
-                await invoke('copy_items_with_progress', { 
-                    id: Math.random().toString(36), 
-                    sources, 
-                    destPath: destTab.path 
-                }); 
-                get().refreshPaths([sourceTab.path, destTab.path]); 
-            } catch (e) { state.setOperationError(`${e}`); }
+            try {
+                await invoke('copy_items_with_progress', {
+                    id: Math.random().toString(36),
+                    sources,
+                    dest: destTab.path
+                });
+                get().refreshPaths([sourceTab.path, destTab.path]);
+            } catch (e) { get().setOperationError(`${e}`); }
         }, true);
     },
     moveToOppositePanel: (sourceSide: 'left' | 'right') => {
@@ -695,12 +695,12 @@ export const useStore = create<AppState>((set, get) => {
                 await invoke('move_items_with_progress', {
                     id: Math.random().toString(36),
                     sources,
-                    destPath: destTab.path
+                    dest: destTab.path
                 });
                 get().refreshPaths([sourceTab.path, destTab.path]);
                 // Clear stale selection after files moved
                 set((s) => updateActiveTab(s, sourceSide, () => ({ selection: [], cursorIndex: 0 })));
-            } catch (e) { state.setOperationError(`${e}`); }
+            } catch (e) { get().setOperationError(`${e}`); }
         }, true);
     }
   };
