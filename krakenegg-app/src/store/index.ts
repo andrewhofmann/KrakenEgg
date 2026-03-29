@@ -187,8 +187,8 @@ export const useStore = create<AppState>((set, get) => {
           const newHistory = [path, ...state.globalHistory.filter(p => p !== path)].slice(0, 30);
           return { globalHistory: newHistory };
       }),
-      addToHotlist: (path: string) => set((state) => ({ hotlist: [...state.hotlist.filter(p => p !== path), path].slice(-50) })),
-      removeFromHotlist: (path: string) => set((state) => ({ hotlist: state.hotlist.filter(p => p !== path) })),
+      addToHotlist: (path: string) => { set((state) => ({ hotlist: [...state.hotlist.filter(p => p !== path), path].slice(-50) })); get().saveState(); },
+      removeFromHotlist: (path: string) => { set((state) => ({ hotlist: state.hotlist.filter(p => p !== path) })); get().saveState(); },
   };
 
   const dataActions = {
@@ -228,15 +228,15 @@ export const useStore = create<AppState>((set, get) => {
             return { left: { ...state.left, tabs: updateTabs(state.left.tabs) }, right: { ...state.right, tabs: updateTabs(state.right.tabs) } };
         });
     },
-    setSort: (side: 'left' | 'right', column: SortColumn) => set((state) => {
+    setSort: (side: 'left' | 'right', column: SortColumn) => { set((state) => {
         const layout = state[side].layout;
         let direction: SortDirection = 'asc';
         if (layout.sortColumn === column) direction = layout.sortDirection === 'asc' ? 'desc' : 'asc';
         else if (column === 'size' || column === 'date') direction = 'desc';
         return { [side]: { ...state[side], layout: { ...layout, sortColumn: column, sortDirection: direction } } };
-    }),
-    setColumnOrder: (side: 'left' | 'right', order: SortColumn[]) => set((state) => ({ [side]: { ...state[side], layout: { ...state[side].layout, columns: order } } })),
-    setColumnWidth: (side: 'left' | 'right', column: SortColumn, width: number) => set((state) => ({ [side]: { ...state[side], layout: { ...state[side].layout, columnWidths: { ...state[side].layout.columnWidths, [column]: Math.max(30, width) } } } })),
+    }); get().saveState(); },
+    setColumnOrder: (side: 'left' | 'right', order: SortColumn[]) => { set((state) => ({ [side]: { ...state[side], layout: { ...state[side].layout, columns: order } } })); get().saveState(); },
+    setColumnWidth: (side: 'left' | 'right', column: SortColumn, width: number) => { set((state) => ({ [side]: { ...state[side], layout: { ...state[side].layout, columnWidths: { ...state[side].layout.columnWidths, [column]: Math.max(30, width) } } } })); get().saveState(); },
   };
 
   const cursorActions = {

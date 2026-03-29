@@ -164,6 +164,9 @@ export function useKeyboard() {
             refreshPanel('left');
             refreshPanel('right');
             break;
+          case 'toggle_quick_view':
+            state.toggleQuickView();
+            break;
           case 'new_file':
             requestInput(
               "New File",
