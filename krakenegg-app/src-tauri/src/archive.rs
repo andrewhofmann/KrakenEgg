@@ -258,6 +258,12 @@ pub fn add_files_to_zip(archive_path: &Path, sources: &[String], dest_dir_intern
         zip_w.raw_copy_file(entry).map_err(|e| e.to_string())?;
     }
 
+    // If no sources but dest_dir_internal is set, create an empty directory entry
+    if sources.is_empty() && !dest_dir_internal.is_empty() {
+        let dir_entry = format!("{}/", dest_dir_internal.trim_end_matches('/'));
+        zip_w.add_directory(&dir_entry, options).map_err(|e| e.to_string())?;
+    }
+
     for src in sources {
         let src_path = Path::new(src);
         let src_name = src_path.file_name().unwrap_or_default().to_string_lossy();

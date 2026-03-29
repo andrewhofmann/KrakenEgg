@@ -470,7 +470,7 @@ export function useKeyboard() {
 
           const file = cursorFile;
           if (file) {
-            const isArchiveFile = /\.(zip|tar|gz|tgz)$/i.test(file.name);
+            const isArchiveFile = /\.(zip|tar\.gz|tgz|tar)$/i.test(file.name);
             if (file.is_dir || isArchiveFile) {
               const newPath = activeTab.path === "/" ? `/${file.name}` : `${activeTab.path}/${file.name}`;
               setPath(activeSide, newPath);

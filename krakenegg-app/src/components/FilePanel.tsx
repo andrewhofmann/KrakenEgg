@@ -59,7 +59,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   const [draggedCol, setDraggedCol] = useState<SortColumn | null>(null);
   const [dragOverCol, setDragOverCol] = useState<SortColumn | null>(null);
 
-  const isArchive = activeTab?.path ? /\.(zip|tar|gz|tgz)(\/|$)/i.test(activeTab.path) : false;
+  const isArchive = activeTab?.path ? /\.(zip|tar\.gz|tgz|tar)(\/|$)/i.test(activeTab.path) : false;
 
   const resizingRef = useRef<{
       leftCol: SortColumn; 
@@ -335,7 +335,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       store.hideContextMenu();
       return;
     }
-    const isArchiveFile = /\.(zip|tar|gz|tgz)$/i.test(file.name);
+    const isArchiveFile = /\.(zip|tar\.gz|tgz|tar)$/i.test(file.name);
 
     if ((file.is_dir || isArchiveFile) && tab) {
       const newPath = tab.path === "/" ? `/${file.name}` : `${tab.path}/${file.name}`;
