@@ -802,7 +802,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
                    selection?.removeAllRanges();
                    selection?.addRange(range);
                    showContextMenu(e.clientX, e.clientY, [
-                       { label: 'Copy Path', action: async () => { try { await navigator.clipboard.writeText(`"${activeTab.path}"`); } catch (err) { useStore.getState().setOperationError("Failed to copy"); } } },
+                       { label: 'Copy Path', action: async () => { try { await navigator.clipboard.writeText(activeTab.path); useStore.getState().showOperationStatus("Path copied."); } catch (err) { useStore.getState().setOperationError("Failed to copy"); } } },
                        { label: 'Paste & Go', disabled: !hasText, action: async () => { try { const text = await navigator.clipboard.readText(); if (text) setPath(side, text.trim().replace(/^"|"$/g, '')); } catch (err) { useStore.getState().setOperationError("Failed to paste"); } } },
                        { label: 'Edit Address', action: () => handlePathClick() }
                    ]);

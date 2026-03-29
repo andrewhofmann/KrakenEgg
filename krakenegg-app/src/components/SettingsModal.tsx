@@ -158,8 +158,8 @@ export const SettingsModal = () => {
       try {
         const s = useStore.getState();
         const config = {
-          left: { tabs: s.left.tabs.map(t => ({ id: t.id, path: t.path, history: t.history, history_index: t.historyIndex })), active_tab_index: s.left.activeTabIndex },
-          right: { tabs: s.right.tabs.map(t => ({ id: t.id, path: t.path, history: t.history, history_index: t.historyIndex })), active_tab_index: s.right.activeTabIndex },
+          left: { tabs: s.left.tabs.map(t => ({ id: t.id, path: t.path, history: t.history, history_index: t.historyIndex })), active_tab_index: s.left.activeTabIndex, layout: s.left.layout },
+          right: { tabs: s.right.tabs.map(t => ({ id: t.id, path: t.path, history: t.history, history_index: t.historyIndex })), active_tab_index: s.right.activeTabIndex, layout: s.right.layout },
           active_side: s.activeSide, hotkeys: s.hotkeys, preferences: s.preferences
         };
         await invoke('save_named_layout', { name, state: config });
@@ -180,8 +180,8 @@ export const SettingsModal = () => {
         const lt = loaded.left.tabs;
         const rt = loaded.right.tabs;
         useStore.setState({
-          left: { tabs: lt.map(t => ({ ...createTab(t.path), id: t.id, history: t.history || [t.path], historyIndex: t.history_index ?? 0 })), activeTabIndex: Math.min(loaded.left.active_tab_index, lt.length - 1), layout: defLayout },
-          right: { tabs: rt.map(t => ({ ...createTab(t.path), id: t.id, history: t.history || [t.path], historyIndex: t.history_index ?? 0 })), activeTabIndex: Math.min(loaded.right.active_tab_index, rt.length - 1), layout: defLayout },
+          left: { tabs: lt.map(t => ({ ...createTab(t.path), id: t.id, history: t.history || [t.path], historyIndex: t.history_index ?? 0 })), activeTabIndex: Math.min(loaded.left.active_tab_index, lt.length - 1), layout: (loaded as any).left?.layout || defLayout },
+          right: { tabs: rt.map(t => ({ ...createTab(t.path), id: t.id, history: t.history || [t.path], historyIndex: t.history_index ?? 0 })), activeTabIndex: Math.min(loaded.right.active_tab_index, rt.length - 1), layout: (loaded as any).right?.layout || defLayout },
           activeSide: loaded.active_side as 'left' | 'right',
         });
         showOperationStatus(`Layout '${name}' loaded.`);
