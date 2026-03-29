@@ -700,34 +700,40 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     setRenamingIndex(null);
   }, []);
 
-  // Row component for react-window v2 List
-  const RowComponent = useCallback(({ index, style: rowStyle }: { index: number; style: React.CSSProperties }) => {
-    const file = processedFiles[index];
-    if (!file) return null;
-    return (
-      <FileRow
-        file={file}
-        index={index}
-        style={rowStyle}
-        isSelected={activeTab?.selection?.includes(index) ?? false}
-        isCursor={activeTab?.cursorIndex === index}
-        isActive={isActive}
-        isDragTarget={dragTargetIndex === index}
-        isRenaming={renamingIndex === index}
-        columns={layout.columns}
-        onClick={handleFileClick}
-        onDoubleClick={handleDoubleClickWrapper}
-        onContextMenu={handleContextMenu}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onRenameSubmit={handleRenameSubmit}
-        onRenameCancel={handleRenameCancel}
-      />
-    );
-  }, [processedFiles, activeTab?.selection, activeTab?.cursorIndex, isActive, dragTargetIndex, renamingIndex, layout.columns, handleFileClick, handleDoubleClickWrapper, handleContextMenu, handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleDrop, handleRenameSubmit, handleRenameCancel]);
+  // Row component wrapper — reads cursor/selection from store inside each row
+  // to avoid recreating RowComponent on every cursor change (which breaks double-click)
+  const StableRowComponent = useMemo(() => {
+    const Row = ({ index, style: rowStyle }: { index: number; style: React.CSSProperties }) => {
+      const isCursor = useStore(s => s[side].tabs[s[side].activeTabIndex]?.cursorIndex === index);
+      const isSelected = useStore(s => s[side].tabs[s[side].activeTabIndex]?.selection?.includes(index) ?? false);
+      const file = processedFiles[index];
+      if (!file) return null;
+      return (
+        <FileRow
+          file={file}
+          index={index}
+          style={rowStyle}
+          isSelected={isSelected}
+          isCursor={isCursor}
+          isActive={isActive}
+          isDragTarget={dragTargetIndex === index}
+          isRenaming={renamingIndex === index}
+          columns={layout.columns}
+          onClick={handleFileClick}
+          onDoubleClick={handleDoubleClickWrapper}
+          onContextMenu={handleContextMenu}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onRenameSubmit={handleRenameSubmit}
+          onRenameCancel={handleRenameCancel}
+        />
+      );
+    };
+    return Row;
+  }, [processedFiles, side, isActive, dragTargetIndex, renamingIndex, layout.columns, handleFileClick, handleDoubleClickWrapper, handleContextMenu, handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleDrop, handleRenameSubmit, handleRenameCancel]);
 
   // -- CONDITIONAL RENDER MUST BE AT END --
   const showQuickView = !isActive && quickView;
@@ -948,7 +954,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
                   style={{ height: height - (activeTab.path !== "/" ? preferences.appearance.rowHeight : 0), width }}
                   rowCount={processedFiles.length}
                   rowHeight={preferences.appearance.rowHeight}
-                  rowComponent={RowComponent}
+                  rowComponent={StableRowComponent}
                   rowProps={{}}
                 />
               )}</AutoSizer>
