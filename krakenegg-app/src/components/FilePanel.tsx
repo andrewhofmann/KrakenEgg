@@ -536,6 +536,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
     if (file) {
       items.push({ label: "Open", action: () => handleDoubleClick(e, file) });
+      const filePath = activeTab.path === "/" ? `/${file.name}` : `${activeTab.path}/${file.name}`;
+      items.push({ label: "Copy Path", action: async () => { try { await navigator.clipboard.writeText(filePath); useStore.getState().showOperationStatus("Path copied to clipboard."); } catch { useStore.getState().setOperationError("Failed to copy path"); } } });
       items.push({ label: useStore.getState().quickView ? "Hide Quick Info (Ctrl+Q)" : "Quick Info (Ctrl+Q)", action: () => useStore.getState().toggleQuickView() });
       items.push({ 
         label: "Quick Look (Space)", 
