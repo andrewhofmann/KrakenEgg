@@ -324,8 +324,43 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     return () => { if (clickTimerRef.current) clearTimeout(clickTimerRef.current); };
   }, []);
 
+  const handleDoubleClick = useCallback(async (_e: React.MouseEvent, file: FileInfo) => {
+    const store = useStore.getState();
+    const tab = store[side].tabs[store[side].activeTabIndex];
+    if (!file || file.name === '..') {
+      if (tab && tab.path !== '/') {
+        const parentPath = tab.path.substring(0, tab.path.lastIndexOf('/')) || '/';
+        store.setPath(side, parentPath);
+      }
+      store.hideContextMenu();
+      return;
+    }
+    const isArchiveFile = /\.(zip|tar|gz|tgz)$/i.test(file.name);
+
+    if ((file.is_dir || isArchiveFile) && tab) {
+      const newPath = tab.path === "/" ? `/${file.name}` : `${tab.path}/${file.name}`;
+      store.setPath(side, newPath);
+    } else if (file && tab) {
+      try {
+        const openPath = tab.path === "/" ? `/${file.name}` : `${tab.path}/${file.name}`;
+        await invoke('open_with_default', { path: openPath });
+      } catch (err) {
+        store.setOperationError(`Failed to open file: ${err}`);
+      }
+    }
+    store.hideContextMenu();
+  }, [side]);
+
+  const handleDoubleClickWrapper = useCallback(async (e: React.MouseEvent, file: FileInfo) => {
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+      clickTimerRef.current = null;
+    }
+    pendingClickRef.current = null;
+    handleDoubleClick(e, file);
+  }, [handleDoubleClick]);
+
   // STABLE click handler — detects double-click internally via timing
-  // instead of relying on browser dblclick event (which breaks when react-window remounts rows)
   const handleFileClick = useCallback((e: React.MouseEvent, index: number) => {
     const store = useStore.getState();
     store.setActiveSide(side);
@@ -340,7 +375,6 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       lastClickRef.current = null;
       if (clickTimerRef.current) { clearTimeout(clickTimerRef.current); clickTimerRef.current = null; }
       pendingClickRef.current = null;
-      // Trigger double-click action
       const file = processedFiles[index];
       if (file) handleDoubleClick(e, file);
       return;
@@ -381,42 +415,6 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
     store.hideContextMenu();
   }, [side, processedFiles, handleDoubleClick]);
-
-  const handleDoubleClick = useCallback(async (_e: React.MouseEvent, file: FileInfo) => {
-    const store = useStore.getState();
-    const tab = store[side].tabs[store[side].activeTabIndex];
-    if (!file || file.name === '..') {
-      if (tab && tab.path !== '/') {
-        const parentPath = tab.path.substring(0, tab.path.lastIndexOf('/')) || '/';
-        store.setPath(side, parentPath);
-      }
-      store.hideContextMenu();
-      return;
-    }
-    const isArchiveFile = /\.(zip|tar|gz|tgz)$/i.test(file.name);
-
-    if ((file.is_dir || isArchiveFile) && tab) {
-      const newPath = tab.path === "/" ? `/${file.name}` : `${tab.path}/${file.name}`;
-      store.setPath(side, newPath);
-    } else if (file && tab) {
-      try {
-        const openPath = tab.path === "/" ? `/${file.name}` : `${tab.path}/${file.name}`;
-        await invoke('open_with_default', { path: openPath });
-      } catch (err) {
-        store.setOperationError(`Failed to open file: ${err}`);
-      }
-    }
-    store.hideContextMenu();
-  }, [side]);
-
-  const handleDoubleClickWrapper = useCallback(async (e: React.MouseEvent, file: FileInfo) => {
-    if (clickTimerRef.current) {
-      clearTimeout(clickTimerRef.current);
-      clickTimerRef.current = null;
-    }
-    pendingClickRef.current = null;
-    handleDoubleClick(e, file);
-  }, [handleDoubleClick]);
 
   const handleUpDir = () => {
     if (!activeTab) return;
