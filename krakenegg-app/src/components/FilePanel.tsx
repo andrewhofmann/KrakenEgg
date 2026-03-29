@@ -425,18 +425,21 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
   const handleDragStart = useCallback((e: React.DragEvent, file: FileInfo, _index: number) => {
     setIsDraggingFiles(true);
-    if (!activeTab) return;
-    const isDraggedItemSelected = activeTab.selection.length > 0 && activeTab.selection.some(i => processedFiles[i] && processedFiles[i].name === file.name);
-    
+    const store = useStore.getState();
+    const tab = store[side].tabs[store[side].activeTabIndex];
+    if (!tab) return;
+    const pFiles = getProcessedFiles(tab.files, store[side].layout, tab.filterQuery, store.preferences.general.showHiddenFiles);
+    const isDraggedItemSelected = tab.selection.length > 0 && tab.selection.some(i => pFiles[i] && pFiles[i].name === file.name);
+
     const joinP = (dir: string, name: string) => dir === "/" ? `/${name}` : `${dir}/${name}`;
     const paths = isDraggedItemSelected
-        ? activeTab.selection.map(i => joinP(activeTab.path, processedFiles[i]?.name)).filter(Boolean)
-        : [joinP(activeTab.path, file.name)];
+        ? tab.selection.map(i => joinP(tab.path, pFiles[i]?.name)).filter(Boolean)
+        : [joinP(tab.path, file.name)];
 
     e.dataTransfer.setData("text/uri-list", paths.join('\r\n'));
     e.dataTransfer.setData("application/x-krakenegg-source", side);
     e.dataTransfer.effectAllowed = "copyMove";
-  }, [activeTab, processedFiles, side]);
+  }, [side]);
 
   const handleDragEnd = useCallback(() => {
     setIsDraggingFiles(false);
@@ -465,49 +468,50 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     setPanelDragOver(false);
     setIsDraggingFiles(false);
 
-    if (!activeTab) return;
+    const store = useStore.getState();
+    const tab = store[side].tabs[store[side].activeTabIndex];
+    if (!tab) return;
 
     try {
         const uriList = e.dataTransfer.getData("text/uri-list");
         const sourceSide = e.dataTransfer.getData("application/x-krakenegg-source") as "left" | "right" | "";
-        
+
         if (!uriList) return;
         const sources = uriList.split('\r\n').filter(s => s.length > 0);
-        
-        let dest = activeTab.path;
+
+        let dest = tab.path;
         if (file && file.is_dir && file.name !== "..") {
-          dest = activeTab.path === "/" ? `/${file.name}` : `${activeTab.path}/${file.name}`;
+          dest = tab.path === "/" ? `/${file.name}` : `${tab.path}/${file.name}`;
         }
 
         if (!dest || sources.length === 0) return;
-        // If dropped on the same panel and same directory, do nothing
-        if (sourceSide === side && dest === activeTab.path) return; 
+        if (sourceSide === side && dest === tab.path) return;
 
         const isCopy = e.altKey;
 
-        requestConfirmation(
+        store.requestConfirmation(
         isCopy ? "Copy Files" : "Move Files",
         `${isCopy ? "Copy" : "Move"} ${sources.length} items to ${dest}?`,
         async () => {
             try {
-              showOperationStatus(`${isCopy ? "Copying" : "Moving"} ${sources.length} items...`);
+              useStore.getState().showOperationStatus(`${isCopy ? "Copying" : "Moving"} ${sources.length} items...`);
               if (isCopy) {
                   await invoke('copy_items', { sources, dest });
               } else {
                   await invoke('move_items', { sources, dest });
               }
-              refreshPanel(side);
-              if (sourceSide) refreshPanel(sourceSide);
-              showOperationStatus(`${isCopy ? "Copied" : "Moved"} ${sources.length} items successfully.`);
+              useStore.getState().refreshPanel(side);
+              if (sourceSide) useStore.getState().refreshPanel(sourceSide);
+              useStore.getState().showOperationStatus(`${isCopy ? "Copied" : "Moved"} ${sources.length} items successfully.`);
             } catch (err) {
-              setOperationError(`${isCopy ? "Copy" : "Move"} failed: ${err}`);
+              useStore.getState().setOperationError(`${isCopy ? "Copy" : "Move"} failed: ${err}`);
             }
         }
         );
     } catch (err) {
         useStore.getState().setOperationError(`Drop failed: ${err}`);
     }
-  }, [activeTab, side, requestConfirmation, refreshPanel]);
+  }, [side]);
 
   const handleContextMenu = useCallback((e: React.MouseEvent, file: FileInfo, index: number) => {
     e.preventDefault();
@@ -701,19 +705,21 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   const [renamingIndex, setRenamingIndex] = useState<number | null>(null);
 
   const handleRenameSubmit = useCallback(async (oldName: string, newName: string) => {
-    if (!activeTab) return;
+    const store = useStore.getState();
+    const tab = store[side].tabs[store[side].activeTabIndex];
+    if (!tab) return;
     setRenamingIndex(null);
     try {
-      useStore.getState().showOperationStatus(`Renaming '${oldName}' to '${newName}'...`);
-      const oldPath = activeTab.path === "/" ? `/${oldName}` : `${activeTab.path}/${oldName}`;
-      const newPath = activeTab.path === "/" ? `/${newName}` : `${activeTab.path}/${newName}`;
+      store.showOperationStatus(`Renaming '${oldName}' to '${newName}'...`);
+      const oldPath = tab.path === "/" ? `/${oldName}` : `${tab.path}/${oldName}`;
+      const newPath = tab.path === "/" ? `/${newName}` : `${tab.path}/${newName}`;
       await invoke('rename_item', { oldPath, newPath });
-      refreshPanel(side);
+      useStore.getState().refreshPanel(side);
       useStore.getState().showOperationStatus(`Renamed successfully.`);
     } catch (err) {
       useStore.getState().setOperationError(`Rename failed: ${err}`);
     }
-  }, [activeTab, side, refreshPanel]);
+  }, [side]);
 
   const handleRenameCancel = useCallback(() => {
     setRenamingIndex(null);
