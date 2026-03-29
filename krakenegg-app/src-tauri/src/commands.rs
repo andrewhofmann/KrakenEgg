@@ -488,6 +488,34 @@ pub async fn copy_items_with_progress(
 
 #[tauri::command]
 pub async fn rename_item(old_path: String, new_path: String) -> Result<(), String> {
+    // Handle rename inside archives — extract, rename, re-add
+    if let Some((archive_path, old_internal)) = parse_archive_path(&old_path) {
+        if let Some((_, new_internal)) = parse_archive_path(&new_path) {
+            let old_name = old_internal.to_string_lossy().to_string();
+            let new_name = new_internal.to_string_lossy().to_string();
+            if old_name.is_empty() || new_name.is_empty() {
+                return Err("Cannot rename archive root".to_string());
+            }
+            // Extract → rename on disk → remove old from archive → add new to archive
+            let temp_dir = std::env::temp_dir().join(format!("kraken_rename_{}", std::process::id()));
+            fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
+            extract_entry(&archive_path, &old_internal, &temp_dir, |_| {}, |_| Ok(true))
+                .map_err(|e| e.to_string())?;
+            // The extracted file is at temp_dir/old_filename
+            let old_filename = Path::new(&old_name).file_name().unwrap_or_default();
+            let new_filename = Path::new(&new_name).file_name().unwrap_or_default();
+            let extracted = temp_dir.join(old_filename);
+            let renamed = temp_dir.join(new_filename);
+            if extracted.exists() {
+                fs::rename(&extracted, &renamed).map_err(|e| e.to_string())?;
+            }
+            remove_files_from_zip(&archive_path, &[old_name])?;
+            let parent = Path::new(&new_name).parent().map(|p| p.to_string_lossy().to_string()).unwrap_or_default();
+            add_files_to_zip(&archive_path, &[renamed.to_string_lossy().to_string()], &parent)?;
+            let _ = fs::remove_dir_all(&temp_dir);
+            return Ok(());
+        }
+    }
     let src = Path::new(&old_path);
     let dst = Path::new(&new_path);
     if dst.exists() {
@@ -818,6 +846,19 @@ pub async fn extract_archive(archive_path: String, dest_dir: String) -> Result<(
 
 #[tauri::command]
 pub async fn create_directory(path: String) -> Result<(), String> {
+    // Handle creating directories inside archives
+    if let Some((archive_path, internal_path)) = parse_archive_path(&path) {
+        let dir_name = internal_path.to_string_lossy().to_string();
+        if dir_name.is_empty() {
+            return Err("Cannot create root directory inside archive".to_string());
+        }
+        // Create empty file with directory marker to add folder entry to ZIP
+        let temp_dir = std::env::temp_dir().join(format!("kraken_mkdir_{}", std::process::id()));
+        fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
+        let result = add_files_to_zip(&archive_path, &[], &dir_name);
+        let _ = fs::remove_dir_all(&temp_dir);
+        return result;
+    }
     let p = Path::new(&path);
     if p.exists() {
         return Err(format!("'{}' already exists", p.file_name().unwrap_or_default().to_string_lossy()));
@@ -876,6 +917,22 @@ pub async fn write_file_content(path: String, content: String) -> Result<(), Str
 
 #[tauri::command]
 pub async fn create_empty_file(path: String) -> Result<(), String> {
+    // Handle creating files inside archives
+    if let Some((archive_path, internal_path)) = parse_archive_path(&path) {
+        let file_name = internal_path.to_string_lossy().to_string();
+        if file_name.is_empty() {
+            return Err("Cannot create file at archive root".to_string());
+        }
+        // Create a temp empty file and add it to the archive
+        let temp_dir = std::env::temp_dir().join(format!("kraken_mkfile_{}", std::process::id()));
+        fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
+        let temp_file = temp_dir.join(Path::new(&file_name).file_name().unwrap_or_default());
+        fs::write(&temp_file, "").map_err(|e| e.to_string())?;
+        let parent = Path::new(&file_name).parent().map(|p| p.to_string_lossy().to_string()).unwrap_or_default();
+        let result = add_files_to_zip(&archive_path, &[temp_file.to_string_lossy().to_string()], &parent);
+        let _ = fs::remove_dir_all(&temp_dir);
+        return result;
+    }
     // Use create_new to fail if file already exists instead of silently truncating
     std::fs::OpenOptions::new()
         .write(true)
