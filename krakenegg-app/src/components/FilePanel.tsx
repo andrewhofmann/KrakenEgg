@@ -395,8 +395,9 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       return;
     }
 
-    // Detect slow double-click: same index, 500ms-2000ms, already selected, no modifier → inline rename
-    if (lastClick && lastClick.index === index && (now - lastClick.time) >= 500 && (now - lastClick.time) < 2000
+    // Detect slow double-click: same index, 500ms-2000ms, already selected, no modifier, active panel → inline rename
+    const wasActive = store.activeSide === side;
+    if (wasActive && lastClick && lastClick.index === index && (now - lastClick.time) >= 500 && (now - lastClick.time) < 2000
         && !e.shiftKey && !e.metaKey && !e.ctrlKey && index >= 0) {
       const file = processedFiles[index];
       if (file && file.name !== '..' && tab.cursorIndex === index) {

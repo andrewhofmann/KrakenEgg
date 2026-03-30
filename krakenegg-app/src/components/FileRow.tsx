@@ -98,6 +98,7 @@ export const FileRow = memo(({
                       {isRenaming ? (
                         <input
                           ref={renameInputRef}
+                          data-rename="true"
                           value={renameValue}
                           onChange={(e) => setRenameValue(e.target.value)}
                           onKeyDown={handleRenameKeyDown}
@@ -145,7 +146,7 @@ export const FileRow = memo(({
       aria-selected={isSelected}
       aria-label={`${file.is_dir ? 'Folder' : 'File'}: ${file.name}`}
       tabIndex={isCursor ? 0 : -1}
-      onClick={(e) => { e.stopPropagation(); if (!isRenaming) onClick(e, index); }}
+      onClick={(e) => { e.stopPropagation(); onClick(e, index); }}
       onDoubleClick={(e) => { e.stopPropagation(); if (!isRenaming) onDoubleClick(e, file); }}
       onContextMenu={(e) => { if (!isRenaming) onContextMenu(e, file, index); }}
       onMouseDown={(e) => { if (!isRenaming && e.button === 0) onDragStart(e as any, file, index); }}

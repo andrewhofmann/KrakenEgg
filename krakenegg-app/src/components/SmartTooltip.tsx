@@ -23,6 +23,8 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
     if (showTimer.current) clearTimeout(showTimer.current);
     showTimer.current = setTimeout(() => {
       if (!ref.current || ref.current.scrollWidth <= ref.current.clientWidth) return;
+      // Don't show tooltips while any rename input is active
+      if (document.querySelector('input[data-rename]')) return;
       const r = ref.current.getBoundingClientRect();
       const cs = window.getComputedStyle(ref.current);
       setSnap({
