@@ -440,6 +440,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         : [joinP(tab.path, file.name)];
 
     e.dataTransfer.setData("text/uri-list", paths.join('\r\n'));
+    e.dataTransfer.setData("text/plain", paths.join('\r\n'));
     e.dataTransfer.setData("application/x-krakenegg-source", side);
     e.dataTransfer.effectAllowed = "copyMove";
   }, [side]);
@@ -452,9 +453,9 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   const handleDragOver = useCallback((e: React.DragEvent, index: number, file: FileInfo) => {
       e.preventDefault();
       e.stopPropagation();
+      e.dataTransfer.dropEffect = e.altKey ? "copy" : "move";
       if (file.is_dir && file.name !== "..") {
           setDragTargetIndex(index);
-          e.dataTransfer.dropEffect = e.altKey ? "copy" : "move";
       } else {
           setDragTargetIndex(null);
       }
@@ -476,7 +477,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     if (!tab) return;
 
     try {
-        const uriList = e.dataTransfer.getData("text/uri-list");
+        const uriList = e.dataTransfer.getData("text/uri-list") || e.dataTransfer.getData("text/plain") || "";
         const sourceSide = e.dataTransfer.getData("application/x-krakenegg-source") as "left" | "right" | "";
 
         if (!uriList) return;
