@@ -495,11 +495,12 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         `${isCopy ? "Copy" : "Move"} ${sources.length} items to ${dest}?`,
         async () => {
             try {
+              const opId = Math.random().toString(36).substring(7);
               useStore.getState().showOperationStatus(`${isCopy ? "Copying" : "Moving"} ${sources.length} items...`);
               if (isCopy) {
-                  await invoke('copy_items', { sources, dest });
+                  await invoke('copy_items_with_progress', { id: opId, sources, dest });
               } else {
-                  await invoke('move_items', { sources, dest });
+                  await invoke('move_items_with_progress', { id: opId, sources, dest });
               }
               useStore.getState().refreshPanel(side);
               if (sourceSide) useStore.getState().refreshPanel(sourceSide);
@@ -628,6 +629,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
                    await invoke('delete_items', { paths: sources });
                    useStore.getState().refreshPanel('left');
                    useStore.getState().refreshPanel('right');
+                   // Clear stale selection after delete
+                   useStore.getState().setSelection(side, []);
                    useStore.getState().showOperationStatus(`Deleted ${sources.length} items successfully.`);
                  } catch (err) {
                    useStore.getState().setOperationError(`Delete failed: ${err}`);
