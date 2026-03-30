@@ -166,10 +166,12 @@ pub fn execute_mrt(
             Ok(()) => { completed.push((new_path, old_path.to_path_buf())); }
             Err(e) => {
                 // Rollback all completed renames
+                let mut rollback_failed = false;
                 for (renamed, original) in completed.iter().rev() {
-                    let _ = fs::rename(renamed, original);
+                    if fs::rename(renamed, original).is_err() { rollback_failed = true; }
                 }
-                return Err(format!("Failed to rename '{}': {} (all changes rolled back)", p.original, e));
+                let msg = if rollback_failed { "WARNING: rollback partially failed" } else { "all changes rolled back" };
+                return Err(format!("Failed to rename '{}': {} ({})", p.original, e, msg));
             }
         }
     }
