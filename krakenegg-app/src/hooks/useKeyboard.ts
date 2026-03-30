@@ -106,6 +106,18 @@ export function useKeyboard() {
         return;
       }
 
+      // Ctrl+F / Cmd+F: Toggle inline file filter
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        const tab = state[activeSide].tabs[state[activeSide].activeTabIndex];
+        if (tab?.showFilterWidget) {
+          state.hideFilterWidget(activeSide);
+        } else {
+          triggerFilterFocus(activeSide);
+        }
+        return;
+      }
+
       // Ctrl+Enter: Open current directory in Finder
       if (e.ctrlKey && e.key === 'Enter') {
         e.preventDefault();
@@ -147,16 +159,10 @@ export function useKeyboard() {
           case 'go_forward':
             goForward(activeSide);
             break;
-          case 'open_search': {
-            // Toggle: if filter is already visible, close it; otherwise open
-            const tab = state[activeSide].tabs[state[activeSide].activeTabIndex];
-            if (tab?.showFilterWidget) {
-              state.hideFilterWidget(activeSide);
-            } else {
-              triggerFilterFocus(activeSide);
-            }
+          case 'open_search':
+            // Alt+F7: open the full search modal (like Total Commander)
+            state.showSearch();
             break;
-          }
           case 'copy_to_opposite':
             copyToOppositePanel(activeSide);
             break;

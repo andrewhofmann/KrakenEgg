@@ -601,8 +601,8 @@ export const useStore = create<AppState>((set, get) => {
                await invoke('delete_items', { paths: sources });
                const freshTab = get()[side].tabs[get()[side].activeTabIndex];
                get().refreshPaths([freshTab?.path || activeTab.path]);
-               // Clear stale selection and clamp cursor after deletion
-               set((s) => updateActiveTab(s, side, () => ({ selection: [], cursorIndex: Math.max(0, (freshTab?.cursorIndex ?? 0) - sources.length) })));
+               // Clear stale selection — cursor will be clamped by setFiles when refresh loads
+               set((s) => updateActiveTab(s, side, () => ({ selection: [] })));
                useStore.getState().hideOperationStatus();
              } catch (err) { useStore.getState().setOperationError(`Delete failed: ${err}`); }
         };
