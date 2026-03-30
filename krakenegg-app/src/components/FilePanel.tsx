@@ -839,7 +839,36 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
   return (
     <div
-      ref={containerRef} data-side={side} onClick={() => setActiveSide(side)} onContextMenu={handlePanelContextMenu} onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = e.altKey ? "copy" : "move"; setPanelDragOver(true); }} onDragLeave={() => setPanelDragOver(false)} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setPanelDragOver(false); setIsDraggingFiles(false); dropRef.current(e, { name: '..', is_dir: false, size: 0 } as any); }}
+      ref={containerRef} data-side={side} onClick={() => setActiveSide(side)} onContextMenu={handlePanelContextMenu}
+      onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = e.altKey ? "copy" : "move"; setPanelDragOver(true); }}
+      onDragLeave={() => setPanelDragOver(false)}
+      onDrop={(e) => {
+        e.preventDefault(); e.stopPropagation();
+        setPanelDragOver(false); setIsDraggingFiles(false);
+        if (!_dragData) return;
+        const sources = _dragData.sources;
+        const srcSide = _dragData.sourceSide;
+        _dragData = null;
+        if (sources.length === 0) return;
+        const s = useStore.getState();
+        const t = s[side].tabs[s[side].activeTabIndex];
+        if (!t) return;
+        if (srcSide === side) return; // same panel drop — do nothing
+        const isCopy = e.altKey;
+        s.requestConfirmation(
+          isCopy ? "Copy Files" : "Move Files",
+          `${isCopy ? "Copy" : "Move"} ${sources.length} items to ${t.path}?`,
+          async () => {
+            try {
+              const opId = Math.random().toString(36).substring(7);
+              useStore.getState().showOperationStatus(`${isCopy ? "Copying" : "Moving"}...`);
+              if (isCopy) await invoke('copy_items_with_progress', { id: opId, sources, dest: t.path });
+              else await invoke('move_items_with_progress', { id: opId, sources, dest: t.path });
+              useStore.getState().refreshPanel('left'); useStore.getState().refreshPanel('right');
+              useStore.getState().showOperationStatus(`${isCopy ? "Copied" : "Moved"} ${sources.length} items.`);
+            } catch (err) { useStore.getState().setOperationError(`${err}`); }
+          }, true);
+      }}
       className={clsx("flex-1 flex flex-col h-full overflow-hidden transition-all duration-200 border-r border-[var(--ke-border)] last:border-r-0 relative group", isActive ? "bg-[var(--ke-bg)]" : "bg-[var(--ke-bg)]/30 saturate-50 opacity-70", panelDragOver && "border-[var(--ke-accent)] border-2")}
       style={{ gridTemplateColumns: gridTemplate, fontSize: `${preferences.appearance.fontSize}px` } as React.CSSProperties}
     >
