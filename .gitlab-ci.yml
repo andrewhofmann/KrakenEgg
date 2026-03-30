@@ -1,0 +1,143 @@
+# KrakenEgg Explorer - GitLab CI/CD Pipeline
+# Free tier: 400 compute minutes/month
+# Target: <4 min per pipeline = ~100 pushes/month budget
+
+stages:
+  - lint
+  - test
+  - security
+  - build
+
+variables:
+  CARGO_HOME: "$CI_PROJECT_DIR/.cargo"
+  RUSTFLAGS: "-D warnings"
+  NODE_OPTIONS: "--max-old-space-size=4096"
+
+# Cache dependencies to speed up builds and save minutes
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - krakenegg-app/node_modules/
+    - krakenegg-app/.pnpm-store/
+    - .cargo/
+
+# ─── LINT STAGE ────────────────────────────────
+typescript-lint:
+  stage: lint
+  image: node:22-slim
+  before_script:
+    - cd krakenegg-app
+    - corepack enable
+    - pnpm install --frozen-lockfile
+  script:
+    - npx tsc --noEmit --skipLibCheck
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+  timeout: 5m
+
+# ─── TEST STAGE ────────────────────────────────
+typescript-tests:
+  stage: test
+  image: node:22-slim
+  before_script:
+    - cd krakenegg-app
+    - corepack enable
+    - pnpm install --frozen-lockfile
+  script:
+    - pnpm test -- --reporter=junit --outputFile=test-results.xml
+  artifacts:
+    when: always
+    reports:
+      junit: krakenegg-app/test-results.xml
+    expire_in: 30 days
+  coverage: '/All files\s*\|\s*(\d+\.?\d*)\s*\|/'
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+  timeout: 5m
+
+rust-tests:
+  stage: test
+  image: rust:latest
+  before_script:
+    - cd krakenegg-app/src-tauri
+    - apt-get update -qq && apt-get install -y -qq
+        libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
+        libgtk-3-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev
+        patchelf > /dev/null 2>&1
+  script:
+    - cargo test --lib 2>&1
+    - cargo clippy --lib -- -D warnings 2>&1
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+    - changes:
+        - "krakenegg-app/src-tauri/**/*"
+  timeout: 10m
+
+# ─── SECURITY STAGE (all free tier) ───────────
+sast:
+  stage: security
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+secret_detection:
+  stage: security
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# Include GitLab's built-in SAST and Secret Detection templates
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+
+# ─── BUILD STAGE ───────────────────────────────
+build-check:
+  stage: build
+  image: node:22-slim
+  before_script:
+    - cd krakenegg-app
+    - corepack enable
+    - pnpm install --frozen-lockfile
+  script:
+    - pnpm build
+  artifacts:
+    paths:
+      - krakenegg-app/dist/
+    expire_in: 7 days
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  timeout: 5m
+
+# ─── NPM AUDIT (dependency check, free alternative to Dependency Scanning) ──
+npm-audit:
+  stage: security
+  image: node:22-slim
+  before_script:
+    - cd krakenegg-app
+    - corepack enable
+    - pnpm install --frozen-lockfile
+  script:
+    - pnpm audit --audit-level=high || true
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  timeout: 3m
+
+cargo-audit:
+  stage: security
+  image: rust:latest
+  before_script:
+    - cargo install cargo-audit --quiet
+  script:
+    - cd krakenegg-app/src-tauri
+    - cargo audit || true
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - changes:
+        - "krakenegg-app/src-tauri/**/*"
+  timeout: 5m
