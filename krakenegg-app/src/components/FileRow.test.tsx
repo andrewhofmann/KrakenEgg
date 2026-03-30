@@ -25,10 +25,6 @@ const defaultHandlers = {
   onDoubleClick: vi.fn(),
   onContextMenu: vi.fn(),
   onDragStart: vi.fn(),
-  onDragEnd: vi.fn(),
-  onDragOver: vi.fn(),
-  onDragLeave: vi.fn(),
-  onDrop: vi.fn(),
 };
 
 const renderRow = (overrides: Record<string, unknown> = {}) => {
@@ -84,12 +80,6 @@ describe('FileRow', () => {
     expect(document.getElementById('row-5')).toBeInTheDocument();
   });
 
-  it('is draggable', () => {
-    renderRow();
-    const row = document.getElementById('row-0')!;
-    expect(row.getAttribute('draggable')).toBe('true');
-  });
-
   it('calls onClick with index when clicked', () => {
     const onClick = vi.fn();
     renderRow({ onClick });
@@ -113,19 +103,12 @@ describe('FileRow', () => {
     expect(onContextMenu).toHaveBeenCalledWith(expect.any(Object), file, 3);
   });
 
-  it('calls onDragStart with file and index', () => {
+  it('calls onDragStart via mouseDown', () => {
     const onDragStart = vi.fn();
     const file = makeFile();
     renderRow({ onDragStart, file, index: 2 });
-    fireEvent.dragStart(document.getElementById('row-2')!);
+    fireEvent.mouseDown(document.getElementById('row-2')!);
     expect(onDragStart).toHaveBeenCalledWith(expect.any(Object), file, 2);
-  });
-
-  it('calls onDragEnd when drag ends', () => {
-    const onDragEnd = vi.fn();
-    renderRow({ onDragEnd });
-    fireEvent.dragEnd(document.getElementById('row-0')!);
-    expect(onDragEnd).toHaveBeenCalled();
   });
 
   it('applies selected+active styling class', () => {

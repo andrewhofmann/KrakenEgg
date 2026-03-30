@@ -13,8 +13,15 @@ import { formatDate, getExtension } from "../utils/format";
 import clsx from "clsx";
 import { ChevronRight, ChevronDown, ArrowUp, ArrowDown, HardDrive, Package, Clock, Star } from "lucide-react";
 
-// Global drag state — dataTransfer is unreliable in Tauri webview
-let _dragData: { sources: string[]; sourceSide: string } | null = null;
+// Global drag state — HTML5 DnD is completely broken in Tauri's WKWebView.
+// Using mouse-based drag instead.
+let _dragState: {
+  sources: string[];
+  sourceSide: string;
+  fileName: string;
+  active: boolean;
+  ghostEl: HTMLDivElement | null;
+} | null = null;
 
 interface FilePanelProps {
   side: 'left' | 'right';
@@ -428,111 +435,100 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     hideContextMenu();
   };
 
-  const handleDragStart = useCallback((e: React.DragEvent, file: FileInfo, _index: number) => {
-    if (file.name === '..') { e.preventDefault(); return; }
-    setIsDraggingFiles(true);
+  // Mouse-based drag — HTML5 DnD is broken in Tauri's WKWebView
+  const handleMouseDragStart = useCallback((e: React.MouseEvent, file: FileInfo, _index: number) => {
+    if (file.name === '..' || e.button !== 0) return;
     const store = useStore.getState();
     const tab = store[side].tabs[store[side].activeTabIndex];
     if (!tab) return;
     const pFiles = getProcessedFiles(tab.files, store[side].layout, tab.filterQuery, store.preferences.general.showHiddenFiles);
     const isDraggedItemSelected = tab.selection.length > 0 && tab.selection.some(i => pFiles[i] && pFiles[i].name === file.name);
-
     const joinP = (dir: string, name: string) => dir === "/" ? `/${name}` : `${dir}/${name}`;
     const paths = isDraggedItemSelected
         ? tab.selection.map(i => joinP(tab.path, pFiles[i]?.name)).filter(Boolean)
         : [joinP(tab.path, file.name)];
 
-    // Store drag data globally — dataTransfer is unreliable in Tauri webview
-    _dragData = { sources: paths, sourceSide: side };
-    e.dataTransfer.setData("text/plain", paths.join('\n'));
-    e.dataTransfer.effectAllowed = "copyMove";
+    const startX = e.clientX, startY = e.clientY;
+    let dragging = false;
 
-    // Custom drag image — show file count badge instead of broken table layout
-    const dragEl = document.createElement('div');
-    dragEl.style.cssText = 'position:absolute;top:-1000px;left:-1000px;padding:6px 12px;border-radius:6px;font-size:13px;font-family:system-ui;color:#fff;background:#007AFF;white-space:nowrap;pointer-events:none;';
-    dragEl.textContent = paths.length === 1 ? file.name : `${paths.length} items`;
-    document.body.appendChild(dragEl);
-    e.dataTransfer.setDragImage(dragEl, 0, 0);
-    setTimeout(() => document.body.removeChild(dragEl), 0);
-  }, [side]);
-
-  const handleDragEnd = useCallback(() => {
-    setIsDraggingFiles(false);
-    setDragTargetIndex(null);
-    // Don't clear _dragData here — drop handler on the OTHER panel needs it.
-    // It fires after dragEnd in Tauri's webview. Clear after a delay.
-    setTimeout(() => { _dragData = null; }, 500);
-  }, []);
-
-  const handleDragOver = useCallback((e: React.DragEvent, index: number, file: FileInfo) => {
-      e.preventDefault();
-      e.stopPropagation();
-      e.dataTransfer.dropEffect = e.altKey ? "copy" : "move";
-      if (file.is_dir && file.name !== "..") {
-          setDragTargetIndex(index);
-      } else {
-          setDragTargetIndex(null);
+    const onMove = (me: MouseEvent) => {
+      const dx = me.clientX - startX, dy = me.clientY - startY;
+      if (!dragging && Math.abs(dx) + Math.abs(dy) > 8) {
+        // Start drag
+        dragging = true;
+        _dragState = { sources: paths, sourceSide: side, fileName: file.name, active: true, ghostEl: null };
+        const ghost = document.createElement('div');
+        ghost.style.cssText = 'position:fixed;z-index:9999;padding:5px 12px;border-radius:6px;font-size:12px;font-family:system-ui;color:#fff;background:#007AFF;pointer-events:none;white-space:nowrap;opacity:0.9;';
+        ghost.textContent = paths.length === 1 ? file.name : `${paths.length} items`;
+        document.body.appendChild(ghost);
+        _dragState.ghostEl = ghost;
+        document.body.style.cursor = 'grabbing';
       }
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-      e.preventDefault();
-  }, []);
-
-  const handleDrop = useCallback(async (e: React.DragEvent, file: FileInfo) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragTargetIndex(null);
-    setPanelDragOver(false);
-    setIsDraggingFiles(false);
-
-    const store = useStore.getState();
-    const tab = store[side].tabs[store[side].activeTabIndex];
-    if (!tab) return;
-
-    try {
-        // Read from global drag state — dataTransfer is unreliable in Tauri webview
-        if (!_dragData) return;
-        const sources = _dragData.sources;
-        const sourceSide = _dragData.sourceSide as "left" | "right" | "";
-        _dragData = null;
-
-        if (sources.length === 0) return;
-
-        let dest = tab.path;
-        if (file && file.is_dir && file.name !== "..") {
-          dest = tab.path === "/" ? `/${file.name}` : `${tab.path}/${file.name}`;
+      if (dragging && _dragState?.ghostEl) {
+        _dragState.ghostEl.style.left = `${me.clientX + 12}px`;
+        _dragState.ghostEl.style.top = `${me.clientY + 12}px`;
+        // Highlight drop target panel
+        const otherSide = side === 'left' ? 'right' : 'left';
+        const otherPanel = document.querySelector(`[data-side="${otherSide}"]`);
+        if (otherPanel) {
+          const rect = otherPanel.getBoundingClientRect();
+          const over = me.clientX >= rect.left && me.clientX <= rect.right && me.clientY >= rect.top && me.clientY <= rect.bottom;
+          (otherPanel as HTMLElement).style.outline = over ? '2px solid var(--ke-accent)' : '';
         }
+      }
+    };
 
-        if (!dest || sources.length === 0) return;
-        if (sourceSide === side && dest === tab.path) return;
+    const onUp = (me: MouseEvent) => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      // Clear highlight
+      document.querySelectorAll('[data-side]').forEach(el => (el as HTMLElement).style.outline = '');
 
-        const isCopy = e.altKey;
-
-        store.requestConfirmation(
-        isCopy ? "Copy Files" : "Move Files",
-        `${isCopy ? "Copy" : "Move"} ${sources.length} items to ${dest}?`,
-        async () => {
-            try {
-              const opId = Math.random().toString(36).substring(7);
-              useStore.getState().showOperationStatus(`${isCopy ? "Copying" : "Moving"} ${sources.length} items...`);
-              if (isCopy) {
-                  await invoke('copy_items_with_progress', { id: opId, sources, dest });
-              } else {
-                  await invoke('move_items_with_progress', { id: opId, sources, dest });
-              }
-              useStore.getState().refreshPanel(side);
-              if (sourceSide) useStore.getState().refreshPanel(sourceSide);
-              useStore.getState().showOperationStatus(`${isCopy ? "Copied" : "Moved"} ${sources.length} items successfully.`);
-            } catch (err) {
-              useStore.getState().setOperationError(`${isCopy ? "Copy" : "Move"} failed: ${err}`);
+      if (dragging && _dragState) {
+        if (_dragState.ghostEl) { document.body.removeChild(_dragState.ghostEl); _dragState.ghostEl = null; }
+        // Check if dropped on other panel
+        const otherSide = side === 'left' ? 'right' : 'left';
+        const otherPanel = document.querySelector(`[data-side="${otherSide}"]`);
+        if (otherPanel) {
+          const rect = otherPanel.getBoundingClientRect();
+          if (me.clientX >= rect.left && me.clientX <= rect.right && me.clientY >= rect.top && me.clientY <= rect.bottom) {
+            // Dropped on other panel — trigger copy/move
+            const s = useStore.getState();
+            const t = s[otherSide].tabs[s[otherSide].activeTabIndex];
+            if (t) {
+              const sources = _dragState.sources;
+              const isCopy = me.altKey;
+              s.requestConfirmation(
+                isCopy ? "Copy Files" : "Move Files",
+                `${isCopy ? "Copy" : "Move"} ${sources.length} item${sources.length > 1 ? 's' : ''} to ${t.path}?`,
+                async () => {
+                  try {
+                    const opId = Math.random().toString(36).substring(7);
+                    useStore.getState().showOperationStatus(`${isCopy ? "Copying" : "Moving"}...`);
+                    if (isCopy) await invoke('copy_items_with_progress', { id: opId, sources, dest: t.path });
+                    else await invoke('move_items_with_progress', { id: opId, sources, dest: t.path });
+                    useStore.getState().refreshPanel('left'); useStore.getState().refreshPanel('right');
+                    useStore.getState().showOperationStatus(`${isCopy ? "Copied" : "Moved"} ${sources.length} items.`);
+                  } catch (err) { useStore.getState().setOperationError(`${err}`); }
+                }, true);
             }
+          }
         }
-        );
-    } catch (err) {
-        useStore.getState().setOperationError(`Drop failed: ${err}`);
-    }
+        _dragState = null;
+      }
+    };
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
   }, [side]);
+
+  // Keep old handlers as no-ops so FileRow/StableRowComponent don't break
+  const handleDragStart = useCallback((e: React.DragEvent) => { e.preventDefault(); }, []);
+  const handleDragEnd = useCallback(() => {}, []);
+  const handleDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); }, []);
+  const handleDragLeave = useCallback(() => {}, []);
+  const handleDrop = useCallback((e: React.DragEvent) => { e.preventDefault(); }, []);
 
   const handleContextMenu = useCallback((e: React.MouseEvent, file: FileInfo, index: number) => {
     e.preventDefault();
@@ -791,12 +787,10 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     setRenamingIndex(null);
   }, []);
 
-  // Use refs for handlers that change frequently — keeps RowComponent stable for double-click
+  // Use refs for handlers that change frequently — keeps RowComponent stable
   const contextMenuRef = useRef(handleContextMenu);
-  const dropRef = useRef(handleDrop);
   const renameSubmitRef = useRef(handleRenameSubmit);
   contextMenuRef.current = handleContextMenu;
-  dropRef.current = handleDrop;
   renameSubmitRef.current = handleRenameSubmit;
 
   // Row component — MUST stay stable to prevent react-window from remounting rows
@@ -821,18 +815,14 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
           onClick={handleFileClick}
           onDoubleClick={handleDoubleClickWrapper}
           onContextMenu={(...args) => contextMenuRef.current(...args)}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={(...args) => dropRef.current(...args)}
+          onDragStart={handleMouseDragStart}
           onRenameSubmit={(...args) => renameSubmitRef.current(...args)}
           onRenameCancel={handleRenameCancel}
         />
       );
     };
     return Row;
-  }, [processedFiles, side, isActive, dragTargetIndex, renamingIndex, layout.columns, handleFileClick, handleDoubleClickWrapper, handleDragStart, handleDragEnd, handleDragOver, handleDragLeave, handleRenameCancel]);
+  }, [processedFiles, side, isActive, dragTargetIndex, renamingIndex, layout.columns, handleFileClick, handleDoubleClickWrapper, handleMouseDragStart, handleRenameCancel]);
 
   // -- CONDITIONAL RENDER MUST BE AT END --
   const showQuickView = !isActive && quickView;
@@ -840,35 +830,6 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   return (
     <div
       ref={containerRef} data-side={side} onClick={() => setActiveSide(side)} onContextMenu={handlePanelContextMenu}
-      onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = e.altKey ? "copy" : "move"; setPanelDragOver(true); }}
-      onDragLeave={() => setPanelDragOver(false)}
-      onDrop={(e) => {
-        e.preventDefault(); e.stopPropagation();
-        setPanelDragOver(false); setIsDraggingFiles(false);
-        if (!_dragData) return;
-        const sources = _dragData.sources;
-        const srcSide = _dragData.sourceSide;
-        _dragData = null;
-        if (sources.length === 0) return;
-        const s = useStore.getState();
-        const t = s[side].tabs[s[side].activeTabIndex];
-        if (!t) return;
-        if (srcSide === side) return; // same panel drop — do nothing
-        const isCopy = e.altKey;
-        s.requestConfirmation(
-          isCopy ? "Copy Files" : "Move Files",
-          `${isCopy ? "Copy" : "Move"} ${sources.length} items to ${t.path}?`,
-          async () => {
-            try {
-              const opId = Math.random().toString(36).substring(7);
-              useStore.getState().showOperationStatus(`${isCopy ? "Copying" : "Moving"}...`);
-              if (isCopy) await invoke('copy_items_with_progress', { id: opId, sources, dest: t.path });
-              else await invoke('move_items_with_progress', { id: opId, sources, dest: t.path });
-              useStore.getState().refreshPanel('left'); useStore.getState().refreshPanel('right');
-              useStore.getState().showOperationStatus(`${isCopy ? "Copied" : "Moved"} ${sources.length} items.`);
-            } catch (err) { useStore.getState().setOperationError(`${err}`); }
-          }, true);
-      }}
       className={clsx("flex-1 flex flex-col h-full overflow-hidden transition-all duration-200 border-r border-[var(--ke-border)] last:border-r-0 relative group", isActive ? "bg-[var(--ke-bg)]" : "bg-[var(--ke-bg)]/30 saturate-50 opacity-70", panelDragOver && "border-[var(--ke-accent)] border-2")}
       style={{ gridTemplateColumns: gridTemplate, fontSize: `${preferences.appearance.fontSize}px` } as React.CSSProperties}
     >

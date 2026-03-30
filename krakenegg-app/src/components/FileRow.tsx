@@ -19,11 +19,7 @@ interface FileRowProps {
   onClick: (e: React.MouseEvent, index: number) => void;
   onDoubleClick: (e: React.MouseEvent, file: FileInfo) => void;
   onContextMenu: (e: React.MouseEvent, file: FileInfo, index: number) => void;
-  onDragStart: (e: React.DragEvent, file: FileInfo, index: number) => void;
-  onDragEnd: () => void;
-  onDragOver: (e: React.DragEvent, index: number, file: FileInfo) => void;
-  onDragLeave: (e: React.DragEvent, file: FileInfo) => void;
-  onDrop: (e: React.DragEvent, file: FileInfo) => void;
+  onDragStart: (e: React.MouseEvent, file: FileInfo, index: number) => void;
   onRenameSubmit?: (oldName: string, newName: string) => void;
   onRenameCancel?: () => void;
 }
@@ -31,7 +27,7 @@ interface FileRowProps {
 export const FileRow = memo(({
   file, index, style,
   isSelected, isCursor, isActive, isDragTarget, isRenaming, columns,
-  onClick, onDoubleClick, onContextMenu, onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
+  onClick, onDoubleClick, onContextMenu, onDragStart,
   onRenameSubmit, onRenameCancel
 }: FileRowProps) => {
   const showGridLines = useStore(s => s.preferences.appearance.showGridLines);
@@ -152,12 +148,7 @@ export const FileRow = memo(({
       onClick={(e) => { e.stopPropagation(); if (!isRenaming) onClick(e, index); }}
       onDoubleClick={(e) => { e.stopPropagation(); if (!isRenaming) onDoubleClick(e, file); }}
       onContextMenu={(e) => { if (!isRenaming) onContextMenu(e, file, index); }}
-      draggable={!isRenaming}
-      onDragStart={(e) => { e.stopPropagation(); onDragStart(e, file, index); }}
-      onDragEnd={onDragEnd}
-      onDragOver={(e) => onDragOver(e, index, file)}
-      onDragLeave={(e) => onDragLeave(e, file)}
-      onDrop={(e) => onDrop(e, file)}
+      onMouseDown={(e) => { if (!isRenaming && e.button === 0) onDragStart(e as any, file, index); }}
       className={clsx(
         "transition-colors font-normal select-none leading-none items-center",
         showGridLines && "border-b border-[var(--ke-border-subtle)]",
