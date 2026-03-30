@@ -75,19 +75,7 @@ rust-tests:
   timeout: 10m
 
 # ─── SECURITY STAGE (all free tier) ───────────
-sast:
-  stage: security
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-
-secret_detection:
-  stage: security
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-
-# Include GitLab's built-in SAST and Secret Detection templates
+# GitLab built-in SAST and Secret Detection — templates define the jobs
 include:
   - template: Security/SAST.gitlab-ci.yml
   - template: Security/Secret-Detection.gitlab-ci.yml
