@@ -13,6 +13,9 @@ import { formatDate, getExtension } from "../utils/format";
 import clsx from "clsx";
 import { ChevronRight, ChevronDown, ArrowUp, ArrowDown, HardDrive, Package, Clock, Star } from "lucide-react";
 
+// Global drag state — dataTransfer is unreliable in Tauri webview
+let _dragData: { sources: string[]; sourceSide: string } | null = null;
+
 interface FilePanelProps {
   side: 'left' | 'right';
   usePanelDataHook: (side: 'left' | 'right') => void;
@@ -439,15 +442,16 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         ? tab.selection.map(i => joinP(tab.path, pFiles[i]?.name)).filter(Boolean)
         : [joinP(tab.path, file.name)];
 
-    e.dataTransfer.setData("text/uri-list", paths.join('\r\n'));
-    e.dataTransfer.setData("text/plain", paths.join('\r\n'));
-    e.dataTransfer.setData("application/x-krakenegg-source", side);
+    // Store drag data globally — dataTransfer is unreliable in Tauri webview
+    _dragData = { sources: paths, sourceSide: side };
+    e.dataTransfer.setData("text/plain", paths.join('\n'));
     e.dataTransfer.effectAllowed = "copyMove";
   }, [side]);
 
   const handleDragEnd = useCallback(() => {
     setIsDraggingFiles(false);
     setDragTargetIndex(null);
+    _dragData = null;
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent, index: number, file: FileInfo) => {
@@ -477,11 +481,13 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     if (!tab) return;
 
     try {
-        const uriList = e.dataTransfer.getData("text/uri-list") || e.dataTransfer.getData("text/plain") || "";
-        const sourceSide = e.dataTransfer.getData("application/x-krakenegg-source") as "left" | "right" | "";
+        // Read from global drag state — dataTransfer is unreliable in Tauri webview
+        if (!_dragData) return;
+        const sources = _dragData.sources;
+        const sourceSide = _dragData.sourceSide as "left" | "right" | "";
+        _dragData = null;
 
-        if (!uriList) return;
-        const sources = uriList.split('\r\n').filter(s => s.length > 0);
+        if (sources.length === 0) return;
 
         let dest = tab.path;
         if (file && file.is_dir && file.name !== "..") {
