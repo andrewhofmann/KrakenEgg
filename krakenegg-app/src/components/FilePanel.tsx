@@ -462,9 +462,10 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         const label = document.createElement('span');
         label.textContent = paths.length === 1 ? file.name : `${paths.length} items`;
         const badge = document.createElement('span');
-        badge.style.cssText = 'font-size:10px;padding:1px 5px;border-radius:4px;background:rgba(255,255,255,0.25);font-weight:600;display:none;';
-        badge.textContent = '⌥ Copy';
+        badge.style.cssText = 'font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600;';
         badge.id = '__ke_drag_badge';
+        badge.textContent = '→ Move';
+        badge.style.background = 'rgba(255,255,255,0.2)';
         ghost.appendChild(label);
         ghost.appendChild(badge);
         document.body.appendChild(ghost);
@@ -474,9 +475,12 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       if (dragging && _dragState?.ghostEl) {
         _dragState.ghostEl.style.left = `${me.clientX + 12}px`;
         _dragState.ghostEl.style.top = `${me.clientY + 12}px`;
-        // Show/hide copy badge based on Alt/Option key
+        // Toggle Move/Copy badge based on Alt/Option key
         const badge = document.getElementById('__ke_drag_badge');
-        if (badge) badge.style.display = me.altKey ? 'inline' : 'none';
+        if (badge) {
+          badge.textContent = me.altKey ? '⌥ Copy' : '→ Move';
+          badge.style.background = me.altKey ? 'rgba(52,199,89,0.5)' : 'rgba(255,255,255,0.2)';
+        }
         // Highlight drop target panel
         const otherSide = side === 'left' ? 'right' : 'left';
         const otherPanel = document.querySelector(`[data-side="${otherSide}"]`);
