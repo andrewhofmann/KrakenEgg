@@ -772,8 +772,8 @@ export const useStore = create<AppState>((set, get) => {
   };
 
   const hotkeyActions = {
-    setHotkey: (actionId: HotkeyAction, keyCombination: string) => set((state) => ({ hotkeys: { ...state.hotkeys, [actionId]: keyCombination } })),
-    resetHotkeys: () => set(() => ({ hotkeys: DEFAULT_HOTKEYS })),
+    setHotkey: (actionId: HotkeyAction, keyCombination: string) => { set((state) => ({ hotkeys: { ...state.hotkeys, [actionId]: keyCombination } })); get().saveState(); },
+    resetHotkeys: () => { set(() => ({ hotkeys: DEFAULT_HOTKEYS })); get().saveState(); },
   };
 
   const settingsModalActions = {

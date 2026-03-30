@@ -424,6 +424,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   };
 
   const handleDragStart = useCallback((e: React.DragEvent, file: FileInfo, _index: number) => {
+    if (file.name === '..') { e.preventDefault(); return; }
     setIsDraggingFiles(true);
     const store = useStore.getState();
     const tab = store[side].tabs[store[side].activeTabIndex];

@@ -19,13 +19,14 @@ export const ConfirmationModal = () => {
     }
   }, [show]);
 
-  const [confirming, setConfirming] = useState(false);
+  const confirmingRef = useRef(false);
   const handleConfirm = () => {
-    if (confirming) return; // Prevent double-click
-    setConfirming(true);
+    if (confirmingRef.current) return;
+    confirmingRef.current = true;
     onConfirm(showConflictOptions ? strategy : undefined);
     closeConfirmation();
-    setConfirming(false);
+    // Reset after a tick to allow async callbacks to complete
+    setTimeout(() => { confirmingRef.current = false; }, 500);
   };
 
   return (

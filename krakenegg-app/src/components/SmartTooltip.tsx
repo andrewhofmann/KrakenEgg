@@ -17,7 +17,9 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
   const handleMouseEnter = () => {
     if (ref.current && ref.current.scrollWidth > ref.current.clientWidth) {
       const rect = ref.current.getBoundingClientRect();
-      setCoords({ top: rect.top, left: rect.left });
+      // Clamp left to prevent tooltip from going off-screen right
+      const maxLeft = window.innerWidth - Math.min(rect.width + 20, 500);
+      setCoords({ top: rect.top, left: Math.min(rect.left, Math.max(0, maxLeft)) });
       setShow(true);
     }
   };
@@ -35,7 +37,7 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
       </div>
       {show && createPortal(
         <div
-          className="fixed z-[1000] text-[13px] whitespace-nowrap pointer-events-none px-1.5 py-[1px] rounded"
+          className="fixed z-[1000] text-[13px] pointer-events-none px-1.5 py-[1px] rounded max-w-[500px] truncate"
           style={{
               top: coords.top,
               left: coords.left,
