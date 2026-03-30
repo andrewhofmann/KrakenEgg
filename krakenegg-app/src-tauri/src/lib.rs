@@ -136,6 +136,7 @@ pub fn run() {
             commands::resolve_conflict,
             commands::create_directory,
             commands::preview_file,
+            commands::extract_to_temp,
             commands::read_file_content,
             commands::write_file_content,
             commands::create_empty_file,

@@ -264,10 +264,12 @@ export const useStore = create<AppState>((set, get) => {
       set((state) => ({ viewer: { ...state.viewer, show: true, title, loading: true, error: null, isImage: false } }));
       const extension = path.substring(path.lastIndexOf('.')).toLowerCase();
       const isImageFile = IMAGE_EXTENSIONS.includes(extension);
-      // convertFileSrc only works for real filesystem paths, not archive virtual paths
       const isArchivePath = /\.(zip|tar\.gz|tgz|tar)\//i.test(path);
-      if (isImageFile && !isArchivePath) set((state) => ({ viewer: { ...state.viewer, content: convertFileSrc(path), loading: false, isImage: true } }));
-      else {
+      if (isImageFile) {
+        // For archive paths, extract to temp first; convertFileSrc needs real filesystem paths
+        const realPath = isArchivePath ? await invoke<string>('extract_to_temp', { path }) : path;
+        set((state) => ({ viewer: { ...state.viewer, content: convertFileSrc(realPath), loading: false, isImage: true } }));
+      } else {
         try {
           const content = await invoke<string>('read_file_content', { path });
           set((state) => ({ viewer: { ...state.viewer, content, loading: false, isImage: false } }));

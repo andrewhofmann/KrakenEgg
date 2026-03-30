@@ -776,7 +776,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
   return (
     <div
-      ref={containerRef} data-side={side} onClick={() => setActiveSide(side)} onContextMenu={handlePanelContextMenu} onDragOver={(e) => { e.preventDefault(); if (isDraggingFiles) { e.dataTransfer.dropEffect = e.altKey ? "copy" : "move"; setPanelDragOver(true); } }} onDragLeave={() => setPanelDragOver(false)} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setPanelDragOver(false); setIsDraggingFiles(false); }}
+      ref={containerRef} data-side={side} onClick={() => setActiveSide(side)} onContextMenu={handlePanelContextMenu} onDragOver={(e) => { e.preventDefault(); if (isDraggingFiles) { e.dataTransfer.dropEffect = e.altKey ? "copy" : "move"; setPanelDragOver(true); } }} onDragLeave={() => setPanelDragOver(false)} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setPanelDragOver(false); setIsDraggingFiles(false); dropRef.current(e, { name: '..', is_dir: false, size: 0 } as any); }}
       className={clsx("flex-1 flex flex-col h-full overflow-hidden transition-all duration-200 border-r border-[var(--ke-border)] last:border-r-0 relative group", isActive ? "bg-[var(--ke-bg)]" : "bg-[var(--ke-bg)]/30 saturate-50 opacity-70", panelDragOver && "border-[var(--ke-accent)] border-2")}
       style={{ gridTemplateColumns: gridTemplate, fontSize: `${preferences.appearance.fontSize}px` } as React.CSSProperties}
     >

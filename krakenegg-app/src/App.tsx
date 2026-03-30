@@ -96,7 +96,7 @@ function App() {
                             useStore.getState().refreshPanel(side);
                             useStore.getState().showOperationStatus(`Folder '${name}' created.`);
                         } catch (err) {
-                            useStore.getState().setOperationError(`Create folder failed: ${err}`);
+                            useStore.getState().setOperationError(`Create folder failed: ${err instanceof Error ? err.message : String(err)}`);
                         }
                     }
                 });
@@ -143,7 +143,7 @@ function App() {
                                 try {
                                     await invoke('rename_item', { oldPath, newPath });
                                     useStore.getState().refreshPanel(side);
-                                } catch (err) { useStore.getState().setOperationError(`Rename failed: ${err}`); }
+                                } catch (err) { useStore.getState().setOperationError(`Rename failed: ${err instanceof Error ? err.message : String(err)}`); }
                             }
                         });
                     }

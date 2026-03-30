@@ -922,6 +922,21 @@ pub async fn preview_file(#[allow(unused)] path: String) -> Result<(), String> {
     }
 }
 
+/// Extract a file from an archive to a temp directory and return the temp file path
+#[tauri::command]
+pub async fn extract_to_temp(path: String) -> Result<String, String> {
+    if let Some((archive_path, internal_path)) = parse_archive_path(&path) {
+        let temp_dir = std::env::temp_dir().join("kraken_viewer");
+        fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
+        extract_entry(&archive_path, &internal_path, &temp_dir, |_| {}, |_| Ok(true))
+            .map_err(|e| e.to_string())?;
+        let file_name = internal_path.file_name().unwrap_or_default();
+        Ok(temp_dir.join(file_name).to_string_lossy().to_string())
+    } else {
+        Ok(path)
+    }
+}
+
 #[tauri::command]
 pub async fn read_file_content(path: String) -> Result<String, String> {
     if let Some((archive_path, internal_path)) = crate::archive::parse_archive_path(&path) {
