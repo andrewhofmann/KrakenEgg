@@ -561,7 +561,7 @@ export const useStore = create<AppState>((set, get) => {
             if (isCopy) await invoke('copy_items_with_progress', { id: opId, sources, dest });
             else await invoke('move_items_with_progress', { id: opId, sources, dest });
 
-            const destPath = destTab.path;
+            const destPath = get()[destSide].tabs[get()[destSide].activeTabIndex]?.path || dest;
             const sourcePath = sourcePanel ? get()[sourcePanel].tabs[get()[sourcePanel].activeTabIndex]?.path : null;
             const pathsToRefresh = [destPath];
             if (sourcePath && !isCopy) pathsToRefresh.push(sourcePath);
@@ -599,9 +599,10 @@ export const useStore = create<AppState>((set, get) => {
              try {
                useStore.getState().showOperationStatus(`Deleting...`);
                await invoke('delete_items', { paths: sources });
-               get().refreshPaths([activeTab.path]);
+               const freshTab = get()[side].tabs[get()[side].activeTabIndex];
+               get().refreshPaths([freshTab?.path || activeTab.path]);
                // Clear stale selection and clamp cursor after deletion
-               set((s) => updateActiveTab(s, side, () => ({ selection: [], cursorIndex: Math.max(0, activeTab.cursorIndex - sources.length) })));
+               set((s) => updateActiveTab(s, side, () => ({ selection: [], cursorIndex: Math.max(0, (freshTab?.cursorIndex ?? 0) - sources.length) })));
                useStore.getState().hideOperationStatus();
              } catch (err) { useStore.getState().setOperationError(`Delete failed: ${err}`); }
         };
