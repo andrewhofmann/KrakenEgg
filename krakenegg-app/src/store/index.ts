@@ -298,7 +298,7 @@ export const useStore = create<AppState>((set, get) => {
     setEditorContent: (content: string) => set((state) => ({ editor: { ...state.editor, content, dirty: true } })),
     saveEditorContent: async () => {
       const editorState = get().editor;
-      if (!editorState.path || editorState.loading || editorState.error || !editorState.dirty) return;
+      if (!editorState.path || editorState.loading || !editorState.dirty) return;
       set((state) => ({ editor: { ...state.editor, loading: true, error: null } }));
       try {
         await invoke('write_file_content', { path: editorState.path, content: editorState.content });

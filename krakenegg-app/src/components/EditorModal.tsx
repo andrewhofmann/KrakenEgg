@@ -41,6 +41,7 @@ export const EditorModal = () => {
               className="w-full h-full bg-transparent text-[var(--ke-text)] p-4 focus:outline-none resize-none"
               value={content}
               onChange={(e) => setEditorContent(e.target.value)}
+              onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 's') { e.preventDefault(); saveEditorContent(); } }}
               spellCheck="false"
             />
           )}

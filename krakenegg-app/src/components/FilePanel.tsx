@@ -397,7 +397,9 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       if (!pendingClickRef.current || pendingClickRef.current.index !== clickIndex) return;
       pendingClickRef.current = null;
 
-      if (shiftKey) {
+      if (clickIndex < 0) {
+        store.setSelection(side, []);
+      } else if (shiftKey) {
         const start = Math.max(0, Math.min(prevCursor, clickIndex));
         const end = Math.max(prevCursor, clickIndex);
         const newSelection = [];
