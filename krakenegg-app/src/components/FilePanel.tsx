@@ -676,6 +676,46 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   const handlePanelContextMenu = (e: React.MouseEvent) => {
       e.preventDefault();
       setActiveSide(side);
+      const store = useStore.getState();
+      const tab = store[side].tabs[store[side].activeTabIndex];
+      if (!tab) return;
+      const items = [];
+      items.push({
+          label: "New File (Shift+F4)",
+          action: () => {
+              store.requestInput("New File", "Enter new file name:", "untitled.txt", (name: string) => {
+                  if (name) useStore.getState().createNewFile(side, name);
+              });
+          }
+      });
+      items.push({
+          label: "New Folder (F7)",
+          action: () => {
+              const _path = tab.path;
+              useStore.getState().requestInput("New Folder", "Enter folder name:", "New Folder", async (name: string) => {
+                  if (name) {
+                      try {
+                          useStore.getState().showOperationStatus(`Creating directory '${name}'...`);
+                          const dirPath = _path === "/" ? `/${name}` : `${_path}/${name}`;
+                          await invoke('create_directory', { path: dirPath });
+                          useStore.getState().refreshPanel(side);
+                          useStore.getState().showOperationStatus(`Directory '${name}' created successfully.`);
+                      } catch (err) {
+                          useStore.getState().setOperationError(`Create directory failed: ${err instanceof Error ? err.message : String(err)}`);
+                      }
+                  }
+              });
+          }
+      });
+      items.push({ label: "---", action: () => {} });
+      items.push({
+          label: "Paste (Cmd+V)",
+          action: () => store.pasteFiles(side),
+          disabled: !store.clipboard.items || store.clipboard.type !== 'files'
+      });
+      items.push({ label: "---", action: () => {} });
+      items.push({ label: "Refresh (F2)", action: () => { store.refreshPanel('left'); store.refreshPanel('right'); } });
+      showContextMenu(e.clientX, e.clientY, items);
   };
 
   const handleHeaderDragStart = (e: React.DragEvent, col: SortColumn) => {
@@ -782,7 +822,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
   return (
     <div
-      ref={containerRef} data-side={side} onClick={() => setActiveSide(side)} onContextMenu={handlePanelContextMenu} onDragOver={(e) => { e.preventDefault(); if (isDraggingFiles) { e.dataTransfer.dropEffect = e.altKey ? "copy" : "move"; setPanelDragOver(true); } }} onDragLeave={() => setPanelDragOver(false)} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setPanelDragOver(false); setIsDraggingFiles(false); dropRef.current(e, { name: '..', is_dir: false, size: 0 } as any); }}
+      ref={containerRef} data-side={side} onClick={() => setActiveSide(side)} onContextMenu={handlePanelContextMenu} onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = e.altKey ? "copy" : "move"; setPanelDragOver(true); }} onDragLeave={() => setPanelDragOver(false)} onDrop={(e) => { e.preventDefault(); e.stopPropagation(); setPanelDragOver(false); setIsDraggingFiles(false); dropRef.current(e, { name: '..', is_dir: false, size: 0 } as any); }}
       className={clsx("flex-1 flex flex-col h-full overflow-hidden transition-all duration-200 border-r border-[var(--ke-border)] last:border-r-0 relative group", isActive ? "bg-[var(--ke-bg)]" : "bg-[var(--ke-bg)]/30 saturate-50 opacity-70", panelDragOver && "border-[var(--ke-accent)] border-2")}
       style={{ gridTemplateColumns: gridTemplate, fontSize: `${preferences.appearance.fontSize}px` } as React.CSSProperties}
     >
