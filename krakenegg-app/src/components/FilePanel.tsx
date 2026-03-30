@@ -459,7 +459,9 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   const handleDragEnd = useCallback(() => {
     setIsDraggingFiles(false);
     setDragTargetIndex(null);
-    _dragData = null;
+    // Don't clear _dragData here — drop handler on the OTHER panel needs it.
+    // It fires after dragEnd in Tauri's webview. Clear after a delay.
+    setTimeout(() => { _dragData = null; }, 500);
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent, index: number, file: FileInfo) => {
