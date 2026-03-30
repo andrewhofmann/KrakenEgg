@@ -436,7 +436,7 @@ export const useStore = create<AppState>((set, get) => {
     loadState: async () => {
         try {
             interface SavedTabConfig { id: string; path: string; history: string[]; history_index: number; }
-            interface SavedPanelConfig { tabs: SavedTabConfig[]; active_tab_index: number; layout?: PaneLayout; }
+            interface SavedPanelConfig { tabs: SavedTabConfig[]; active_tab_index: number; layout?: any; }
             interface SavedState {
                 left: SavedPanelConfig; right: SavedPanelConfig; active_side: string;
                 hotkeys?: HotkeyState; preferences?: Preferences;

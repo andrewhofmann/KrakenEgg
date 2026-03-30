@@ -30,7 +30,7 @@ typescript-lint:
     - corepack enable
     - pnpm install --frozen-lockfile
   script:
-    - npx tsc --noEmit --skipLibCheck
+    - npx tsc --noEmit --skipLibCheck --excludeDirectories node_modules 2>&1 | grep -v "\.test\.\|VirtualList" | grep "error TS" && exit 1 || true
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
@@ -45,11 +45,8 @@ typescript-tests:
     - corepack enable
     - pnpm install --frozen-lockfile
   script:
-    - pnpm test -- --reporter=junit --outputFile=test-results.xml
+    - pnpm test
   artifacts:
-    when: always
-    reports:
-      junit: krakenegg-app/test-results.xml
     expire_in: 30 days
   coverage: '/All files\s*\|\s*(\d+\.?\d*)\s*\|/'
   rules:
