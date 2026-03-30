@@ -370,17 +370,22 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     handleDoubleClick(e, file);
   }, [handleDoubleClick]);
 
-  // STABLE click handler — detects double-click internally via timing
+  // STABLE click handler — detects double-click and slow-double-click (rename)
+  const renameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const handleFileClick = useCallback((e: React.MouseEvent, index: number) => {
     const store = useStore.getState();
     store.setActiveSide(side);
     const tab = store[side].tabs[store[side].activeTabIndex];
     if (!tab) return;
 
+    // Cancel any pending rename trigger
+    if (renameTimerRef.current) { clearTimeout(renameTimerRef.current); renameTimerRef.current = null; }
+
     const now = Date.now();
     const lastClick = lastClickRef.current;
 
-    // Detect double-click: same index, within 400ms
+    // Detect fast double-click: same index, within 400ms → navigate/open
     if (lastClick && lastClick.index === index && (now - lastClick.time) < 400) {
       lastClickRef.current = null;
       if (clickTimerRef.current) { clearTimeout(clickTimerRef.current); clickTimerRef.current = null; }
@@ -389,6 +394,20 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       if (file) handleDoubleClick(e, file);
       return;
     }
+
+    // Detect slow double-click: same index, 500ms-2000ms, already selected, no modifier → inline rename
+    if (lastClick && lastClick.index === index && (now - lastClick.time) >= 500 && (now - lastClick.time) < 2000
+        && !e.shiftKey && !e.metaKey && !e.ctrlKey && index >= 0) {
+      const file = processedFiles[index];
+      if (file && file.name !== '..' && tab.cursorIndex === index) {
+        lastClickRef.current = null;
+        if (clickTimerRef.current) { clearTimeout(clickTimerRef.current); clickTimerRef.current = null; }
+        pendingClickRef.current = null;
+        setRenamingIndex(index);
+        return;
+      }
+    }
+
     lastClickRef.current = { index, time: now };
 
     store.setCursor(side, index);
