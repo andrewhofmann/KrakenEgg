@@ -60,23 +60,18 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
         className={clsx("truncate", className)}
         style={style}
         onMouseEnter={show}
-        // Don't hide on source mouseLeave — the portal covers the source,
-        // so only the portal's mouseLeave should dismiss.
-        onMouseLeave={() => {
-          // Only hide if portal isn't showing yet (still in timer delay)
-          if (!snap) hide();
-        }}
+        onMouseLeave={hide}
       >
         {text}
       </div>
       {snap && createPortal(
         <div
-          onMouseLeave={hide}
           style={{
             position: 'fixed',
             top: snap.top,
             left: snap.left,
             height: snap.height,
+            pointerEvents: 'none',
             display: 'flex',
             alignItems: 'center',
             whiteSpace: 'nowrap',

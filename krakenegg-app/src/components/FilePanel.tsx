@@ -809,6 +809,13 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       const oldPath = tab.path === "/" ? `/${oldName}` : `${tab.path}/${oldName}`;
       const newPath = tab.path === "/" ? `/${newName}` : `${tab.path}/${newName}`;
       await invoke('rename_item', { oldPath, newPath });
+      // Set previousFolderName to the new name so cursor lands on the renamed file after refresh
+      useStore.setState((s) => {
+        const tabs = [...s[side].tabs];
+        const ti = s[side].activeTabIndex;
+        if (tabs[ti]) tabs[ti] = { ...tabs[ti], previousFolderName: newName };
+        return { [side]: { ...s[side], tabs } };
+      });
       useStore.getState().refreshPanel(side);
       useStore.getState().showOperationStatus(`Renamed successfully.`);
     } catch (err) {
