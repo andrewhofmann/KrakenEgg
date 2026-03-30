@@ -153,7 +153,7 @@ export const FileRow = memo(({
       onDoubleClick={(e) => { e.stopPropagation(); if (!isRenaming) onDoubleClick(e, file); }}
       onContextMenu={(e) => { if (!isRenaming) onContextMenu(e, file, index); }}
       draggable={!isRenaming}
-      onDragStart={(e) => onDragStart(e, file, index)}
+      onDragStart={(e) => { e.stopPropagation(); onDragStart(e, file, index); }}
       onDragEnd={onDragEnd}
       onDragOver={(e) => onDragOver(e, index, file)}
       onDragLeave={(e) => onDragLeave(e, file)}

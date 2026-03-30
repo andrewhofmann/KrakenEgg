@@ -446,6 +446,14 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     _dragData = { sources: paths, sourceSide: side };
     e.dataTransfer.setData("text/plain", paths.join('\n'));
     e.dataTransfer.effectAllowed = "copyMove";
+
+    // Custom drag image — show file count badge instead of broken table layout
+    const dragEl = document.createElement('div');
+    dragEl.style.cssText = 'position:absolute;top:-1000px;left:-1000px;padding:6px 12px;border-radius:6px;font-size:13px;font-family:system-ui;color:#fff;background:#007AFF;white-space:nowrap;pointer-events:none;';
+    dragEl.textContent = paths.length === 1 ? file.name : `${paths.length} items`;
+    document.body.appendChild(dragEl);
+    e.dataTransfer.setDragImage(dragEl, 0, 0);
+    setTimeout(() => document.body.removeChild(dragEl), 0);
   }, [side]);
 
   const handleDragEnd = useCallback(() => {
