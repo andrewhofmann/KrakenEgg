@@ -298,8 +298,7 @@ export function useKeyboard() {
                   .replace(/\./g, '\\.')
                   .replace(/\*/g, '.*')
                   .replace(/\?/g, '.')
-                  .replace(/\{([^}]+)\}/g, '($1)')
-                  .replace(/,/g, '|');
+                  .replace(/\{([^}]+)\}/g, (_m, p1: string) => '(' + p1.replace(/,/g, '|') + ')');
                 try {
                   const regex = new RegExp(`^${regexStr}$`, 'i');
                   // Use visibleFiles (processedFiles) — selection indices must match the sorted/filtered view

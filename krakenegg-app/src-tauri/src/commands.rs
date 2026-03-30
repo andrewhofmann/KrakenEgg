@@ -899,6 +899,7 @@ pub async fn preview_file(#[allow(unused)] path: String) -> Result<(), String> {
         // Extract from archive if needed
         let actual_path = if let Some((archive_path, internal_path)) = parse_archive_path(&path) {
             let temp_dir = std::env::temp_dir().join("kraken_preview");
+            let _ = fs::remove_dir_all(&temp_dir); // Clean up previous previews
             fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
             extract_entry(&archive_path, &internal_path, &temp_dir, |_| {}, |_| Ok(true))
                 .map_err(|e| e.to_string())?;
@@ -927,6 +928,7 @@ pub async fn preview_file(#[allow(unused)] path: String) -> Result<(), String> {
 pub async fn extract_to_temp(path: String) -> Result<String, String> {
     if let Some((archive_path, internal_path)) = parse_archive_path(&path) {
         let temp_dir = std::env::temp_dir().join("kraken_viewer");
+        let _ = fs::remove_dir_all(&temp_dir); // Clean up previous extractions
         fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
         extract_entry(&archive_path, &internal_path, &temp_dir, |_| {}, |_| Ok(true))
             .map_err(|e| e.to_string())?;
@@ -1153,8 +1155,11 @@ pub async fn search_files(query: String, path: String, search_content: bool, sea
 pub async fn open_with_default(path: String) -> Result<(), String> {
     // If file is inside an archive, extract to temp and open the temp file
     let actual_path = if let Some((archive_path, internal_path)) = parse_archive_path(&path) {
-        let temp_dir = std::env::temp_dir().join("kraken_open");
-        fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
+        // Clean up old temp extractions before creating new one
+        let base = std::env::temp_dir().join("kraken_open");
+        let _ = fs::remove_dir_all(&base);
+        fs::create_dir_all(&base).map_err(|e| e.to_string())?;
+        let temp_dir = base;
         extract_entry(&archive_path, &internal_path, &temp_dir, |_| {}, |_| Ok(true))
             .map_err(|e| e.to_string())?;
         let file_name = internal_path.file_name().unwrap_or_default();
