@@ -371,7 +371,9 @@ export const useStore = create<AppState>((set, get) => {
               try {
                 showOperationStatus(`Compressing to '${finalDestPath}'...`);
                 await invoke('compress_files_with_progress', { id: opId, sources, destPath: finalDestPath });
-                get().refreshPaths([destTab.path]);
+                // Refresh both panels — dest might have changed since dialog opened
+                get().refreshPanel('left');
+                get().refreshPanel('right');
                 hideOperationStatus();
               } catch (err) { setOperationError(`Compression failed: ${err}`); } 
               finally { unlisten(); set((state) => updateActiveTab(state, side, () => ({ loading: false }))); useStore.setState(s => ({ operationStatus: { ...s.operationStatus, progress: null } })); }

@@ -91,8 +91,13 @@ function App() {
                 store.requestInput("New Folder", "Name:", "New Folder", async (name) => {
                     if (name) {
                         const p = currentPath === "/" ? `/${name}` : `${currentPath}/${name}`;
-                        await invoke('create_directory', { path: p });
-                        store.refreshPanel(side);
+                        try {
+                            await invoke('create_directory', { path: p });
+                            useStore.getState().refreshPanel(side);
+                            useStore.getState().showOperationStatus(`Folder '${name}' created.`);
+                        } catch (err) {
+                            useStore.getState().setOperationError(`Create folder failed: ${err}`);
+                        }
                     }
                 });
                 break;

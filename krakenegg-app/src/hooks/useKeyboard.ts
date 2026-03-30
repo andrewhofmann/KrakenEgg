@@ -175,26 +175,25 @@ export function useKeyboard() {
               (name) => { if (name) createNewFile(activeSide, name); }
             );
             break;
-          case 'new_folder':
-            requestInput(
-              "New Folder",
-              "Enter folder name:",
-              "New Folder",
-              async (name) => {
-                  if (name) {
-                      const path = joinPath(activeTab.path, name);
-                      try {
-                        showOperationStatus(`Creating directory '${name}'...`);
-                        await invoke('create_directory', { path });
-                        refreshPanel(activeSide);
-                        showOperationStatus(`Directory '${name}' created successfully.`);
-                      } catch (err) {
-                        setOperationError(`Create directory failed: ${err}`);
-                      }
-                  }
-              }
-            );
+          case 'new_folder': {
+            const _side = activeSide;
+            const _path = activeTab.path;
+            requestInput("New Folder", "Enter folder name:", "New Folder", async (name) => {
+                if (name) {
+                    const s = useStore.getState();
+                    const dirPath = joinPath(_path, name);
+                    try {
+                      s.showOperationStatus(`Creating directory '${name}'...`);
+                      await invoke('create_directory', { path: dirPath });
+                      useStore.getState().refreshPanel(_side);
+                      useStore.getState().showOperationStatus(`Directory '${name}' created successfully.`);
+                    } catch (err) {
+                      useStore.getState().setOperationError(`Create directory failed: ${err}`);
+                    }
+                }
+            });
             break;
+          }
           case 'copy':
             copySelectedFiles(activeSide);
             break;
@@ -210,21 +209,21 @@ export function useKeyboard() {
           case 'rename':
             const currentFile = cursorFile;
             if (!currentFile || currentFile.name === "..") return;
-            requestInput(
-              "Rename Item",
-              `Enter new name for "${currentFile.name}":`,
-              currentFile.name,
+            const _side = activeSide;
+            const _tabPath = activeTab.path;
+            const _fileName = currentFile.name;
+            requestInput("Rename Item", `Enter new name for "${_fileName}":`, _fileName,
               async (newName) => {
-                  if (newName && newName !== currentFile.name) {
-                      const oldPath = joinPath(activeTab.path, currentFile.name);
-                      const newPath = joinPath(activeTab.path, newName);
-                       try {
-                          showOperationStatus(`Renaming '${currentFile.name}' to '${newName}'...`);
+                  if (newName && newName !== _fileName) {
+                      const oldPath = joinPath(_tabPath, _fileName);
+                      const newPath = joinPath(_tabPath, newName);
+                      try {
+                          useStore.getState().showOperationStatus(`Renaming '${_fileName}' to '${newName}'...`);
                           await invoke('rename_item', { oldPath, newPath });
-                          refreshPanel(activeSide);
-                          showOperationStatus(`Renamed '${currentFile.name}' to '${newName}' successfully.`);
+                          useStore.getState().refreshPanel(_side);
+                          useStore.getState().showOperationStatus(`Renamed '${_fileName}' to '${newName}' successfully.`);
                       } catch (err) {
-                          setOperationError(`Rename failed: ${err}`);
+                          useStore.getState().setOperationError(`Rename failed: ${err}`);
                       }
                   }
               }
