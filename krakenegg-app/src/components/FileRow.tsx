@@ -1,6 +1,6 @@
 import { memo, useState, useRef, useEffect } from "react";
 import clsx from "clsx";
-import { FileInfo, SortColumn } from "../store";
+import { FileInfo, SortColumn, useStore } from "../store";
 import { SmartTooltip } from "./SmartTooltip";
 import { formatSize, formatDate, getExtension } from "../utils/format";
 import { getFileIcon, getFileIconColor } from "../utils/fileIcons";
@@ -34,6 +34,7 @@ export const FileRow = memo(({
   onClick, onDoubleClick, onContextMenu, onDragStart, onDragEnd, onDragOver, onDragLeave, onDrop,
   onRenameSubmit, onRenameCancel
 }: FileRowProps) => {
+  const showGridLines = useStore(s => s.preferences.appearance.showGridLines);
   const [renameValue, setRenameValue] = useState(file.name);
   const renameInputRef = useRef<HTMLInputElement>(null);
 
@@ -158,7 +159,8 @@ export const FileRow = memo(({
       onDragLeave={(e) => onDragLeave(e, file)}
       onDrop={(e) => onDrop(e, file)}
       className={clsx(
-        "transition-colors font-normal select-none leading-none items-center border-b border-[var(--ke-border-subtle)]",
+        "transition-colors font-normal select-none leading-none items-center",
+        showGridLines && "border-b border-[var(--ke-border-subtle)]",
         isSelected && isActive
           ? "bg-[var(--ke-selection)] text-[var(--ke-selection-text)]"
           : isActive ? "hover:bg-[var(--ke-bg-hover)]" : "opacity-70",

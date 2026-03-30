@@ -207,8 +207,11 @@ export const useStore = create<AppState>((set, get) => {
       }
       // Clamp cursor to valid range when file count changes (e.g. after delete)
       const maxIdx = processed.length - 1;
-      if (tab.cursorIndex > maxIdx && !update.cursorIndex) {
-        update.cursorIndex = Math.max(0, maxIdx);
+      if (processed.length > 0 && tab.cursorIndex > maxIdx && !update.cursorIndex) {
+        update.cursorIndex = maxIdx;
+      } else if (processed.length === 0 && !update.cursorIndex) {
+        update.cursorIndex = 0;
+        update.selection = [];
       }
       // Filter out stale selection indices
       if (tab.selection.length > 0) {
