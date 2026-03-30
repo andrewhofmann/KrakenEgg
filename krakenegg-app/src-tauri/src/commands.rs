@@ -893,7 +893,7 @@ pub async fn create_directory(path: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn preview_file(path: String) -> Result<(), String> {
+pub async fn preview_file(#[allow(unused)] path: String) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
         // Extract from archive if needed
