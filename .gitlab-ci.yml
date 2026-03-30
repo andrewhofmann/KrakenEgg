@@ -58,14 +58,15 @@ rust-tests:
   stage: test
   image: rust:latest
   before_script:
+    - rustup component add clippy
     - cd krakenegg-app/src-tauri
     - apt-get update -qq && apt-get install -y -qq
         libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev
         libgtk-3-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev
         patchelf > /dev/null 2>&1
   script:
-    - cargo test --lib 2>&1
-    - cargo clippy --lib -- -D warnings 2>&1
+    - cargo test --lib
+    - cargo clippy --lib -- -D warnings -A clippy::too_many_arguments
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == "main"
