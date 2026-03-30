@@ -568,16 +568,17 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     items.push({
         label: "New Folder (F7)",
         action: () => {
-            requestInput("New Folder", "Enter folder name:", "New Folder", async (name) => {
+            const _path = activeTab.path;
+            useStore.getState().requestInput("New Folder", "Enter folder name:", "New Folder", async (name) => {
                 if (name) {
                     try {
-                      showOperationStatus(`Creating directory '${name}'...`);
-                      const dirPath = activeTab.path === "/" ? `/${name}` : `${activeTab.path}/${name}`;
+                      useStore.getState().showOperationStatus(`Creating directory '${name}'...`);
+                      const dirPath = _path === "/" ? `/${name}` : `${_path}/${name}`;
                       await invoke('create_directory', { path: dirPath });
-                      refreshPanel(side);
-                      showOperationStatus(`Directory '${name}' created successfully.`);
+                      useStore.getState().refreshPanel(side);
+                      useStore.getState().showOperationStatus(`Directory '${name}' created successfully.`);
                     } catch (err) {
-                      setOperationError(`Create directory failed: ${err}`);
+                      useStore.getState().setOperationError(`Create directory failed: ${err}`);
                     }
                 }
             });

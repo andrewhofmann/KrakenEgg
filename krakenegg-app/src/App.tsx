@@ -134,12 +134,16 @@ function App() {
                     const visible = getProcessedFiles(rnTab.files, rnPanel.layout, rnTab.filterQuery, store.preferences.general.showHiddenFiles);
                     const file = visible[rnTab.cursorIndex];
                     if (file && file.name !== '..') {
-                        store.requestInput("Rename", `New name for "${file.name}":`, file.name, async (newName) => {
-                            if (newName && newName !== file.name) {
-                                const oldPath = currentPath === '/' ? `/${file.name}` : `${currentPath}/${file.name}`;
-                                const newPath = currentPath === '/' ? `/${newName}` : `${currentPath}/${newName}`;
-                                await invoke('rename_item', { oldPath, newPath });
-                                store.refreshPanel(side);
+                        const _rnPath = currentPath;
+                        const _rnName = file.name;
+                        store.requestInput("Rename", `New name for "${_rnName}":`, _rnName, async (newName) => {
+                            if (newName && newName !== _rnName) {
+                                const oldPath = _rnPath === '/' ? `/${_rnName}` : `${_rnPath}/${_rnName}`;
+                                const newPath = _rnPath === '/' ? `/${newName}` : `${_rnPath}/${newName}`;
+                                try {
+                                    await invoke('rename_item', { oldPath, newPath });
+                                    useStore.getState().refreshPanel(side);
+                                } catch (err) { useStore.getState().setOperationError(`Rename failed: ${err}`); }
                             }
                         });
                     }

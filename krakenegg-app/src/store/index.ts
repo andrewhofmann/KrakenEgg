@@ -552,7 +552,7 @@ export const useStore = create<AppState>((set, get) => {
         async (_option) => {
           try {
             const opId = Math.random().toString(36).substring(7);
-            currentAppState.showOperationStatus(`${isCopy ? "Copying" : "Moving"} ${sources.length} items...`);
+            get().showOperationStatus(`${isCopy ? "Copying" : "Moving"} ${sources.length} items...`);
             if (isCopy) await invoke('copy_items_with_progress', { id: opId, sources, dest });
             else await invoke('move_items_with_progress', { id: opId, sources, dest });
 
