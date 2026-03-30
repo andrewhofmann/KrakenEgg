@@ -31,14 +31,14 @@ pub fn run() {
             Ok(())
         })
         .menu(|handle| {
-            let app_name = "KrakenEgg";
-            
+            let app_name = "KrakenEgg Explorer";
+
             // 1. App Menu (macOS specific mostly)
             let app_menu = Submenu::new(handle, app_name, true)?;
-            app_menu.append(&PredefinedMenuItem::about(handle, Some("About KrakenEgg"), Some(AboutMetadata {
+            app_menu.append(&PredefinedMenuItem::about(handle, Some("About KrakenEgg Explorer"), Some(AboutMetadata {
                 version: Some("0.2.0".to_string()),
                 authors: Some(vec!["Andrew Hofmann".to_string()]),
-                comments: Some("A modern dual-pane file manager for macOS".to_string()),
+                comments: Some("A modern dual-pane file explorer for macOS".to_string()),
                 ..Default::default()
             }))?)?;
             app_menu.append(&PredefinedMenuItem::separator(handle)?)?;

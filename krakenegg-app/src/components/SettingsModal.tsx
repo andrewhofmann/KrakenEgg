@@ -224,7 +224,7 @@ export const SettingsModal = () => {
             <NavItem id="layouts" label="Layouts" icon={Layout} />
           </div>
           <div className="text-[10px] px-2 space-y-0.5" style={{ color: 'var(--ke-text-disabled)' }}>
-            <div>KrakenEgg v0.2.0</div>
+            <div>KrakenEgg Explorer v0.2.0</div>
             <div>by Andrew Hofmann</div>
           </div>
         </div>

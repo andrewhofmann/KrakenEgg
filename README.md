@@ -1,6 +1,6 @@
-# KrakenEgg
+# KrakenEgg Explorer
 
-A modern, cross-platform dual-pane file manager built for macOS, inspired by Total Commander and Finder.
+A modern, cross-platform dual-pane file explorer built for macOS, inspired by Total Commander and Finder.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-macOS-lightgrey.svg)

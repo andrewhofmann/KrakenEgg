@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "krakenegg-app",
+  "productName": "KrakenEgg Explorer",
   "version": "0.2.0",
-  "identifier": "com.andrew.krakenegg-app",
+  "identifier": "com.andrew.krakenegg-explorer",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "krakenegg-app",
+        "title": "KrakenEgg Explorer",
         "width": 800,
         "height": 600
       }
