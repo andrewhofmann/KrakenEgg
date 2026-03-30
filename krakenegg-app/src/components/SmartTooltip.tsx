@@ -6,20 +6,29 @@ interface SmartTooltipProps {
   text: string;
   className?: string;
   style?: React.CSSProperties;
-  isActive?: boolean;
 }
 
 export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
   const [show, setShow] = useState(false);
-  const [coords, setCoords] = useState({ top: 0, left: 0 });
+  const [pos, setPos] = useState({ top: 0, left: 0, fontSize: '', lineHeight: '', fontFamily: '', fontWeight: '', letterSpacing: '', height: 0 });
   const ref = useRef<HTMLDivElement>(null);
 
   const handleMouseEnter = () => {
     if (ref.current && ref.current.scrollWidth > ref.current.clientWidth) {
       const rect = ref.current.getBoundingClientRect();
+      const computed = window.getComputedStyle(ref.current);
       // Clamp left to prevent tooltip from going off-screen right
-      const maxLeft = window.innerWidth - Math.min(rect.width + 20, 500);
-      setCoords({ top: rect.top, left: Math.min(rect.left, Math.max(0, maxLeft)) });
+      const maxLeft = window.innerWidth - Math.min(rect.width + 40, 600);
+      setPos({
+        top: rect.top,
+        left: Math.min(rect.left, Math.max(0, maxLeft)),
+        fontSize: computed.fontSize,
+        lineHeight: computed.lineHeight,
+        fontFamily: computed.fontFamily,
+        fontWeight: computed.fontWeight,
+        letterSpacing: computed.letterSpacing,
+        height: rect.height,
+      });
       setShow(true);
     }
   };
@@ -37,14 +46,24 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
       </div>
       {show && createPortal(
         <div
-          className="fixed z-[1000] text-[13px] pointer-events-none px-1.5 py-[1px] rounded max-w-[500px] truncate"
+          className="fixed z-[1000] pointer-events-none whitespace-nowrap"
           style={{
-              top: coords.top,
-              left: coords.left,
-              minWidth: ref.current?.getBoundingClientRect().width,
+              top: pos.top,
+              left: pos.left,
+              height: pos.height,
+              fontSize: pos.fontSize,
+              lineHeight: pos.lineHeight,
+              fontFamily: pos.fontFamily,
+              fontWeight: pos.fontWeight,
+              letterSpacing: pos.letterSpacing,
+              display: 'flex',
+              alignItems: 'center',
+              paddingLeft: 0,
+              paddingRight: '8px',
               backgroundColor: 'var(--ke-bg-elevated)',
               color: 'var(--ke-text)',
               border: '1px solid var(--ke-border)',
+              borderRadius: '4px',
               boxShadow: 'var(--ke-shadow-sm)',
           }}
         >
