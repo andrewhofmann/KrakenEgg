@@ -18,13 +18,11 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
   const [snap, setSnap] = useState<SnapStyles | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isHovering = useRef(false);
 
-  const handleEnter = useCallback(() => {
-    isHovering.current = true;
-    if (!ref.current || ref.current.scrollWidth <= ref.current.clientWidth) return;
+  const show = useCallback(() => {
+    if (showTimer.current) clearTimeout(showTimer.current);
     showTimer.current = setTimeout(() => {
-      if (!isHovering.current || !ref.current) return;
+      if (!ref.current || ref.current.scrollWidth <= ref.current.clientWidth) return;
       const r = ref.current.getBoundingClientRect();
       const cs = window.getComputedStyle(ref.current);
       setSnap({
@@ -33,11 +31,10 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
         fontWeight: cs.fontWeight, lineHeight: cs.lineHeight,
         letterSpacing: cs.letterSpacing, color: cs.color,
       });
-    }, 300);
+    }, 400);
   }, []);
 
-  const handleLeave = useCallback(() => {
-    isHovering.current = false;
+  const hide = useCallback(() => {
     if (showTimer.current) { clearTimeout(showTimer.current); showTimer.current = null; }
     setSnap(null);
   }, []);
@@ -48,14 +45,19 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
         ref={ref}
         className={clsx("truncate", className)}
         style={style}
-        onMouseEnter={handleEnter}
-        onMouseLeave={handleLeave}
+        onMouseEnter={show}
+        // Don't hide on source mouseLeave — the portal covers the source,
+        // so only the portal's mouseLeave should dismiss.
+        onMouseLeave={() => {
+          // Only hide if portal isn't showing yet (still in timer delay)
+          if (!snap) hide();
+        }}
       >
         {text}
       </div>
       {snap && createPortal(
         <div
-          onMouseLeave={handleLeave}
+          onMouseLeave={hide}
           style={{
             position: 'fixed',
             top: snap.top,
@@ -73,8 +75,8 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
             color: snap.color,
             paddingRight: '10px',
             backgroundColor: 'var(--ke-bg-elevated)',
-            borderRadius: '3px',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+            borderRadius: '2px',
+            boxShadow: '0 1px 8px rgba(0,0,0,0.2)',
           }}
         >
           {text}
