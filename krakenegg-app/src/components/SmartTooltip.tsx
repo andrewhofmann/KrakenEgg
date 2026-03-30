@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import clsx from 'clsx';
 
@@ -38,6 +38,20 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
     if (showTimer.current) { clearTimeout(showTimer.current); showTimer.current = null; }
     setSnap(null);
   }, []);
+
+  // Dismiss on scroll, keyboard, or click anywhere
+  useEffect(() => {
+    if (!snap) return;
+    const dismiss = () => hide();
+    window.addEventListener('scroll', dismiss, true);
+    window.addEventListener('keydown', dismiss, true);
+    window.addEventListener('mousedown', dismiss, true);
+    return () => {
+      window.removeEventListener('scroll', dismiss, true);
+      window.removeEventListener('keydown', dismiss, true);
+      window.removeEventListener('mousedown', dismiss, true);
+    };
+  }, [snap, hide]);
 
   return (
     <>
