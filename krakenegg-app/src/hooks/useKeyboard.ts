@@ -122,6 +122,7 @@ export function useKeyboard() {
       const activeTab = state[activeSide].tabs[state[activeSide].activeTabIndex];
 
       if (!activeTab) return;
+      if (activeTab.loading) return; // Don't navigate while directory is loading
 
       // Compute processedFiles ONCE — cursor indices refer to this sorted/filtered list
       const _showHidden = state.preferences.general.showHiddenFiles;
@@ -148,9 +149,16 @@ export function useKeyboard() {
           case 'go_forward':
             goForward(activeSide);
             break;
-          case 'open_search':
-            triggerFilterFocus(activeSide);
+          case 'open_search': {
+            // Toggle: if filter is already visible, close it; otherwise open
+            const tab = state[activeSide].tabs[state[activeSide].activeTabIndex];
+            if (tab?.showFilterWidget) {
+              state.hideFilterWidget(activeSide);
+            } else {
+              triggerFilterFocus(activeSide);
+            }
             break;
+          }
           case 'copy_to_opposite':
             copyToOppositePanel(activeSide);
             break;
