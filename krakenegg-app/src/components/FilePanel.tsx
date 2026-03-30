@@ -259,7 +259,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
-        if (context) context.font = '13px system-ui';
+        const fontSize = useStore.getState().preferences.appearance.fontSize || 13;
+        if (context) context.font = `${fontSize}px system-ui`;
         
         let maxContentWidth = MIN_WIDTHS[col];
         
