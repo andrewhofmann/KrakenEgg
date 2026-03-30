@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import clsx from 'clsx';
 
 interface SmartTooltipProps {
@@ -8,36 +9,65 @@ interface SmartTooltipProps {
 }
 
 export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
-  const [expanded, setExpanded] = useState(false);
+  const [show, setShow] = useState(false);
+  const [rect, setRect] = useState<DOMRect | null>(null);
   const ref = useRef<HTMLDivElement>(null);
-  const isTruncated = () => ref.current ? ref.current.scrollWidth > ref.current.clientWidth : false;
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleEnter = useCallback(() => {
+    if (ref.current && ref.current.scrollWidth > ref.current.clientWidth) {
+      setRect(ref.current.getBoundingClientRect());
+      // Small delay to prevent flicker on quick mouse passes
+      timerRef.current = setTimeout(() => setShow(true), 150);
+    }
+  }, []);
+
+  const handleLeave = useCallback(() => {
+    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+    setShow(false);
+  }, []);
 
   return (
-    <div className="relative" style={{ minWidth: 0 }}>
+    <>
       <div
         ref={ref}
         className={clsx("truncate", className)}
         style={style}
-        onMouseEnter={() => { if (isTruncated()) setExpanded(true); }}
-        onMouseLeave={() => setExpanded(false)}
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
       >
         {text}
       </div>
-      {expanded && (
+      {show && rect && createPortal(
         <div
-          className={clsx("absolute top-0 left-0 whitespace-nowrap z-30", className)}
+          onMouseEnter={() => {}}
+          onMouseLeave={handleLeave}
           style={{
-            ...style,
+            position: 'fixed',
+            top: rect.top,
+            left: rect.left,
+            height: rect.height,
+            display: 'flex',
+            alignItems: 'center',
+            whiteSpace: 'nowrap',
+            zIndex: 1000,
+            fontSize: 'inherit',
+            fontFamily: 'inherit',
+            fontWeight: 'inherit',
+            lineHeight: 'inherit',
+            letterSpacing: 'inherit',
+            paddingRight: '10px',
             backgroundColor: 'var(--ke-bg-elevated)',
-            paddingRight: '8px',
-            borderRadius: '2px',
-            boxShadow: '4px 0 12px rgba(0,0,0,0.2)',
+            color: 'var(--ke-text)',
+            borderRadius: '3px',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
+            pointerEvents: 'auto',
           }}
-          onMouseLeave={() => setExpanded(false)}
         >
           {text}
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 };
