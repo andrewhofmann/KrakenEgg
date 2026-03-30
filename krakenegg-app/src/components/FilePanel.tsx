@@ -458,8 +458,15 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
         dragging = true;
         _dragState = { sources: paths, sourceSide: side, fileName: file.name, active: true, ghostEl: null };
         const ghost = document.createElement('div');
-        ghost.style.cssText = 'position:fixed;z-index:9999;padding:5px 12px;border-radius:6px;font-size:12px;font-family:system-ui;color:#fff;background:#007AFF;pointer-events:none;white-space:nowrap;opacity:0.9;';
-        ghost.textContent = paths.length === 1 ? file.name : `${paths.length} items`;
+        ghost.style.cssText = 'position:fixed;z-index:9999;display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:6px;font-size:12px;font-family:system-ui;color:#fff;background:#007AFF;pointer-events:none;white-space:nowrap;opacity:0.9;';
+        const label = document.createElement('span');
+        label.textContent = paths.length === 1 ? file.name : `${paths.length} items`;
+        const badge = document.createElement('span');
+        badge.style.cssText = 'font-size:10px;padding:1px 5px;border-radius:4px;background:rgba(255,255,255,0.25);font-weight:600;display:none;';
+        badge.textContent = '⌥ Copy';
+        badge.id = '__ke_drag_badge';
+        ghost.appendChild(label);
+        ghost.appendChild(badge);
         document.body.appendChild(ghost);
         _dragState.ghostEl = ghost;
         document.body.style.cursor = 'grabbing';
@@ -467,6 +474,9 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
       if (dragging && _dragState?.ghostEl) {
         _dragState.ghostEl.style.left = `${me.clientX + 12}px`;
         _dragState.ghostEl.style.top = `${me.clientY + 12}px`;
+        // Show/hide copy badge based on Alt/Option key
+        const badge = document.getElementById('__ke_drag_badge');
+        if (badge) badge.style.display = me.altKey ? 'inline' : 'none';
         // Highlight drop target panel
         const otherSide = side === 'left' ? 'right' : 'left';
         const otherPanel = document.querySelector(`[data-side="${otherSide}"]`);
