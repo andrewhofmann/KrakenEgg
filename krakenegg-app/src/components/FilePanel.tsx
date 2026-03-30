@@ -39,8 +39,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     copySelectedFiles, cutSelectedFiles, pasteFiles,
     copyToOppositePanel, moveToOppositePanel,
     addToHotlist, removeFromHotlist,
-    requestConfirmation, requestInput,
-    showOperationStatus, setOperationError,
+    requestInput,
   } = useStore((s) => s);
 
   const compressSelection = useStore((s) => s.archive.compressSelection);

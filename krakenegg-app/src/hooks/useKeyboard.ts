@@ -49,8 +49,6 @@ export function useKeyboard() {
         showEditor,
         requestConfirmation,
         refreshPanel,
-        showOperationStatus,
-        setOperationError,
         hotkeys, // Get hotkeys from store
         setActiveSide, // Corrected: use setActiveSide from state
         triggerFilterFocus,
@@ -243,7 +241,7 @@ export function useKeyboard() {
               const filePath = joinPath(activeTab.path, fileToView.name);
               showViewer(fileToView.name, filePath);
             } else if (fileToView && fileToView.is_dir) {
-              setOperationError("Cannot view a directory.");
+              state.setOperationError("Cannot view a directory.");
             }
             break;
           case 'edit_file':
@@ -252,7 +250,7 @@ export function useKeyboard() {
               const filePath = joinPath(activeTab.path, fileToEdit.name);
               showEditor(fileToEdit.name, filePath);
             } else if (fileToEdit && fileToEdit.is_dir) {
-              setOperationError("Cannot edit a directory.");
+              state.setOperationError("Cannot edit a directory.");
             }
             break;
           case 'compress_selection':
@@ -267,7 +265,7 @@ export function useKeyboard() {
                 () => state.archive.extractSelection(activeSide)
                 );
             } else {
-                setOperationError("Please select an archive file to extract.");
+                state.setOperationError("Please select an archive file to extract.");
             }
             break;
           case 'select_all': {
@@ -485,7 +483,7 @@ export function useKeyboard() {
               try {
                 await invoke('open_with_default', { path: filePath });
               } catch (err) {
-                setOperationError(`Failed to open: ${err}`);
+                state.setOperationError(`Failed to open: ${err}`);
               }
             }
           }

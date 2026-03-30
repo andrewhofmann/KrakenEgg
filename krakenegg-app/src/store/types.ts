@@ -159,6 +159,9 @@ export interface AppState {
   openMultiRename: (side: 'left' | 'right') => void;
   closeMultiRename: () => void;
 
+  // Filter
+  hideFilterWidget: (side: 'left' | 'right') => void;
+
   // History & Hotlist
   globalHistory: string[];
   hotlist: string[];
