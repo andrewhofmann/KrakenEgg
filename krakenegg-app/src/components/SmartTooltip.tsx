@@ -17,17 +17,19 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
     if (ref.current && ref.current.scrollWidth > ref.current.clientWidth) {
       const rect = ref.current.getBoundingClientRect();
       const computed = window.getComputedStyle(ref.current);
+      const padTop = parseFloat(computed.paddingTop) || 0;
+      const padLeft = parseFloat(computed.paddingLeft) || 0;
       // Clamp left to prevent tooltip from going off-screen right
       const maxLeft = window.innerWidth - Math.min(rect.width + 40, 600);
       setPos({
-        top: rect.top,
-        left: Math.min(rect.left, Math.max(0, maxLeft)),
+        top: rect.top + padTop,
+        left: Math.min(rect.left + padLeft, Math.max(0, maxLeft)),
         fontSize: computed.fontSize,
         lineHeight: computed.lineHeight,
         fontFamily: computed.fontFamily,
         fontWeight: computed.fontWeight,
         letterSpacing: computed.letterSpacing,
-        height: rect.height,
+        height: rect.height - padTop * 2,
       });
       setShow(true);
     }
@@ -58,8 +60,8 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
               letterSpacing: pos.letterSpacing,
               display: 'flex',
               alignItems: 'center',
-              paddingLeft: 0,
-              paddingRight: '8px',
+              padding: '0 8px 0 0',
+              margin: 0,
               backgroundColor: 'var(--ke-bg-elevated)',
               color: 'var(--ke-text)',
               border: '1px solid var(--ke-border)',
