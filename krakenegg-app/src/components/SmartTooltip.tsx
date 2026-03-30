@@ -8,23 +8,38 @@ interface SmartTooltipProps {
   style?: React.CSSProperties;
 }
 
+interface SnapStyles {
+  top: number; left: number; height: number;
+  fontSize: string; fontFamily: string; fontWeight: string;
+  lineHeight: string; letterSpacing: string; color: string;
+}
+
 export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
-  const [show, setShow] = useState(false);
-  const [rect, setRect] = useState<DOMRect | null>(null);
+  const [snap, setSnap] = useState<SnapStyles | null>(null);
   const ref = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isHovering = useRef(false);
 
   const handleEnter = useCallback(() => {
-    if (ref.current && ref.current.scrollWidth > ref.current.clientWidth) {
-      setRect(ref.current.getBoundingClientRect());
-      // Small delay to prevent flicker on quick mouse passes
-      timerRef.current = setTimeout(() => setShow(true), 150);
-    }
+    isHovering.current = true;
+    if (!ref.current || ref.current.scrollWidth <= ref.current.clientWidth) return;
+    showTimer.current = setTimeout(() => {
+      if (!isHovering.current || !ref.current) return;
+      const r = ref.current.getBoundingClientRect();
+      const cs = window.getComputedStyle(ref.current);
+      setSnap({
+        top: r.top, left: r.left, height: r.height,
+        fontSize: cs.fontSize, fontFamily: cs.fontFamily,
+        fontWeight: cs.fontWeight, lineHeight: cs.lineHeight,
+        letterSpacing: cs.letterSpacing, color: cs.color,
+      });
+    }, 300);
   }, []);
 
   const handleLeave = useCallback(() => {
-    if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
-    setShow(false);
+    isHovering.current = false;
+    if (showTimer.current) { clearTimeout(showTimer.current); showTimer.current = null; }
+    setSnap(null);
   }, []);
 
   return (
@@ -38,30 +53,28 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
       >
         {text}
       </div>
-      {show && rect && createPortal(
+      {snap && createPortal(
         <div
-          onMouseEnter={() => {}}
           onMouseLeave={handleLeave}
           style={{
             position: 'fixed',
-            top: rect.top,
-            left: rect.left,
-            height: rect.height,
+            top: snap.top,
+            left: snap.left,
+            height: snap.height,
             display: 'flex',
             alignItems: 'center',
             whiteSpace: 'nowrap',
             zIndex: 1000,
-            fontSize: 'inherit',
-            fontFamily: 'inherit',
-            fontWeight: 'inherit',
-            lineHeight: 'inherit',
-            letterSpacing: 'inherit',
+            fontSize: snap.fontSize,
+            fontFamily: snap.fontFamily,
+            fontWeight: snap.fontWeight,
+            lineHeight: snap.lineHeight,
+            letterSpacing: snap.letterSpacing,
+            color: snap.color,
             paddingRight: '10px',
             backgroundColor: 'var(--ke-bg-elevated)',
-            color: 'var(--ke-text)',
             borderRadius: '3px',
             boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
-            pointerEvents: 'auto',
           }}
         >
           {text}
