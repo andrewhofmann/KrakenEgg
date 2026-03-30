@@ -161,7 +161,7 @@ export const FileRow = memo(({
       )}
     >
       {columns.map(col => (
-          <div key={col} className="h-full overflow-hidden">
+          <div key={col} className="h-full overflow-visible">
               {renderCell(col)}
           </div>
       ))}

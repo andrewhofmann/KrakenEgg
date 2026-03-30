@@ -13,24 +13,31 @@ export const SmartTooltip = ({ text, className, style }: SmartTooltipProps) => {
   const isTruncated = () => ref.current ? ref.current.scrollWidth > ref.current.clientWidth : false;
 
   return (
-    <div
-      ref={ref}
-      className={clsx(expanded ? "whitespace-nowrap" : "truncate", className)}
-      style={{
-        ...style,
-        ...(expanded ? {
-          position: 'relative' as const,
-          zIndex: 20,
-          backgroundColor: 'var(--ke-bg-elevated)',
-          borderRadius: '2px',
-          paddingRight: '6px',
-          boxShadow: '4px 0 8px rgba(0,0,0,0.15)',
-        } : {}),
-      }}
-      onMouseEnter={() => { if (isTruncated()) setExpanded(true); }}
-      onMouseLeave={() => setExpanded(false)}
-    >
-      {text}
+    <div className="relative" style={{ minWidth: 0 }}>
+      <div
+        ref={ref}
+        className={clsx("truncate", className)}
+        style={style}
+        onMouseEnter={() => { if (isTruncated()) setExpanded(true); }}
+        onMouseLeave={() => setExpanded(false)}
+      >
+        {text}
+      </div>
+      {expanded && (
+        <div
+          className={clsx("absolute top-0 left-0 whitespace-nowrap z-30", className)}
+          style={{
+            ...style,
+            backgroundColor: 'var(--ke-bg-elevated)',
+            paddingRight: '8px',
+            borderRadius: '2px',
+            boxShadow: '4px 0 12px rgba(0,0,0,0.2)',
+          }}
+          onMouseLeave={() => setExpanded(false)}
+        >
+          {text}
+        </div>
+      )}
     </div>
   );
 };
