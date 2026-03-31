@@ -28,6 +28,7 @@
   --ke-bg-panel: rgba(30, 30, 32, 0.4);
   --ke-bg-secondary: rgba(40, 40, 45, 0.6);
   --ke-bg-elevated: rgba(44, 44, 46, 0.95);
+  --ke-bg-solid: #2c2c2e;
 
   --ke-bg-hover: rgba(255, 255, 255, 0.06);
   --ke-bg-active: rgba(255, 255, 255, 0.1);
@@ -67,6 +68,7 @@
   --ke-bg-panel: rgba(255, 255, 255, 0.85);
   --ke-bg-secondary: rgba(240, 240, 242, 0.9);
   --ke-bg-elevated: rgba(255, 255, 255, 0.98);
+  --ke-bg-solid: #FFFFFF;
 
   --ke-bg-hover: rgba(0, 0, 0, 0.04);
   --ke-bg-active: rgba(0, 0, 0, 0.08);
