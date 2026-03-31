@@ -147,22 +147,24 @@ test('F5 copies selected files to opposite pane directory', async ({ page }) => 
   await refreshList(page);
 
   // Navigate right panel into dest dir
+  const rightPanel = page.locator('[data-side="right"]');
   await page.keyboard.press('Tab');
   await page.waitForTimeout(300);
-  const destRow = page.locator('[aria-label="Folder: copy_dest"]');
+  const destRow = rightPanel.locator('[aria-label="Folder: copy_dest"]');
   if (await destRow.count() > 0 && await destRow.isVisible()) {
     await destRow.dblclick();
     await page.waitForTimeout(1500);
   }
 
   // Switch back to left panel and select source files
+  const leftPanel = page.locator('[data-side="left"]');
   await page.keyboard.press('Tab');
   await page.waitForTimeout(300);
-  const src0 = page.locator('[aria-label="File: copysrc_0.txt"]');
+  const src0 = leftPanel.locator('[aria-label="File: copysrc_0.txt"]');
   if (await src0.count() > 0 && await src0.isVisible()) {
     await src0.click();
     await page.waitForTimeout(300);
-    const src1 = page.locator('[aria-label="File: copysrc_1.txt"]');
+    const src1 = leftPanel.locator('[aria-label="File: copysrc_1.txt"]');
     if (await src1.count() > 0) { await src1.click({ modifiers: ['Meta'] }); await page.waitForTimeout(300); }
 
     // F5 copy to opposite
@@ -173,7 +175,11 @@ test('F5 copies selected files to opposite pane directory', async ({ page }) => 
     const confirmBtn = page.locator('button[aria-label="Confirm"]');
     if (await confirmBtn.count() > 0 && await confirmBtn.isVisible()) {
       await confirmBtn.click();
-      await page.waitForTimeout(1500);
+      // Wait for async copy to complete (poll with timeout)
+      for (let w = 0; w < 10; w++) {
+        await page.waitForTimeout(500);
+        if (fs.existsSync(path.join(destDir, 'copysrc_0.txt'))) break;
+      }
 
       // Verify files exist in BOTH locations (copy, not move)
       expect(fs.existsSync(srcFiles[0]), 'Source should still exist').toBe(true);
@@ -195,18 +201,20 @@ test('F6 moves files — source removed, dest created', async ({ page }) => {
   await refreshList(page);
 
   // Navigate right panel into dest
+  const rightPanel = page.locator('[data-side="right"]');
   await page.keyboard.press('Tab');
   await page.waitForTimeout(300);
-  const destRow = page.locator('[aria-label="Folder: move_dest"]');
+  const destRow = rightPanel.locator('[aria-label="Folder: move_dest"]');
   if (await destRow.count() > 0 && await destRow.isVisible()) {
     await destRow.dblclick();
     await page.waitForTimeout(1500);
   }
 
   // Select source in left panel
+  const leftPanel = page.locator('[data-side="left"]');
   await page.keyboard.press('Tab');
   await page.waitForTimeout(300);
-  const src0 = page.locator('[aria-label="File: movesrc_0.txt"]');
+  const src0 = leftPanel.locator('[aria-label="File: movesrc_0.txt"]');
   if (await src0.count() > 0 && await src0.isVisible()) {
     await src0.click();
     await page.waitForTimeout(300);

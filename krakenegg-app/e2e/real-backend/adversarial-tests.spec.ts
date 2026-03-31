@@ -199,7 +199,8 @@ test('navigate into empty directory — shows empty message, no crash', async ({
   await page.keyboard.press('F2');
   await page.waitForTimeout(1000);
 
-  const emptyRow = page.locator('[aria-label="Folder: empty_test"]');
+  const leftPanel = page.locator('[data-side="left"]');
+  const emptyRow = leftPanel.locator('[aria-label="Folder: empty_test"]');
   if (await emptyRow.count() > 0 && await emptyRow.isVisible()) {
     await emptyRow.dblclick();
     await page.waitForTimeout(1500);
@@ -217,7 +218,8 @@ test('operations in empty directory do not crash', async ({ page }) => {
   await page.keyboard.press('F2');
   await page.waitForTimeout(1000);
 
-  const row = page.locator('[aria-label="Folder: empty_ops"]');
+  const leftPanel = page.locator('[data-side="left"]');
+  const row = leftPanel.locator('[aria-label="Folder: empty_ops"]');
   if (await row.count() > 0 && await row.isVisible()) {
     await row.dblclick();
     await page.waitForTimeout(1500);

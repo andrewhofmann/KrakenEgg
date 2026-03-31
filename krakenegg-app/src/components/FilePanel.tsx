@@ -334,7 +334,10 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
   // Cleanup click timer on unmount to prevent state updates after unmount
   useEffect(() => {
-    return () => { if (clickTimerRef.current) clearTimeout(clickTimerRef.current); };
+    return () => {
+      if (clickTimerRef.current) clearTimeout(clickTimerRef.current);
+      if (renameTimerRef.current) clearTimeout(renameTimerRef.current);
+    };
   }, []);
 
   const handleDoubleClick = useCallback(async (_e: React.MouseEvent, file: FileInfo) => {

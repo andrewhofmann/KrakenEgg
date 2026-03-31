@@ -148,7 +148,8 @@ function handleCommand(cmd: string, args: any, root: string): any {
       return null;
     }
 
-    case 'copy_items': {
+    case 'copy_items':
+    case 'copy_items_with_progress': {
       for (const src of args.sources) {
         const name = path.basename(src);
         const dest = path.join(args.dest, name);
@@ -161,7 +162,8 @@ function handleCommand(cmd: string, args: any, root: string): any {
       return null;
     }
 
-    case 'move_items': {
+    case 'move_items':
+    case 'move_items_with_progress': {
       for (const src of args.sources) {
         const name = path.basename(src);
         const dest = path.join(args.dest, name);

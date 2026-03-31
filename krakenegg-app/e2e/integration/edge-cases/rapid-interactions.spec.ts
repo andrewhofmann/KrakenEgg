@@ -245,10 +245,14 @@ test('type-ahead search: type f-i-l-e rapidly', async ({ page }) => {
 test('navigate into folder, immediately navigate back, repeat 5 times', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
-  const folder = page.locator('[aria-label^="Folder:"]').first();
-  if (await folder.isVisible()) {
+  const leftPanel = page.locator('[data-side="left"]');
+  const folder = leftPanel.locator('[aria-label^="Folder:"]').first();
+  if (await folder.count() > 0 && await folder.isVisible()) {
     for (let i = 0; i < 5; i++) {
-      await folder.click();
+      // Re-locate folder each iteration since DOM changes after navigation
+      const f = leftPanel.locator('[aria-label^="Folder:"]').first();
+      if (await f.count() === 0) break;
+      await f.click();
       await page.waitForTimeout(300);
       await page.keyboard.press('Enter');
       await page.waitForTimeout(500);

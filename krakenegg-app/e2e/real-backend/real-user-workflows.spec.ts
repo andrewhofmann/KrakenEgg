@@ -235,8 +235,9 @@ test('delete removes file from disk', async ({ page }) => {
   await page.keyboard.press('F2');
   await page.waitForTimeout(1000);
 
-  // Find and select the file
-  const row = page.locator(`[aria-label="File: ${sacrificialName}"]`);
+  // Find and select the file (scope to left panel to avoid dual-panel strict mode violation)
+  const leftPanel = page.locator('[data-side="left"]');
+  const row = leftPanel.locator(`[aria-label="File: ${sacrificialName}"]`);
   if (await row.count() > 0 && await row.isVisible()) {
     await row.click();
     await page.waitForTimeout(300);

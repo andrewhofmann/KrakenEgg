@@ -372,7 +372,7 @@ export const useStore = create<AppState>((set, get) => {
               set((state) => updateActiveTab(state, side, () => ({ loading: true })));
               const { updateProgress, showOperationStatus, hideOperationStatus, setOperationError } = useStore.getState();
               const opId = Math.random().toString(36).substring(7);
-              const unlisten = await listen<ProgressInfo>('progress', (event) => { if (event.payload.id === opId) updateProgress(event.payload); });
+              const unlisten = await listen<ProgressInfo>('progress', (event) => { if (event.payload.id === opId) updateProgress(event.payload); }).catch(() => null);
               try {
                 showOperationStatus(`Compressing to '${finalDestPath}'...`);
                 await invoke('compress_files_with_progress', { id: opId, sources, destPath: finalDestPath });
@@ -380,8 +380,8 @@ export const useStore = create<AppState>((set, get) => {
                 get().refreshPanel('left');
                 get().refreshPanel('right');
                 hideOperationStatus();
-              } catch (err) { setOperationError(`Compression failed: ${err}`); } 
-              finally { unlisten(); set((state) => updateActiveTab(state, side, () => ({ loading: false }))); useStore.setState(s => ({ operationStatus: { ...s.operationStatus, progress: null } })); }
+              } catch (err) { setOperationError(`Compression failed: ${err}`); }
+              finally { unlisten?.(); set((state) => updateActiveTab(state, side, () => ({ loading: false }))); useStore.setState(s => ({ operationStatus: { ...s.operationStatus, progress: null } })); }
           }
       );
     },
@@ -555,8 +555,10 @@ export const useStore = create<AppState>((set, get) => {
         isCopy ? "Copy Files" : "Move Files",
         `${isCopy ? "Copy" : "Move"} ${sources.length} items to ${dest}?`,
         async (_option) => {
+          const opId = Math.random().toString(36).substring(7);
+          const { updateProgress } = useStore.getState();
+          const unlisten = await listen<ProgressInfo>('progress', (event) => { if (event.payload.id === opId) updateProgress(event.payload); }).catch(() => null);
           try {
-            const opId = Math.random().toString(36).substring(7);
             get().showOperationStatus(`${isCopy ? "Copying" : "Moving"} ${sources.length} items...`);
             if (isCopy) await invoke('copy_items_with_progress', { id: opId, sources, dest });
             else await invoke('move_items_with_progress', { id: opId, sources, dest });
@@ -571,6 +573,9 @@ export const useStore = create<AppState>((set, get) => {
             get().clearClipboard();
           } catch (err) {
             get().setOperationError(`${isCopy ? "Copy" : "Move"} failed: ${err}`);
+          } finally {
+            unlisten?.();
+            useStore.setState(s => ({ operationStatus: { ...s.operationStatus, progress: null } }));
           }
         }, true);
     },
@@ -698,16 +703,17 @@ export const useStore = create<AppState>((set, get) => {
         }
         if (sources.length === 0) return;
         state.requestConfirmation("Copy", `Copy ${sources.length} items?`, async (_option) => {
+            const opId = Math.random().toString(36).substring(7);
+            const { updateProgress } = useStore.getState();
+            const unlisten = await listen<ProgressInfo>('progress', (event) => { if (event.payload.id === opId) updateProgress(event.payload); }).catch(() => null);
             try {
-                await invoke('copy_items_with_progress', {
-                    id: Math.random().toString(36),
-                    sources,
-                    dest: destTab.path
-                });
+                get().showOperationStatus(`Copying ${sources.length} items...`);
+                await invoke('copy_items_with_progress', { id: opId, sources, dest: destTab.path });
                 get().refreshPaths([sourceTab.path, destTab.path]);
-                // Clear selection after copy completes
                 set((s) => updateActiveTab(s, sourceSide, () => ({ selection: [] })));
+                get().hideOperationStatus();
             } catch (e) { get().setOperationError(`${e}`); }
+            finally { unlisten?.(); useStore.setState(s => ({ operationStatus: { ...s.operationStatus, progress: null } })); }
         }, true);
     },
     moveToOppositePanel: (sourceSide: 'left' | 'right') => {
@@ -729,16 +735,17 @@ export const useStore = create<AppState>((set, get) => {
         }
         if (sources.length === 0) return;
         state.requestConfirmation("Move", `Move ${sources.length} items?`, async (_option) => {
+            const opId = Math.random().toString(36).substring(7);
+            const { updateProgress } = useStore.getState();
+            const unlisten = await listen<ProgressInfo>('progress', (event) => { if (event.payload.id === opId) updateProgress(event.payload); }).catch(() => null);
             try {
-                await invoke('move_items_with_progress', {
-                    id: Math.random().toString(36),
-                    sources,
-                    dest: destTab.path
-                });
+                get().showOperationStatus(`Moving ${sources.length} items...`);
+                await invoke('move_items_with_progress', { id: opId, sources, dest: destTab.path });
                 get().refreshPaths([sourceTab.path, destTab.path]);
-                // Clear stale selection after files moved
                 set((s) => updateActiveTab(s, sourceSide, () => ({ selection: [], cursorIndex: 0 })));
+                get().hideOperationStatus();
             } catch (e) { get().setOperationError(`${e}`); }
+            finally { unlisten?.(); useStore.setState(s => ({ operationStatus: { ...s.operationStatus, progress: null } })); }
         }, true);
     }
   };

@@ -1,7 +1,11 @@
 /**
  * TEST SUITE: Status Bar
- * Tests bottom status bar and panel status bars: selection display, keyboard hints,
- * counts, sizes, and persistence across interactions.
+ * Tests bottom status bar and panel status bars: keyboard hints, counts, sizes,
+ * and persistence across interactions.
+ *
+ * Note: The bottom status bar (App.tsx) shows keyboard shortcuts only.
+ * Each panel has its own status bar (FilePanel.tsx) showing folder/file counts
+ * and "N selected (size)" when items are selected.
  */
 import { test, expect } from '@playwright/test';
 import { createSandbox, setupSandboxMocks } from '../sandbox';
@@ -55,32 +59,36 @@ test('keyboard shortcuts text includes F6', async ({ page }) => {
   expect(await f6.count()).toBeGreaterThanOrEqual(1);
 });
 
-test('bottom status bar shows "0 items selected" initially', async ({ page }) => {
-  const statusText = page.locator('text=0 items selected');
-  expect(await statusText.count()).toBeGreaterThanOrEqual(1);
+// --- PANEL STATUS BAR: SELECTION COUNT ---
+
+test('no selection text shown initially (0 selected is not displayed)', async ({ page }) => {
+  // When nothing is selected, the panel status bar only shows folder/file counts,
+  // no "selected" text at all
+  const selectedText = page.locator('text=/selected/');
+  expect(await selectedText.count()).toBe(0);
 });
 
-test('after clicking a file, status bar shows "1 file selected"', async ({ page }) => {
+test('after clicking a file, panel status bar shows "1 selected"', async ({ page }) => {
   const fileRow = page.locator('[aria-label^="File:"]').first();
   if (await fileRow.count() > 0) {
     await fileRow.click();
     await page.waitForTimeout(300);
-    const statusText = page.locator('text=/1 file.* selected/');
+    const statusText = page.locator('text=/1 selected/');
     expect(await statusText.count()).toBeGreaterThanOrEqual(1);
   }
 });
 
-test('after clicking a folder, status bar shows "1 folder selected"', async ({ page }) => {
+test('after clicking a folder, panel status bar shows "1 selected"', async ({ page }) => {
   const folderRow = page.locator('[aria-label^="Folder:"]').first();
   if (await folderRow.count() > 0) {
     await folderRow.click();
     await page.waitForTimeout(300);
-    const statusText = page.locator('text=/1 folder.* selected/');
+    const statusText = page.locator('text=/1 selected/');
     expect(await statusText.count()).toBeGreaterThanOrEqual(1);
   }
 });
 
-test('after Cmd+click 2 files, shows "2 files selected"', async ({ page }) => {
+test('after Cmd+click 2 files, shows "2 selected"', async ({ page }) => {
   const fileRows = page.locator('[aria-label^="File:"]');
   const count = await fileRows.count();
   if (count >= 2) {
@@ -88,12 +96,12 @@ test('after Cmd+click 2 files, shows "2 files selected"', async ({ page }) => {
     await page.waitForTimeout(300);
     await fileRows.nth(1).click({ modifiers: ['Meta'] });
     await page.waitForTimeout(300);
-    const statusText = page.locator('text=/2 file.* selected/');
+    const statusText = page.locator('text=/2 selected/');
     expect(await statusText.count()).toBeGreaterThanOrEqual(1);
   }
 });
 
-test('after Cmd+A, shows correct total in status bar', async ({ page }) => {
+test('after Cmd+A, shows selection count in panel status bar', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
 
@@ -106,15 +114,16 @@ test('after Cmd+A, shows correct total in status bar', async ({ page }) => {
   expect(filterErrors(errors)).toHaveLength(0);
 });
 
-test('after Cmd+D, shows "0 items selected"', async ({ page }) => {
+test('after Cmd+D, selection text disappears (no "selected" shown for 0)', async ({ page }) => {
   // First select all
   await page.keyboard.press('Meta+a');
   await page.waitForTimeout(200);
   // Then deselect all
   await page.keyboard.press('Meta+d');
   await page.waitForTimeout(200);
-  const statusText = page.locator('text=0 items selected');
-  expect(await statusText.count()).toBeGreaterThanOrEqual(1);
+  // When 0 items selected, no "selected" text is shown
+  const selectedText = page.locator('text=/selected/');
+  expect(await selectedText.count()).toBe(0);
 });
 
 test('status bar shows size for file selection', async ({ page }) => {
@@ -122,15 +131,15 @@ test('status bar shows size for file selection', async ({ page }) => {
   if (await fileRow.count() > 0) {
     await fileRow.click();
     await page.waitForTimeout(300);
-    // The status bar should show a size in parentheses (e.g., "(1 KB)")
-    const sizeText = page.locator('text=/selected.*\\(/');
+    // The panel status bar should show "N selected" and possibly a size in parentheses
+    const statusText = page.locator('text=/selected/');
+    expect(await statusText.count()).toBeGreaterThanOrEqual(1);
     // Size may or may not show depending on file size > 0
     // Just verify no crash
-    expect(true).toBe(true);
   }
 });
 
-test('multiple folders selected shows folder count', async ({ page }) => {
+test('multiple folders selected shows selection count', async ({ page }) => {
   const folderRows = page.locator('[aria-label^="Folder:"]');
   const count = await folderRows.count();
   if (count >= 2) {
@@ -138,12 +147,12 @@ test('multiple folders selected shows folder count', async ({ page }) => {
     await page.waitForTimeout(300);
     await folderRows.nth(1).click({ modifiers: ['Meta'] });
     await page.waitForTimeout(300);
-    const statusText = page.locator('text=/2 folder.* selected/');
+    const statusText = page.locator('text=/2 selected/');
     expect(await statusText.count()).toBeGreaterThanOrEqual(1);
   }
 });
 
-test('mixed selection shows both file and folder counts', async ({ page }) => {
+test('mixed selection shows total selection count', async ({ page }) => {
   const fileRow = page.locator('[aria-label^="File:"]').first();
   const folderRow = page.locator('[aria-label^="Folder:"]').first();
   if (await fileRow.count() > 0 && await folderRow.count() > 0) {
@@ -151,13 +160,13 @@ test('mixed selection shows both file and folder counts', async ({ page }) => {
     await page.waitForTimeout(300);
     await folderRow.click({ modifiers: ['Meta'] });
     await page.waitForTimeout(300);
-    // Should show both folder and file counts
-    const statusText = page.locator('text=/folder.*file.*selected|file.*folder.*selected/');
+    // Should show "2 selected" (combined count, no file/folder breakdown)
+    const statusText = page.locator('text=/2 selected/');
     expect(await statusText.count()).toBeGreaterThanOrEqual(1);
   }
 });
 
-test('tab switch updates status bar', async ({ page }) => {
+test('tab switch does not crash status bar', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', e => errors.push(e.message));
 
@@ -170,7 +179,7 @@ test('tab switch updates status bar', async ({ page }) => {
   // Switch panels with Tab
   await page.keyboard.press('Tab');
   await page.waitForTimeout(200);
-  // Status bar should update (may show 0 items for the new panel)
+  // Status bar should still work (no crash)
   expect(filterErrors(errors)).toHaveLength(0);
 });
 

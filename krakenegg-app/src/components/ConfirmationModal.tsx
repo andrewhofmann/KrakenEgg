@@ -112,6 +112,7 @@ export const ConfirmationModal = () => {
             </Dialog.Close>
             <button
               ref={confirmRef}
+              aria-label="Confirm"
               onClick={handleConfirm}
               className="px-5 py-[7px] rounded-md text-sm font-medium transition-colors focus:ring-2 focus:ring-[var(--ke-accent)] focus:ring-offset-1 outline-none"
               style={{ backgroundColor: 'var(--ke-accent)', color: '#fff' }}

@@ -100,10 +100,14 @@ describe('ConfirmationModal', () => {
 
     render(<ConfirmationModal />);
 
-    expect(screen.getByText('Conflict Resolution')).toBeInTheDocument();
-    expect(screen.getByText('Ask for each conflict (Default)')).toBeInTheDocument();
-    expect(screen.getByText('Overwrite All')).toBeInTheDocument();
-    expect(screen.getByText('Skip Existing')).toBeInTheDocument();
+    // Conflict Resolution section is collapsed by default — expand it
+    const expandBtn = screen.getByText('Conflict Resolution');
+    expect(expandBtn).toBeInTheDocument();
+    fireEvent.click(expandBtn);
+
+    expect(screen.getByText('Ask for each conflict')).toBeInTheDocument();
+    expect(screen.getByText('Overwrite all')).toBeInTheDocument();
+    expect(screen.getByText('Skip existing')).toBeInTheDocument();
     expect(screen.getByText('Overwrite only if newer')).toBeInTheDocument();
   });
 
@@ -124,8 +128,11 @@ describe('ConfirmationModal', () => {
 
     render(<ConfirmationModal />);
 
-    // Select "Overwrite All"
-    fireEvent.click(screen.getByLabelText('Overwrite All'));
+    // Expand conflict resolution options
+    fireEvent.click(screen.getByText('Conflict Resolution'));
+
+    // Select "Overwrite all"
+    fireEvent.click(screen.getByLabelText('Overwrite all'));
 
     fireEvent.click(screen.getByText('Confirm'));
 

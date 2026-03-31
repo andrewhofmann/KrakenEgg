@@ -20,7 +20,29 @@ interface NavItem {
   color?: string;
 }
 
-const TAG_COLORS = [
+// macOS Finder standard tag colors in FavoriteTagNames order
+const FINDER_TAG_COLORS = [
+  '#FF3B30', // Red (index 0)
+  '#FF9500', // Orange (index 1)
+  '#FFCC00', // Yellow (index 2)
+  '#34C759', // Green (index 3)
+  '#007AFF', // Blue (index 4)
+  '#AF52DE', // Purple (index 5)
+  '#8E8E93', // Gray (index 6)
+];
+
+// Fallback: map known color names to colors (for tags beyond the 7 standard positions)
+const FINDER_TAG_COLOR_MAP: Record<string, string> = {
+  'Red': '#FF3B30',
+  'Orange': '#FF9500',
+  'Yellow': '#FFCC00',
+  'Green': '#34C759',
+  'Blue': '#007AFF',
+  'Purple': '#AF52DE',
+  'Gray': '#8E8E93',
+};
+
+const DEFAULT_TAGS = [
   { name: 'Red', color: '#FF3B30' },
   { name: 'Orange', color: '#FF9500' },
   { name: 'Yellow', color: '#FFCC00' },
@@ -34,10 +56,21 @@ export const QuickNav = ({ side, anchorRef, onClose }: QuickNavProps) => {
   const setPath = useStore(s => s.setPath);
   const hotlist = useStore(s => s.hotlist);
   const [homeDir, setHomeDir] = useState('/Users');
+  const [tags, setTags] = useState(DEFAULT_TAGS);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     invoke<string>('get_home_directory').then(h => setHomeDir(h)).catch(() => {});
+    invoke<string[]>('get_finder_tags').then(names => {
+      if (names.length > 0) {
+        setTags(names.map((name, i) => ({
+          name,
+          color: i < FINDER_TAG_COLORS.length
+            ? FINDER_TAG_COLORS[i]
+            : FINDER_TAG_COLOR_MAP[name] || '#8E8E93',
+        })));
+      }
+    }).catch(() => {});
   }, []);
 
   // Close on click outside
@@ -160,7 +193,7 @@ export const QuickNav = ({ side, anchorRef, onClose }: QuickNavProps) => {
           Tags
         </div>
         <div className="flex flex-wrap gap-1 px-2 pt-1">
-          {TAG_COLORS.map(tag => (
+          {tags.map(tag => (
             <button
               key={tag.name}
               title={tag.name}

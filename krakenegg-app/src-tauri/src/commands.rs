@@ -1151,6 +1151,31 @@ pub async fn search_files(query: String, path: String, search_content: bool, sea
     Ok(files)
 }
 
+/// Read the user's configured Finder tag names from macOS preferences
+#[tauri::command]
+pub async fn get_finder_tags() -> Result<Vec<String>, String> {
+    #[cfg(target_os = "macos")]
+    {
+        let output = Command::new("defaults")
+            .arg("read")
+            .arg("com.apple.finder")
+            .arg("FavoriteTagNames")
+            .output()
+            .map_err(|e| format!("defaults read failed: {}", e))?;
+
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let tags: Vec<String> = stdout.lines()
+            .map(|l| l.trim().trim_matches(',').trim_matches('"').trim().to_string())
+            .filter(|l| !l.is_empty() && l != "(" && l != ")")
+            .collect();
+        Ok(tags)
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        Ok(vec!["Red".into(), "Orange".into(), "Yellow".into(), "Green".into(), "Blue".into(), "Purple".into(), "Gray".into()])
+    }
+}
+
 /// Find files by macOS Finder tag using mdfind
 #[tauri::command]
 pub async fn find_by_tag(tag: String) -> Result<Vec<FileInfo>, String> {
