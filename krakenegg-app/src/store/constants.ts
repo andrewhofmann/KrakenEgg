@@ -60,8 +60,7 @@ export const getProcessedFiles = (files: FileInfo[], layout: PaneLayout, filterQ
       if (valA > valB) return layout.sortDirection === 'asc' ? 1 : -1;
       return 0;
   };
-  const dirMul = layout.sortDirection === 'asc' ? 1 : -1;
-  folders.sort((a, b) => dirMul * a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+  folders.sort(sortFn);
   regularFiles.sort(sortFn);
   return [...folders, ...regularFiles];
 };
