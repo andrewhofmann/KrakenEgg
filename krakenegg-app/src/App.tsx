@@ -194,36 +194,14 @@ function App() {
         </ErrorBoundary>
       </div>
 
-      {/* Bottom Status Bar */}
-      <div className="h-8 backdrop-blur-md flex items-center px-4 text-xs justify-between shrink-0" style={{ backgroundColor: 'var(--ke-bg-secondary)', borderTop: '1px solid var(--ke-border-subtle)', color: 'var(--ke-text-secondary)' }}>
+      {/* Bottom Status Bar — keyboard shortcuts only */}
+      <div className="h-7 backdrop-blur-md flex items-center px-4 text-xs shrink-0" style={{ backgroundColor: 'var(--ke-bg-secondary)', borderTop: '1px solid var(--ke-border-subtle)', color: 'var(--ke-text-secondary)' }}>
         <div className="flex space-x-4">
           <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>F5</kbd> Copy</span>
           <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>F6</kbd> Move</span>
           <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>&#8984;&#9003;</kbd> Delete</span>
           <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>F7</kbd> New Folder</span>
           <span><kbd className="font-semibold" style={{ color: 'var(--ke-text)' }}>Ctrl+Q</kbd> Quick View</span>
-        </div>
-        <div>
-          {(() => {
-             const activeTab = activePanelState.tabs[activePanelState.activeTabIndex];
-             if (!activeTab) return "0 items selected";
-
-             const preferences = useStore.getState().preferences;
-             const processedFiles = getProcessedFiles(activeTab.files, activePanelState.layout, activeTab.filterQuery, preferences.general.showHiddenFiles);
-             const selectedItems = activeTab.selection.map(i => processedFiles[i]).filter(Boolean);
-
-             if (selectedItems.length === 0) return "0 items selected";
-
-             const folderCount = selectedItems.filter(f => f.is_dir).length;
-             const fileCount = selectedItems.length - folderCount;
-             const totalSize = selectedItems.reduce((sum, f) => sum + (f.is_dir ? 0 : f.size), 0);
-
-             const parts = [];
-             if (folderCount > 0) parts.push(`${folderCount} folder${folderCount !== 1 ? 's' : ''}`);
-             if (fileCount > 0) parts.push(`${fileCount} file${fileCount !== 1 ? 's' : ''}`);
-             const sizeStr = totalSize > 0 ? ` (${formatSize(totalSize)})` : '';
-             return `${parts.join(', ')} selected${sizeStr}`;
-          })()}
         </div>
       </div>
 
