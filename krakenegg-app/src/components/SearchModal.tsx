@@ -33,16 +33,20 @@ export const SearchModal = () => {
   };
 
   const handleResultClick = (fileName: string) => {
-    // fileName is a relative path from the search root (e.g., "subdir/file.txt")
-    const searchRoot = activeTab?.path || '/';
-    const parts = fileName.split('/');
-    if (parts.length > 1) {
-      // Navigate to the parent directory of the result
-      const parentDir = parts.slice(0, -1).join('/');
-      const targetPath = searchRoot === '/' ? `/${parentDir}` : `${searchRoot}/${parentDir}`;
-      setPath(activeSide, targetPath);
+    if (fileName.startsWith('/')) {
+      // Absolute path (e.g. from tag search) — navigate to parent directory
+      const parentDir = fileName.substring(0, fileName.lastIndexOf('/')) || '/';
+      setPath(activeSide, parentDir);
+    } else {
+      // Relative path from search root (e.g., "subdir/file.txt")
+      const searchRoot = activeTab?.path || '/';
+      const parts = fileName.split('/');
+      if (parts.length > 1) {
+        const parentDir = parts.slice(0, -1).join('/');
+        const targetPath = searchRoot === '/' ? `/${parentDir}` : `${searchRoot}/${parentDir}`;
+        setPath(activeSide, targetPath);
+      }
     }
-    // For root-level results, we're already in the right directory — just close
     hideSearch();
   };
 

@@ -1151,6 +1151,43 @@ pub async fn search_files(query: String, path: String, search_content: bool, sea
     Ok(files)
 }
 
+/// Find files by macOS Finder tag using mdfind
+#[tauri::command]
+pub async fn find_by_tag(tag: String) -> Result<Vec<FileInfo>, String> {
+    #[cfg(target_os = "macos")]
+    {
+        let output = Command::new("mdfind")
+            .arg(format!("kMDItemUserTags == '{}'", tag))
+            .output()
+            .map_err(|e| format!("mdfind failed: {}", e))?;
+
+        if !output.status.success() {
+            return Err("mdfind returned error".to_string());
+        }
+
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let mut files: Vec<FileInfo> = Vec::new();
+        for line in stdout.lines().take(500) {
+            if line.is_empty() { continue; }
+            let p = Path::new(line);
+            let _name = p.file_name().unwrap_or_default().to_string_lossy().to_string();
+            let is_dir = p.is_dir();
+            let metadata = fs::metadata(p).ok();
+            let size = metadata.as_ref().map(|m| m.len()).unwrap_or(0);
+            let modified_at = metadata.as_ref().and_then(|m| m.modified().ok())
+                .and_then(|st| st.duration_since(UNIX_EPOCH).ok().map(|d| d.as_secs()));
+            let extension = if !is_dir { p.extension().and_then(|e| e.to_str()).map(|e| e.to_lowercase()) } else { None };
+            // Store the FULL path as the name so the frontend can navigate to the parent
+            files.push(FileInfo { name: line.to_string(), is_dir, size, modified_at, created_at: None, permissions: None, extension, is_symlink: false });
+        }
+        Ok(files)
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        Err("Finder tags are only available on macOS".to_string())
+    }
+}
+
 #[tauri::command]
 pub async fn open_with_default(path: String) -> Result<(), String> {
     // If file is inside an archive, extract to temp and open the temp file

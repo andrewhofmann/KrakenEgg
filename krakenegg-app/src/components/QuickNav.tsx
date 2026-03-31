@@ -166,10 +166,18 @@ export const QuickNav = ({ side, anchorRef, onClose }: QuickNavProps) => {
               title={tag.name}
               className="w-5 h-5 rounded-full transition-transform hover:scale-125 active:scale-95"
               style={{ backgroundColor: tag.color }}
-              onClick={() => {
-                // Tag filtering is a future feature — for now just visual
-                useStore.getState().showOperationStatus(`Tag filtering coming soon`);
+              onClick={async () => {
                 onClose();
+                const store = useStore.getState();
+                // Show search modal with tag results
+                store.showSearch();
+                useStore.setState(s => ({ search: { ...s.search, query: `Tag: ${tag.name}`, loading: true } }));
+                try {
+                  const results = await invoke<any[]>('find_by_tag', { tag: tag.name });
+                  useStore.setState(s => ({ search: { ...s.search, results, loading: false } }));
+                } catch {
+                  useStore.setState(s => ({ search: { ...s.search, results: [], loading: false, error: `No files found with tag "${tag.name}"` } }));
+                }
               }}
             />
           ))}
