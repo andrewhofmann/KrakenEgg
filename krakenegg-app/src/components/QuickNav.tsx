@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useStore } from '../store';
 import { invoke } from '@tauri-apps/api/core';
 import {
@@ -8,6 +9,7 @@ import {
 
 interface QuickNavProps {
   side: 'left' | 'right';
+  anchorRef: React.RefObject<HTMLButtonElement | null>;
   onClose: () => void;
 }
 
@@ -28,7 +30,7 @@ const TAG_COLORS = [
   { name: 'Gray', color: '#8E8E93' },
 ];
 
-export const QuickNav = ({ side, onClose }: QuickNavProps) => {
+export const QuickNav = ({ side, anchorRef, onClose }: QuickNavProps) => {
   const setPath = useStore(s => s.setPath);
   const hotlist = useStore(s => s.hotlist);
   const [homeDir, setHomeDir] = useState('/Users');
@@ -77,11 +79,15 @@ export const QuickNav = ({ side, onClose }: QuickNavProps) => {
     { label: 'Temp', path: '/tmp', icon: <Folder size={14} /> },
   ];
 
-  return (
+  const anchorRect = anchorRef.current?.getBoundingClientRect();
+  const top = anchorRect ? anchorRect.bottom + 4 : 100;
+  const left = anchorRect ? anchorRect.left : 100;
+
+  return createPortal(
     <div
       ref={panelRef}
-      className="absolute top-full left-0 mt-1 w-56 rounded-lg shadow-2xl z-50 overflow-hidden select-none"
-      style={{ backgroundColor: 'var(--ke-bg-solid)', border: '1px solid var(--ke-border)' }}
+      className="fixed w-56 rounded-lg shadow-2xl overflow-hidden select-none"
+      style={{ top, left, zIndex: 9000, backgroundColor: 'var(--ke-bg-solid)', border: '1px solid var(--ke-border)' }}
     >
       {/* Favorites */}
       {hotlist.length > 0 && (
@@ -169,6 +175,7 @@ export const QuickNav = ({ side, onClose }: QuickNavProps) => {
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

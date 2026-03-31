@@ -64,6 +64,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   const [pathInputValue, setPathInputValue] = useState('');
   const [showHistory, setShowHistory] = useState(false);
   const [showQuickNav, setShowQuickNav] = useState(false);
+  const quickNavBtnRef = useRef<HTMLButtonElement>(null);
   const [isDraggingFiles, setIsDraggingFiles] = useState(false);
   const [dragTargetIndex, setDragTargetIndex] = useState<number | null>(null);
   const [panelDragOver, setPanelDragOver] = useState(false);
@@ -907,6 +908,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
            >
               <div className="flex items-center">
                 <button
+                  ref={quickNavBtnRef}
                   onClick={(e) => { e.stopPropagation(); setShowQuickNav(!showQuickNav); setShowHistory(false); }}
                   className={clsx("p-0.5 rounded transition-colors mr-1.5 shrink-0", showQuickNav ? "bg-[var(--ke-bg-active)]" : "hover:bg-[var(--ke-bg-hover)]")}
                   title="Quick Navigation"
@@ -975,7 +977,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
            {/* Quick Navigation Popup */}
            {showQuickNav && (
-               <QuickNav side={side} onClose={() => setShowQuickNav(false)} />
+               <QuickNav side={side} anchorRef={quickNavBtnRef} onClose={() => setShowQuickNav(false)} />
            )}
 
            {/* History Dropdown */}
