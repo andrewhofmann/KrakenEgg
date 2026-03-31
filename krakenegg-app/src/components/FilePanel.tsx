@@ -11,7 +11,8 @@ import { SearchFilter } from "./SearchFilter";
 import { QuickInfoPanel } from "./QuickInfoPanel";
 import { formatDate, getExtension } from "../utils/format";
 import clsx from "clsx";
-import { ChevronRight, ChevronDown, ArrowUp, ArrowDown, HardDrive, Package, Clock, Star } from "lucide-react";
+import { ChevronRight, ChevronDown, ArrowUp, ArrowDown, HardDrive, Package, Clock, Star, Compass } from "lucide-react";
+import { QuickNav } from "./QuickNav";
 
 // Global drag state — HTML5 DnD is completely broken in Tauri's WKWebView.
 // Using mouse-based drag instead.
@@ -62,6 +63,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
   const [isPathEditing, setIsPathEditing] = useState(false);
   const [pathInputValue, setPathInputValue] = useState('');
   const [showHistory, setShowHistory] = useState(false);
+  const [showQuickNav, setShowQuickNav] = useState(false);
   const [isDraggingFiles, setIsDraggingFiles] = useState(false);
   const [dragTargetIndex, setDragTargetIndex] = useState<number | null>(null);
   const [panelDragOver, setPanelDragOver] = useState(false);
@@ -904,6 +906,13 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
                }}
            >
               <div className="flex items-center">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setShowQuickNav(!showQuickNav); setShowHistory(false); }}
+                  className={clsx("p-0.5 rounded transition-colors mr-1.5 shrink-0", showQuickNav ? "bg-[var(--ke-bg-active)]" : "hover:bg-[var(--ke-bg-hover)]")}
+                  title="Quick Navigation"
+                >
+                  <Compass size={13} style={{ color: showQuickNav ? 'var(--ke-accent)' : 'var(--ke-text-secondary)' }} />
+                </button>
                 {isArchive ? <Package size={13} className="mr-2 shrink-0" style={{ color: 'var(--ke-accent)' }} /> : <HardDrive size={13} className="text-[var(--ke-text-secondary)] mr-2 shrink-0" />}
                 
                 {isPathEditing ? (
@@ -963,6 +972,11 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
               {activeTab.showFilterWidget && <SearchFilter value={activeTab.filterQuery || ''} onChange={(val) => setFilterQuery(side, val)} onClear={() => setFilterQuery(side, '')} onClose={() => useStore.getState().hideFilterWidget(side)} className="w-32 focus-within:w-48 transition-all duration-200" focusSignal={activeTab.filterFocusSignal} autoFocus={true} />}
               <button onClick={handleUpDir} className="p-0.5 hover:bg-[var(--ke-bg-hover)] rounded text-[var(--ke-text-secondary)] transition-colors" aria-label="Go Up"><ChevronRight size={14} className="rotate-270" /></button>
            </div>
+
+           {/* Quick Navigation Popup */}
+           {showQuickNav && (
+               <QuickNav side={side} onClose={() => setShowQuickNav(false)} />
+           )}
 
            {/* History Dropdown */}
            {showHistory && (
