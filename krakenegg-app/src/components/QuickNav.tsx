@@ -80,8 +80,8 @@ export const QuickNav = ({ side, onClose }: QuickNavProps) => {
   return (
     <div
       ref={panelRef}
-      className="absolute top-full left-0 mt-1 w-56 rounded-lg shadow-2xl z-50 overflow-hidden select-none"
-      style={{ backgroundColor: 'var(--ke-bg-elevated)', border: '1px solid var(--ke-border)' }}
+      className="absolute top-full left-0 mt-1 w-56 rounded-lg shadow-2xl z-50 overflow-hidden select-none backdrop-blur-xl"
+      style={{ backgroundColor: 'var(--ke-bg-secondary)', border: '1px solid var(--ke-border)', opacity: 1 }}
     >
       {/* Favorites */}
       {hotlist.length > 0 && (
