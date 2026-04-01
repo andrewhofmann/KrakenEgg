@@ -248,6 +248,8 @@ export const SettingsModal = () => {
                   <div className="space-y-3">
                     <Toggle checked={preferences.general.showHiddenFiles} onChange={(v) => setPreference('general', 'showHiddenFiles', v)}
                       label="Show Hidden Files" description="Display files and folders starting with a dot (.)" />
+                    <Toggle checked={preferences.general.hideSystemFiles} onChange={(v) => setPreference('general', 'hideSystemFiles', v)}
+                      label="Hide System Files" description="Hide system junk files (.DS_Store, Thumbs.db, $RECYCLE.BIN, etc.)" />
                     <Toggle checked={preferences.general.confirmDelete} onChange={(v) => setPreference('general', 'confirmDelete', v)}
                       label="Confirm Deletions" description="Show a confirmation dialog before deleting files" />
                     <Toggle checked={preferences.general.saveHistoryOnExit} onChange={(v) => setPreference('general', 'saveHistoryOnExit', v)}

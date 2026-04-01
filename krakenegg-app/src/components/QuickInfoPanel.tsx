@@ -17,8 +17,8 @@ export const QuickInfoPanel = ({ side: _side }: { side: 'left' | 'right' }) => {
     const targetTab = useStore(s => s[activeSide].tabs[s[activeSide].activeTabIndex]);
     const files = useMemo(() => {
         if (!targetTab || !layout) return [];
-        return getProcessedFiles(targetTab.files, layout, targetTab.filterQuery, preferences.general.showHiddenFiles);
-    }, [targetTab?.files, layout, targetTab?.filterQuery, preferences.general.showHiddenFiles]);
+        return getProcessedFiles(targetTab.files, layout, targetTab.filterQuery, preferences.general.showHiddenFiles, preferences.general.hideSystemFiles);
+    }, [targetTab?.files, layout, targetTab?.filterQuery, preferences.general.showHiddenFiles, preferences.general.hideSystemFiles]);
     const selection = targetTab?.selection || [];
     const cursorIndex = targetTab?.cursorIndex ?? -1;
 

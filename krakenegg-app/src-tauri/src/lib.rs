@@ -1,6 +1,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use tauri::Manager;
 use tauri::menu::{Menu, Submenu, MenuItem, PredefinedMenuItem, AboutMetadata};
+use tauri::image::Image;
 use tauri::Emitter;
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
@@ -35,10 +36,15 @@ pub fn run() {
 
             // 1. App Menu (macOS specific mostly)
             let app_menu = Submenu::new(handle, app_name, true)?;
+            let icon_bytes = include_bytes!("../icons/128x128@2x.png");
+            let icon = Image::from_bytes(icon_bytes).ok();
             app_menu.append(&PredefinedMenuItem::about(handle, Some("About KrakenEgg Explorer"), Some(AboutMetadata {
+                name: Some("KrakenEgg Explorer".to_string()),
                 version: Some("0.2.0".to_string()),
-                authors: Some(vec!["Andrew Hofmann".to_string()]),
-                comments: Some("A modern dual-pane file explorer for macOS".to_string()),
+                short_version: Some("0.2".to_string()),
+                copyright: Some("\u{00A9} 2025 Andrew Hofmann. All rights reserved.".to_string()),
+                credits: Some("A modern dual-pane file explorer for macOS.\nBuilt with Tauri, React & Rust.".to_string()),
+                icon,
                 ..Default::default()
             }))?)?;
             app_menu.append(&PredefinedMenuItem::separator(handle)?)?;
@@ -68,13 +74,20 @@ pub fn run() {
             edit_menu.append(&PredefinedMenuItem::undo(handle, None)?)?;
             edit_menu.append(&PredefinedMenuItem::redo(handle, None)?)?;
             edit_menu.append(&PredefinedMenuItem::separator(handle)?)?;
-            edit_menu.append(&MenuItem::with_id(handle, "copy_files", "Copy", true, Some("Cmd+C"))?)?;
-            edit_menu.append(&MenuItem::with_id(handle, "cut_files", "Cut", true, Some("Cmd+X"))?)?;
-            edit_menu.append(&MenuItem::with_id(handle, "paste_files", "Paste", true, Some("Cmd+V"))?)?;
-            edit_menu.append(&MenuItem::with_id(handle, "delete_files", "Delete", true, Some("Cmd+Backspace"))?)?;
+            // PredefinedMenuItems for copy/cut/paste/selectAll — required for WKWebView
+            // text input support (path bar, rename, search, etc.)
+            edit_menu.append(&PredefinedMenuItem::copy(handle, None)?)?;
+            edit_menu.append(&PredefinedMenuItem::cut(handle, None)?)?;
+            edit_menu.append(&PredefinedMenuItem::paste(handle, None)?)?;
+            edit_menu.append(&PredefinedMenuItem::select_all(handle, None)?)?;
             edit_menu.append(&PredefinedMenuItem::separator(handle)?)?;
-            edit_menu.append(&MenuItem::with_id(handle, "select_all", "Select All", true, Some("Cmd+A"))?)?;
-            edit_menu.append(&MenuItem::with_id(handle, "deselect_all", "Deselect All", true, Some("Cmd+D"))?)?;
+            // File operations (no keyboard shortcuts — handled by JS keyboard handler)
+            edit_menu.append(&MenuItem::with_id(handle, "copy_files", "Copy Files", true, None::<&str>)?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "cut_files", "Cut Files", true, None::<&str>)?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "paste_files", "Paste Files", true, None::<&str>)?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "delete_files", "Delete Files", true, None::<&str>)?)?;
+            edit_menu.append(&PredefinedMenuItem::separator(handle)?)?;
+            edit_menu.append(&MenuItem::with_id(handle, "deselect_all", "Deselect All", true, None::<&str>)?)?;
             edit_menu.append(&MenuItem::with_id(handle, "invert_selection", "Invert Selection", true, Some("Cmd+Shift+A"))?)?;
             edit_menu.append(&PredefinedMenuItem::separator(handle)?)?;
             edit_menu.append(&MenuItem::with_id(handle, "rename", "Rename", true, Some("Shift+F6"))?)?;

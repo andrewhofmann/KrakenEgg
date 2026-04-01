@@ -71,7 +71,7 @@ export const useStore = create<AppState>((set, get) => {
             }
         }));
         // Reset cursor when visible files change (hidden files toggled)
-        if (category === 'general' && key === 'showHiddenFiles') {
+        if (category === 'general' && (key === 'showHiddenFiles' || key === 'hideSystemFiles')) {
             set(state => ({
                 left: { ...state.left, tabs: state.left.tabs.map(t => ({ ...t, selection: [], cursorIndex: 0 })) },
                 right: { ...state.right, tabs: state.right.tabs.map(t => ({ ...t, selection: [], cursorIndex: 0 })) },
@@ -196,7 +196,8 @@ export const useStore = create<AppState>((set, get) => {
       const update: Partial<TabState> = { files, loading: false, error: null };
       const layout = state[side].layout;
       const showHidden = state.preferences.general.showHiddenFiles;
-      const processed = getProcessedFiles(files, layout, tab.filterQuery, showHidden);
+      const hideSystem = state.preferences.general.hideSystemFiles;
+      const processed = getProcessedFiles(files, layout, tab.filterQuery, showHidden, hideSystem);
       // If we navigated up, place cursor on the folder we came from
       if (tab.previousFolderName) {
         const idx = processed.findIndex(f => f.name === tab.previousFolderName);
@@ -247,7 +248,8 @@ export const useStore = create<AppState>((set, get) => {
     setCursorAndSelection: (side: 'left' | 'right', cursor: number, selection: number[]) => set((state) => updateActiveTab(state, side, () => ({ cursorIndex: cursor, selection: [...new Set(selection)] }))),
     moveCursor: (side: 'left' | 'right', delta: number) => set((state) => updateActiveTab(state, side, (tab) => {
       const showHidden = state.preferences.general.showHiddenFiles;
-      const files = getProcessedFiles(tab.files, state[side].layout, tab.filterQuery, showHidden);
+      const hideSystem = state.preferences.general.hideSystemFiles;
+      const files = getProcessedFiles(tab.files, state[side].layout, tab.filterQuery, showHidden, hideSystem);
       const minIndex = tab.path === "/" ? 0 : -1;
       const newIndex = Math.max(minIndex, Math.min(files.length - 1, tab.cursorIndex + delta));
       return { cursorIndex: newIndex };
@@ -342,7 +344,8 @@ export const useStore = create<AppState>((set, get) => {
       const destTab = currentAppState[destSide].tabs[currentAppState[destSide].activeTabIndex];
       if (!destTab) return;
       const showHidden = currentAppState.preferences.general.showHiddenFiles;
-      const files = getProcessedFiles(activeTab.files, currentAppState[side].layout, activeTab.filterQuery, showHidden);
+      const hideSystem = currentAppState.preferences.general.hideSystemFiles;
+      const files = getProcessedFiles(activeTab.files, currentAppState[side].layout, activeTab.filterQuery, showHidden, hideSystem);
       let sources: string[];
       if (activeTab.selection.length > 0) {
         sources = activeTab.selection.filter(i => i >= 0 && files[i] && files[i].name !== '..').map(i => `${activeTab.path === "/" ? "" : activeTab.path}/${files[i].name}`);
@@ -390,7 +393,8 @@ export const useStore = create<AppState>((set, get) => {
       const activeTab = currentAppState[side].tabs[currentAppState[side].activeTabIndex];
       if (!activeTab) return;
       const showHidden = currentAppState.preferences.general.showHiddenFiles;
-      const files = getProcessedFiles(activeTab.files, currentAppState[side].layout, activeTab.filterQuery, showHidden);
+      const hideSystem = currentAppState.preferences.general.hideSystemFiles;
+      const files = getProcessedFiles(activeTab.files, currentAppState[side].layout, activeTab.filterQuery, showHidden, hideSystem);
       const file = files[activeTab.cursorIndex];
       if (!file || file.name === "..") return;
       const archivePath = `${activeTab.path === "/" ? "" : activeTab.path}/${file.name}`;
@@ -476,7 +480,11 @@ export const useStore = create<AppState>((set, get) => {
                     },
                     activeSide: (loaded.active_side === 'left' || loaded.active_side === 'right') ? loaded.active_side : 'left',
                     hotkeys: loaded.hotkeys || state.hotkeys,
-                    preferences: loaded.preferences || state.preferences,
+                    preferences: loaded.preferences ? {
+                        general: { ...state.preferences.general, ...loaded.preferences.general },
+                        appearance: { ...state.preferences.appearance, ...loaded.preferences.appearance },
+                        behavior: { ...state.preferences.behavior, ...loaded.preferences.behavior },
+                    } : state.preferences,
                     globalHistory: loaded.global_history || [],
                     hotlist: loaded.hotlist || []
                 }));
@@ -500,7 +508,8 @@ export const useStore = create<AppState>((set, get) => {
       const activeTab = currentAppState[side].tabs[currentAppState[side].activeTabIndex];
       if (!activeTab) return;
       const showHidden = currentAppState.preferences.general.showHiddenFiles;
-      const files = getProcessedFiles(activeTab.files, currentAppState[side].layout, activeTab.filterQuery, showHidden);
+      const hideSystem = currentAppState.preferences.general.hideSystemFiles;
+      const files = getProcessedFiles(activeTab.files, currentAppState[side].layout, activeTab.filterQuery, showHidden, hideSystem);
       const buildPath = (name: string) => `${activeTab.path === "/" ? "" : activeTab.path}/${name}`;
       let sources: string[];
       if (activeTab.selection.length > 0) {
@@ -521,7 +530,8 @@ export const useStore = create<AppState>((set, get) => {
       const activeTab = currentAppState[side].tabs[currentAppState[side].activeTabIndex];
       if (!activeTab) return;
       const showHidden = currentAppState.preferences.general.showHiddenFiles;
-      const files = getProcessedFiles(activeTab.files, currentAppState[side].layout, activeTab.filterQuery, showHidden);
+      const hideSystem = currentAppState.preferences.general.hideSystemFiles;
+      const files = getProcessedFiles(activeTab.files, currentAppState[side].layout, activeTab.filterQuery, showHidden, hideSystem);
       const buildPath = (name: string) => `${activeTab.path === "/" ? "" : activeTab.path}/${name}`;
       let sources: string[];
       if (activeTab.selection.length > 0) {
@@ -584,7 +594,8 @@ export const useStore = create<AppState>((set, get) => {
         const activeTab = state[side].tabs[state[side].activeTabIndex];
         if (!activeTab) return;
         const showHidden = state.preferences.general.showHiddenFiles;
-        const files = getProcessedFiles(activeTab.files, state[side].layout, activeTab.filterQuery, showHidden);
+        const hideSystem = state.preferences.general.hideSystemFiles;
+        const files = getProcessedFiles(activeTab.files, state[side].layout, activeTab.filterQuery, showHidden, hideSystem);
 
         let sources: string[];
         if (activeTab.selection.length > 0) {
@@ -628,7 +639,8 @@ export const useStore = create<AppState>((set, get) => {
           const activeTab = state[side].tabs[state[side].activeTabIndex];
           if (!activeTab) return;
           const showHidden = state.preferences.general.showHiddenFiles;
-          const files = getProcessedFiles(activeTab.files, state[side].layout, activeTab.filterQuery, showHidden);
+          const hideSystem = state.preferences.general.hideSystemFiles;
+          const files = getProcessedFiles(activeTab.files, state[side].layout, activeTab.filterQuery, showHidden, hideSystem);
           let targetFiles: string[] = [];
           if (activeTab.selection.length > 0) {
               targetFiles = activeTab.selection.filter(i => i >= 0 && files[i] && files[i].name !== '..').map(i => `${activeTab.path === "/" ? "" : activeTab.path}/${files[i].name}`);
@@ -692,7 +704,8 @@ export const useStore = create<AppState>((set, get) => {
         const destTab = state[destSide].tabs[state[destSide].activeTabIndex];
         if (!destTab) return;
         const showHidden = state.preferences.general.showHiddenFiles;
-        const files = getProcessedFiles(sourceTab.files, state[sourceSide].layout, sourceTab.filterQuery, showHidden);
+        const hideSystem = state.preferences.general.hideSystemFiles;
+        const files = getProcessedFiles(sourceTab.files, state[sourceSide].layout, sourceTab.filterQuery, showHidden, hideSystem);
         const buildPath = (name: string) => `${sourceTab.path === "/" ? "" : sourceTab.path}/${name}`;
         let sources: string[];
         if (sourceTab.selection.length > 0) {
@@ -724,7 +737,8 @@ export const useStore = create<AppState>((set, get) => {
         const destTab = state[destSide].tabs[state[destSide].activeTabIndex];
         if (!destTab) return;
         const showHidden = state.preferences.general.showHiddenFiles;
-        const files = getProcessedFiles(sourceTab.files, state[sourceSide].layout, sourceTab.filterQuery, showHidden);
+        const hideSystem = state.preferences.general.hideSystemFiles;
+        const files = getProcessedFiles(sourceTab.files, state[sourceSide].layout, sourceTab.filterQuery, showHidden, hideSystem);
         const buildPath = (name: string) => `${sourceTab.path === "/" ? "" : sourceTab.path}/${name}`;
         let sources: string[];
         if (sourceTab.selection.length > 0) {

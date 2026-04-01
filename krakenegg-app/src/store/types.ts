@@ -55,6 +55,7 @@ export interface SettingsModalState { show: boolean; }
 export interface Preferences {
     general: {
         showHiddenFiles: boolean;
+        hideSystemFiles: boolean;
         confirmDelete: boolean;
         saveHistoryOnExit: boolean;
     };

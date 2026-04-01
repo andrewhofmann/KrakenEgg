@@ -1,7 +1,7 @@
 import { Preferences, HotkeyState, PaneLayout, TabState, FileInfo } from "./types";
 
 export const DEFAULT_PREFERENCES: Preferences = {
-    general: { showHiddenFiles: false, confirmDelete: true, saveHistoryOnExit: true },
+    general: { showHiddenFiles: false, hideSystemFiles: true, confirmDelete: true, saveHistoryOnExit: true },
     appearance: { fontSize: 13, rowHeight: 22, showGridLines: true, compactMode: false, theme: 'dark' },
     behavior: { mouseSelection: 'standard' }
 };
@@ -34,11 +34,23 @@ export const getExtension = (filename: string) => {
     return parts.length > 1 && !filename.startsWith('.') ? parts[parts.length - 1].toLowerCase() : "";
 };
 
-export const getProcessedFiles = (files: FileInfo[], layout: PaneLayout, filterQuery: string, showHiddenFiles: boolean) => {
+// System/junk files hidden by default (matching Finder behavior on external volumes)
+const SYSTEM_FILES = new Set([
+  '$RECYCLE.BIN', 'System Volume Information', 'RECYCLER',
+  '$Recycle.Bin', 'desktop.ini', 'Thumbs.db', 'ehthumbs.db',
+  '.DS_Store', '.Spotlight-V100', '.fseventsd', '.Trashes',
+  '.TemporaryItems', '.VolumeIcon.icns', '.com.apple.timemachine.donotpresent',
+]);
+
+export const getProcessedFiles = (files: FileInfo[], layout: PaneLayout, filterQuery: string, showHiddenFiles: boolean, hideSystemFiles: boolean = true) => {
   let processed = files;
-  
+
   if (!showHiddenFiles) {
       processed = processed.filter(f => !f.name.startsWith('.'));
+  }
+
+  if (hideSystemFiles) {
+      processed = processed.filter(f => !SYSTEM_FILES.has(f.name));
   }
 
   if (filterQuery) {

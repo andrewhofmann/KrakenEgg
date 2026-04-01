@@ -136,8 +136,9 @@ export function useKeyboard() {
 
       // Compute processedFiles ONCE — cursor indices refer to this sorted/filtered list
       const _showHidden = state.preferences.general.showHiddenFiles;
+      const _hideSystem = state.preferences.general.hideSystemFiles;
       const _panel = state[activeSide];
-      const visibleFiles = getProcessedFiles(activeTab.files, _panel.layout, activeTab.filterQuery, _showHidden);
+      const visibleFiles = getProcessedFiles(activeTab.files, _panel.layout, activeTab.filterQuery, _showHidden, _hideSystem);
       const cursorFile = visibleFiles[activeTab.cursorIndex];
 
       // --- Hotkey handling based on stored hotkeys ---

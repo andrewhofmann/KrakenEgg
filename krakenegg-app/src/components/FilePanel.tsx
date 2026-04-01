@@ -84,8 +84,8 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
 
   const processedFiles = useMemo(() => {
     if (!activeTab || !layout) return [];
-    return getProcessedFiles(activeTab.files, layout, activeTab.filterQuery, preferences.general.showHiddenFiles);
-  }, [activeTab?.files, layout, activeTab?.filterQuery, preferences.general.showHiddenFiles]);
+    return getProcessedFiles(activeTab.files, layout, activeTab.filterQuery, preferences.general.showHiddenFiles, preferences.general.hideSystemFiles);
+  }, [activeTab?.files, layout, activeTab?.filterQuery, preferences.general.showHiddenFiles, preferences.general.hideSystemFiles]);
 
   const searchBuffer = useRef("");  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [typeAheadDisplay, setTypeAheadDisplay] = useState("");
@@ -325,6 +325,10 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
           setIsPathEditing(false);
       } else if (e.key === 'Escape') {
           setIsPathEditing(false);
+      } else {
+          // Stop propagation for all other keys so global handlers
+          // don't intercept standard text editing (Cmd+C, Cmd+V, Cmd+A, Cmd+X, arrows, etc.)
+          e.stopPropagation();
       }
   };
 
@@ -467,7 +471,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
     const store = useStore.getState();
     const tab = store[side].tabs[store[side].activeTabIndex];
     if (!tab) return;
-    const pFiles = getProcessedFiles(tab.files, store[side].layout, tab.filterQuery, store.preferences.general.showHiddenFiles);
+    const pFiles = getProcessedFiles(tab.files, store[side].layout, tab.filterQuery, store.preferences.general.showHiddenFiles, store.preferences.general.hideSystemFiles);
     const isDraggedItemSelected = tab.selection.length > 0 && tab.selection.some(i => pFiles[i] && pFiles[i].name === file.name);
     const joinP = (dir: string, name: string) => dir === "/" ? `/${name}` : `${dir}/${name}`;
     const paths = isDraggedItemSelected
@@ -887,7 +891,7 @@ export const FilePanel = ({ side, usePanelDataHook }: FilePanelProps) => {
                className="flex-1 flex flex-col min-w-0 h-full justify-center cursor-text"
                onClick={handlePathClick}
                onContextMenu={async (e) => {
-                   if (isPathEditing) return; 
+                   if (isPathEditing) { e.stopPropagation(); return; }
                    e.preventDefault();
                    const target = e.currentTarget;
                    
