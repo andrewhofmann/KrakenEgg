@@ -57,3 +57,8 @@ CLAUDE.md
 # Local-only directories (not needed for build)
 legacy/
 graphics/
+Graphics/
+
+# Debug/test artifacts
+start_log.txt
+test-results/
